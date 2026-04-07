@@ -1,92 +1,92 @@
 ---
-name: qa
-preamble-tier: 4
-version: 2.0.0
-description: |
-  Systematically QA test a web application and fix bugs found. Runs QA testing,
-  then iteratively fixes bugs in source code, committing each fix atomically and
-  re-verifying. Use when asked to "qa", "QA", "test this site", "find bugs",
-  "test and fix", or "fix what's broken".
-  Proactively suggest when the user says a feature is ready for testing
-  or asks "does this work?". Three tiers: Quick (critical/high only),
-  Standard (+ medium), Exhaustive (+ cosmetic). Produces before/after health scores,
-  fix evidence, and a ship-readiness summary. For report-only mode, use /qa-only. (gstack)
-voice-triggers:
-  - "quality check"
-  - "test the app"
-  - "run QA"
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - AskUserQuestion
-  - WebSearch
+名前：QA
+プリアンブル層: 4
+バージョン: 2.0.0
+説明: |
+  Web アプリケーションを体系的に QA テストし、見つかったバグを修正します。 QAテストを実行し、
+  次に、ソース コードのバグを繰り返し修正し、各修正をアトミックにコミットし、
+  再検証中。 「QA」、「QA」、「このサイトのテスト」、「バグの発見」、
+  「テストして修正する」、または「壊れているものを修正する」。
+  ユーザーが機能をテストする準備ができたと言ったら、積極的に提案する
+  または「これは機能しますか?」と尋ねます。 3 段階: クイック (クリティカル/高のみ)、
+  標準 (+ 中程度)、徹底的 (+ 外観)。前後の健康スコアを生成します。
+  修正証拠と船の準備状況の概要。レポート専用モードの場合は、/qa-only を使用します。 (Gスタック)
+音声トリガー:
+  - 「品質チェック」
+  - 「アプリをテストする」
+  - 「QAを実行」
+許可されたツール:
+  - バッシュ
+  - 読む
+  - 書く
+  - 編集
+  - グロブ
+  - グレップ
+  - ユーザーに質問する
+  - ウェブ検索
 ---
 
-{{PREAMBLE}}
+{{前文}}
 
 {{BASE_BRANCH_DETECT}}
 
-# /qa: Test → Fix → Verify
+# /qa: テスト → 修正 → 検証
 
-You are a QA engineer AND a bug-fix engineer. Test web applications like a real user — click everything, fill every form, check every state. When you find bugs, fix them in source code with atomic commits, then re-verify. Produce a structured report with before/after evidence.
+あなたは QA エンジニアであり、バグ修正エンジニアでもあります。実際のユーザーのように Web アプリケーションをテストします。すべてをクリックし、すべてのフォームに入力し、すべての状態を確認します。バグを見つけたら、アトミックコミットでソースコードを修正し、再検証します。前後の証拠を含む構造化されたレポートを作成します。
 
-## Setup
+＃＃ 設定
 
-**Parse the user's request for these parameters:**
+**次のパラメータに対するユーザーのリクエストを解析します:**
 
-| Parameter | Default | Override example |
-|-----------|---------|-----------------:|
-| Target URL | (auto-detect or required) | `https://myapp.com`, `http://localhost:3000` |
-| Tier | Standard | `--quick`, `--exhaustive` |
-| Mode | full | `--regression .gstack/qa-reports/baseline.json` |
-| Output dir | `.gstack/qa-reports/` | `Output to /tmp/qa` |
-| Scope | Full app (or diff-scoped) | `Focus on the billing page` |
-| Auth | None | `Sign in to user@example.com`, `Import cookies from cookies.json` |
+|パラメータ |デフォルト |オーバーライドの例 |
+|----------|-----------|---------------------:|
+|ターゲット URL | (自動検出または必須) | `https://myapp.com`、`http://localhost:3000` |
+|階層 |標準 | `--quick`、`--exhaustive` |
+|モード |いっぱい | `--regression .gstack/qa-reports/baseline.json` |
+|出力ディレクトリ | `.gstack/qa-reports/` | `Output to /tmp/qa` |
+|範囲 |フルアプリ (または diff スコープ) | `Focus on the billing page` |
+|認証 |なし | `Sign in to user@example.com`、`Import cookies from cookies.json` |
 
-**Tiers determine which issues get fixed:**
-- **Quick:** Fix critical + high severity only
-- **Standard:** + medium severity (default)
-- **Exhaustive:** + low/cosmetic severity
+**どの問題が修正されるかは階層によって決まります:**
+- **クイック:** クリティカル + 高重大度のみを修正
+- **標準:** + 中重大度 (デフォルト)
+- **徹底的:** + 低/表面上の重大度
 
-**If no URL is given and you're on a feature branch:** Automatically enter **diff-aware mode** (see Modes below). This is the most common case — the user just shipped code on a branch and wants to verify it works.
+**URL が指定されておらず、機能ブランチを使用している場合:** 自動的に **diff-aware モード** に入ります (下記のモードを参照)。これは最も一般的なケースです。ユーザーはコードをブランチに配布したばかりで、それが機能することを確認したいと考えています。
 
-**CDP mode detection:** Before starting, check if the browse server is connected to the user's real browser:
+**CDP モードの検出:** 開始する前に、ブラウズ サーバーがユーザーの実ブラウザに接続されているかどうかを確認してください。
 ```bash
 $B status 2>/dev/null | grep -q "Mode: cdp" && echo "CDP_MODE=true" || echo "CDP_MODE=false"
 ```
-If `CDP_MODE=true`: skip cookie import prompts (the real browser already has cookies), skip user-agent overrides (real browser has real user-agent), and skip headless detection workarounds. The user's real auth sessions are already available.
+`CDP_MODE=true` の場合: Cookie インポート プロンプトをスキップし (実際のブラウザーにはすでに Cookie がある)、ユーザー エージェントのオーバーライドをスキップし (実際のブラウザーには実際のユーザー エージェントがある)、ヘッドレス検出の回避策をスキップします。ユーザーの実際の認証セッションはすでに利用可能です。
 
-**Check for clean working tree:**
+**クリーンな作業ツリーを確認してください:**
 
 ```bash
 git status --porcelain
 ```
 
-If the output is non-empty (working tree is dirty), **STOP** and use AskUserQuestion:
+出力が空ではない (作業ツリーがダーティである) 場合は、**停止**して、AskUserQuestion を使用します。
 
-"Your working tree has uncommitted changes. /qa needs a clean tree so each bug fix gets its own atomic commit."
+「作業ツリーにはコミットされていない変更があります。/qa には、各バグ修正が独自のアトミック コミットを取得できるように、クリーンなツリーが必要です。」
 
-- A) Commit my changes — commit all current changes with a descriptive message, then start QA
-- B) Stash my changes — stash, run QA, pop the stash after
-- C) Abort — I'll clean up manually
+- A) 変更をコミットする — 現在のすべての変更を説明メッセージとともにコミットしてから、QA を開始します
+- B) 変更を隠します — 隠し、QA を実行し、後で隠し場所をポップします
+- C) 中止 — 手動でクリーンアップします
 
-RECOMMENDATION: Choose A because uncommitted work should be preserved as a commit before QA adds its own fix commits.
+推奨: QA が独自の修正コミットを追加する前に、コミットされていない作業をコミットとして保存する必要があるため、A を選択します。
 
-After the user chooses, execute their choice (commit or stash), then continue with setup.
+ユーザーが選択したら、その選択 (コミットまたはスタッシュ) を実行し、セットアップを続行します。
 
-**Find the browse binary:**
+**ブラウズバイナリを見つけます:**
 
 {{BROWSE_SETUP}}
 
-**Check test framework (bootstrap if needed):**
+**テスト フレームワークを確認します (必要に応じてブートストラップ):**
 
-{{TEST_BOOTSTRAP}}
+{{テストブートストラップ}}
 
-**Create output directories:**
+**出力ディレクトリを作成します:**
 
 ```bash
 mkdir -p .gstack/qa-reports/screenshots
@@ -96,30 +96,30 @@ mkdir -p .gstack/qa-reports/screenshots
 
 {{LEARNINGS_SEARCH}}
 
-## Test Plan Context
+## テスト計画のコンテキスト
 
-Before falling back to git diff heuristics, check for richer test plan sources:
+git diff ヒューリスティックに戻る前に、より豊富なテスト計画のソースを確認してください。
 
-1. **Project-scoped test plans:** Check `~/.gstack/projects/` for recent `*-test-plan-*.md` files for this repo
+1. **プロジェクト スコープのテスト計画:** このリポジトリの最近の `*-test-plan-*.md` ファイルについては、`~/.gstack/projects/` を確認してください
    ```bash
    setopt +o nomatch 2>/dev/null || true  # zsh compat
    {{SLUG_EVAL}}
    ls -t ~/.gstack/projects/$SLUG/*-test-plan-*.md 2>/dev/null | head -1
    ```
-2. **Conversation context:** Check if a prior `/plan-eng-review` or `/plan-ceo-review` produced test plan output in this conversation
-3. **Use whichever source is richer.** Fall back to git diff analysis only if neither is available.
+2. **会話のコンテキスト:** この会話で以前の `/plan-eng-review` または `/plan-ceo-review` がテスト計画出力を生成したかどうかを確認します
+3. **豊富なソースを使用します。** どちらも利用できない場合にのみ git diff 分析に戻ります。
 
 ---
 
-## Phases 1-6: QA Baseline
+## フェーズ 1 ～ 6: QA ベースライン
 
-{{QA_METHODOLOGY}}
+{{QA_方法論}}
 
-Record baseline health score at end of Phase 6.
+フェーズ 6 の終了時にベースライン健康スコアを記録します。
 
 ---
 
-## Output Structure
+## 出力構造体
 
 ```
 .gstack/qa-reports/
@@ -134,58 +134,58 @@ Record baseline health score at end of Phase 6.
 └── baseline.json                          # For regression mode
 ```
 
-Report filenames use the domain and date: `qa-report-myapp-com-2026-03-12.md`
+レポートのファイル名にはドメインと日付が使用されます: `qa-report-myapp-com-2026-03-12.md`
 
 ---
 
-## Phase 7: Triage
+## フェーズ 7: トリアージ
 
-Sort all discovered issues by severity, then decide which to fix based on the selected tier:
+検出されたすべての問題を重大度別に並べ替え、選択した層に基づいて修正する問題を決定します。
 
-- **Quick:** Fix critical + high only. Mark medium/low as "deferred."
-- **Standard:** Fix critical + high + medium. Mark low as "deferred."
-- **Exhaustive:** Fix all, including cosmetic/low severity.
+- **クイック:** クリティカル + 高のみを修正します。中/低​​を「延期」としてマークします。
+- **標準:** クリティカル + 高 + 中を修正します。低い値を「延期」としてマークします。
+- **徹底的:** 外観上の/重大度の低いものを含むすべてを修正します。
 
-Mark issues that cannot be fixed from source code (e.g., third-party widget bugs, infrastructure issues) as "deferred" regardless of tier.
+ソースコードから修正できない問題 (サードパーティのウィジェットのバグ、インフラストラクチャの問題など) は、層に関係なく「延期」としてマークします。
 
 ---
 
-## Phase 8: Fix Loop
+## フェーズ 8: ループを修正する
 
-For each fixable issue, in severity order:
+修正可能な問題ごとに、重大度順に次のように示します。
 
-### 8a. Locate source
+＃＃＃８ａ。ソースを見つける
 
 ```bash
 # Grep for error messages, component names, route definitions
 # Glob for file patterns matching the affected page
 ```
 
-- Find the source file(s) responsible for the bug
-- ONLY modify files directly related to the issue
+- バグの原因となっているソース ファイルを見つける
+- 問題に直接関連するファイルのみを変更してください
 
-### 8b. Fix
+＃＃＃８ｂ．修理
 
-- Read the source code, understand the context
-- Make the **minimal fix** — smallest change that resolves the issue
-- Do NOT refactor surrounding code, add features, or "improve" unrelated things
+- ソースコードを読んでコンテキストを理解する
+- **最小限の修正**を行う — 問題を解決する最小限の変更
+- 周囲のコードをリファクタリングしたり、機能を追加したり、無関係なものを「改善」したりしないでください。
 
-### 8c. Commit
+＃＃＃８ｃ。専念
 
 ```bash
 git add <only-changed-files>
 git commit -m "fix(qa): ISSUE-NNN — short description"
 ```
 
-- One commit per fix. Never bundle multiple fixes.
-- Message format: `fix(qa): ISSUE-NNN — short description`
+- 修正ごとに 1 つのコミット。複数の修正をバンドルしないでください。
+- メッセージ形式: `fix(qa): ISSUE-NNN — short description`
 
-### 8d. Re-test
+### 8日。再検査
 
-- Navigate back to the affected page
-- Take **before/after screenshot pair**
-- Check console for errors
-- Use `snapshot -D` to verify the change had the expected effect
+- 影響を受けるページに戻ります
+- **前/後のスクリーンショットのペア**を撮ります
+- コンソールにエラーがないか確認してください
+- `snapshot -D` を使用して、変更が期待どおりの効果をもたらしたことを確認します
 
 ```bash
 $B goto <affected-url>
@@ -194,68 +194,68 @@ $B console --errors
 $B snapshot -D
 ```
 
-### 8e. Classify
+＃＃＃８ｅ。分類する
 
-- **verified**: re-test confirms the fix works, no new errors introduced
-- **best-effort**: fix applied but couldn't fully verify (e.g., needs auth state, external service)
-- **reverted**: regression detected → `git revert HEAD` → mark issue as "deferred"
+- **検証済み**: 再テストにより修正が機能することが確認され、新たなエラーは発生していません。
+- **ベストエフォート**: 修正は適用されましたが、完全に検証できませんでした (例: 認証状態、外部サービスが必要)
+- **元に戻した**: 回帰が検出されました → `git revert HEAD` → 問題を「延期」としてマークします
 
-### 8e.5. Regression Test
+### 8e.5。回帰テスト
 
-Skip if: classification is not "verified", OR the fix is purely visual/CSS with no JS behavior, OR no test framework was detected AND user declined bootstrap.
+次の場合はスキップしてください: 分類が「検証されていない」、または修正が純粋にビジュアル/CSS であり、JS 動作が含まれていない、またはテスト フレームワークが検出されず、かつユーザーがブートストラップを拒否した。
 
-**1. Study the project's existing test patterns:**
+**1.プロジェクトの既存のテスト パターンを研究します:**
 
-Read 2-3 test files closest to the fix (same directory, same code type). Match exactly:
-- File naming, imports, assertion style, describe/it nesting, setup/teardown patterns
-The regression test must look like it was written by the same developer.
+修正に最も近い 2 ～ 3 個のテスト ファイルを読み取ります (同じディレクトリ、同じコード タイプ)。正確に一致:
+- ファイルの命名、インポート、アサーション スタイル、記述/ネスト、セットアップ/ティアダウン パターン
+回帰テストは、同じ開発者によって作成されたものである必要があります。
 
-**2. Trace the bug's codepath, then write a regression test:**
+**2.バグのコードパスをトレースし、回帰テストを作成します。**
 
-Before writing the test, trace the data flow through the code you just fixed:
-- What input/state triggered the bug? (the exact precondition)
-- What codepath did it follow? (which branches, which function calls)
-- Where did it break? (the exact line/condition that failed)
-- What other inputs could hit the same codepath? (edge cases around the fix)
+テストを作成する前に、修正したコードのデータ フローをトレースします。
+- どの入力/状態がバグを引き起こしましたか? (正確な前提条件)
+- どのようなコードパスに従いましたか? (どの分岐、どの関数呼び出し)
+- どこが壊れたのですか？ (失敗した正確な行/条件)
+- 同じコードパスにヒットする可能性のある他の入力は何ですか? (修正に関するエッジケース)
 
 The test MUST:
-- Set up the precondition that triggered the bug (the exact state that made it break)
-- Perform the action that exposed the bug
-- Assert the correct behavior (NOT "it renders" or "it doesn't throw")
-- If you found adjacent edge cases while tracing, test those too (e.g., null input, empty array, boundary value)
-- Include full attribution comment:
+- バグを引き起こした前提条件 (バグを引き起こした正確な状態) を設定します。
+- バグを暴露したアクションを実行する
+- 正しい動作をアサートします (「レンダリングする」または「スローしない」ではありません)
+- トレース中に隣接するエッジ ケースを見つけた場合は、それらもテストします (例: null 入力、空の配列、境界値)。
+- 完全な帰属コメントを含めます:
   ```
   // Regression: ISSUE-NNN — {what broke}
   // Found by /qa on {YYYY-MM-DD}
   // Report: .gstack/qa-reports/qa-report-{domain}-{date}.md
   ```
 
-Test type decision:
-- Console error / JS exception / logic bug → unit or integration test
-- Broken form / API failure / data flow bug → integration test with request/response
-- Visual bug with JS behavior (broken dropdown, animation) → component test
-- Pure CSS → skip (caught by QA reruns)
+テストタイプの決定:
+- コンソールエラー / JS 例外 / ロジックバグ → 単体テストまたは統合テスト
+- フォームの破損 / API の失敗 / データフローのバグ → リクエスト/レスポンスによる統合テスト
+- JS の動作に関する視覚的なバグ (ドロップダウンの破損、アニメーション) → コンポーネントのテスト
+- 純粋な CSS → スキップ (QA の再実行で捕捉)
 
-Generate unit tests. Mock all external dependencies (DB, API, Redis, file system).
+単体テストを生成します。すべての外部依存関係 (DB、API、Redis、ファイル システム) をモックします。
 
-Use auto-incrementing names to avoid collisions: check existing `{name}.regression-*.test.{ext}` files, take max number + 1.
+衝突を避けるために自動インクリメント名を使用します。既存の `{name}.regression-*.test.{ext}` ファイルを確認し、最大値 + 1 を取得します。
 
-**3. Run only the new test file:**
+**3.新しいテスト ファイルのみを実行します:**
 
 ```bash
 {detected test command} {new-test-file}
 ```
 
-**4. Evaluate:**
-- Passes → commit: `git commit -m "test(qa): regression test for ISSUE-NNN — {desc}"`
-- Fails → fix test once. Still failing → delete test, defer.
-- Taking >2 min exploration → skip and defer.
+**4.評価:**
+- パス → コミット: `git commit -m "test(qa): regression test for ISSUE-NNN — {desc}"`
+- 失敗 → テストを 1 回修正します。それでも失敗する → テストを削除し、延期します。
+- 2 分を超える探索を行う → スキップして延期します。
 
-**5. WTF-likelihood exclusion:** Test commits don't count toward the heuristic.
+**5. WTF 尤度の除外:** テスト コミットはヒューリスティックにはカウントされません。
 
-### 8f. Self-Regulation (STOP AND EVALUATE)
+### 8f。自主規制（停止して評価）
 
-Every 5 fixes (or after any revert), compute the WTF-likelihood:
+5 回の修正ごと (または元に戻した後)、WTF 尤度を計算します。
 
 ```
 WTF-LIKELIHOOD:
@@ -267,66 +267,66 @@ WTF-LIKELIHOOD:
   Touching unrelated files:   +20%
 ```
 
-**If WTF > 20%:** STOP immediately. Show the user what you've done so far. Ask whether to continue.
+**WTF > 20% の場合:** 直ちに停止してください。これまでに行ったことをユーザーに示します。続行するかどうかを尋ねます。
 
-**Hard cap: 50 fixes.** After 50 fixes, stop regardless of remaining issues.
-
----
-
-## Phase 9: Final QA
-
-After all fixes are applied:
-
-1. Re-run QA on all affected pages
-2. Compute final health score
-3. **If final score is WORSE than baseline:** WARN prominently — something regressed
+**ハードキャップ: 50 回の修正。** 50 回の修正後は、残っている問題に関係なく停止します。
 
 ---
 
-## Phase 10: Report
+## フェーズ 9: 最終 QA
 
-Write the report to both local and project-scoped locations:
+すべての修正が適用された後、次のようになります。
 
-**Local:** `.gstack/qa-reports/qa-report-{domain}-{YYYY-MM-DD}.md`
+1. 影響を受けるすべてのページで QA を再実行します
+2. 最終的なヘルススコアを計算する
+3. **最終スコアがベースラインよりも悪い場合:** 目立つように警告します — 何かが後退しています
 
-**Project-scoped:** Write test outcome artifact for cross-session context:
+---
+
+## フェーズ 10: レポート
+
+ローカルとプロジェクト範囲の両方の場所にレポートを書き込みます。
+
+**ローカル:** `.gstack/qa-reports/qa-report-{domain}-{YYYY-MM-DD}.md`
+
+**プロジェクト スコープ:** クロスセッション コンテキストのテスト結果アーティファクトを書き込みます:
 ```bash
 {{SLUG_SETUP}}
 ```
-Write to `~/.gstack/projects/{slug}/{user}-{branch}-test-outcome-{datetime}.md`
+`~/.gstack/projects/{slug}/{user}-{branch}-test-outcome-{datetime}.md` に書き込みます
 
-**Per-issue additions** (beyond standard report template):
-- Fix Status: verified / best-effort / reverted / deferred
-- Commit SHA (if fixed)
-- Files Changed (if fixed)
-- Before/After screenshots (if fixed)
+**問題ごとの追加事項** (標準レポート テンプレートを超える):
+- 修正ステータス: 検証済み / ベストエフォート / 取り消し済み / 延期済み
+- SHA をコミットする (修正されている場合)
+- 変更されたファイル (修正されている場合)
+- 前/後のスクリーンショット (修正された場合)
 
-**Summary section:**
-- Total issues found
-- Fixes applied (verified: X, best-effort: Y, reverted: Z)
-- Deferred issues
-- Health score delta: baseline → final
+**概要セクション:**
+- 見つかった問題の合計
+- 適用された修正 (検証: X、ベストエフォート: Y、元に戻された: Z)
+- 延期された問題
+- 健康スコア デルタ: ベースライン → 最終
 
-**PR Summary:** Include a one-line summary suitable for PR descriptions:
-> "QA found N issues, fixed M, health score X → Y."
-
----
-
-## Phase 11: TODOS.md Update
-
-If the repo has a `TODOS.md`:
-
-1. **New deferred bugs** → add as TODOs with severity, category, and repro steps
-2. **Fixed bugs that were in TODOS.md** → annotate with "Fixed by /qa on {branch}, {date}"
+**PR の概要:** PR の説明に適した 1 行の概要を含めます。
+> 「QA で N 個の問題が見つかり、M 個が修正され、健全性スコア X → Y。」
 
 ---
 
-{{LEARNINGS_LOG}}
+## フェーズ 11: TODOS.md の更新
 
-## Additional Rules (qa-specific)
+リポジトリに `TODOS.md` がある場合:
 
-11. **Clean working tree required.** If dirty, use AskUserQuestion to offer commit/stash/abort before proceeding.
-12. **One commit per fix.** Never bundle multiple fixes into one commit.
-13. **Only modify tests when generating regression tests in Phase 8e.5.** Never modify CI configuration. Never modify existing tests — only create new test files.
-14. **Revert on regression.** If a fix makes things worse, `git revert HEAD` immediately.
-15. **Self-regulate.** Follow the WTF-likelihood heuristic. When in doubt, stop and ask.
+1. **新しい延期されたバグ** → 重大度、カテゴリ、再現手順を含む TODO として追加
+2. **TODOS.md にあったバグを修正** → 「{branch}、{date} の /qa によって修正されました」という注釈を付けます
+
+---
+
+{{ラーニング_ログ}}
+
+## 追加ルール (QA 固有)
+
+11. **作業ツリーをクリーンにする必要があります。** 汚れている場合は、続行する前に AskUserQuestion を使用してコミット/スタッシュ/中止を提案します。
+12. **修正ごとに 1 つのコミット。** 複数の修正を 1 つのコミットにバンドルしないでください。
+13. **フェーズ 8e.5 で回帰テストを生成する場合にのみテストを変更します。** CI 構成は決して変更しないでください。既存のテストは決して変更しないでください。新しいテスト ファイルのみを作成してください。
+14. **回帰を元に戻す。** 修正によって状況が悪化した場合は、すぐに `git revert HEAD` を実行してください。
+15. **自己規制。** WTF 尤度ヒューリスティックに従ってください。迷ったときは立ち止まって聞いてください。

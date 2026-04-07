@@ -1,79 +1,79 @@
 ---
-name: review
-preamble-tier: 4
-version: 1.0.0
-description: |
-  Pre-landing PR review. Analyzes diff against the base branch for SQL safety, LLM trust
-  boundary violations, conditional side effects, and other structural issues. Use when
-  asked to "review this PR", "code review", "pre-landing review", or "check my diff".
-  Proactively suggest when the user is about to merge or land code changes. (gstack)
-allowed-tools:
-  - Bash
-  - Read
-  - Edit
-  - Write
-  - Grep
-  - Glob
-  - Agent
-  - AskUserQuestion
-  - WebSearch
+名前：レビュー
+プリアンブル層: 4
+バージョン: 1.0.0
+説明: |
+  着陸前のPRレビュー。 SQL の安全性、LLM の信頼性についてベース ブランチとの差分を分析します。
+  境界違反、条件付きの副作用、その他の構造的な問題。いつ使用しますか
+  「この PR をレビューしてください」、「コード レビュー」、「着陸前レビュー」、または「差分を確認してください」と依頼されました。
+  ユーザーがコード変更をマージまたはランディングしようとしている時期を積極的に提案します。 (Gスタック)
+許可されたツール:
+  - バッシュ
+  - 読む
+  - 編集
+  - 書く
+  - グレップ
+  - グロブ
+  - エージェント
+  - ユーザーに質問する
+  - ウェブ検索
 ---
 
-{{PREAMBLE}}
+{{前文}}
 
 {{BASE_BRANCH_DETECT}}
 
-# Pre-Landing PR Review
+# 上陸前のPRレビュー
 
-You are running the `/review` workflow. Analyze the current branch's diff against the base branch for structural issues that tests don't catch.
-
----
-
-## Step 1: Check branch
-
-1. Run `git branch --show-current` to get the current branch.
-2. If on the base branch, output: **"Nothing to review — you're on the base branch or have no changes against it."** and stop.
-3. Run `git fetch origin <base> --quiet && git diff origin/<base> --stat` to check if there's a diff. If no diff, output the same message and stop.
+You are running the `/review` workflow.テストで捕捉できない構造的な問題について、ベース ブランチに対する現在のブランチの差分を分析します。
 
 ---
 
-{{SCOPE_DRIFT}}
+## ステップ 1: ブランチを確認する
+
+1. `git branch --show-current` を実行して現在のブランチを取得します。
+2. ベース ブランチ上の場合は、**「レビューするものはありません — ベース ブランチ上にいるか、ベース ブランチに対する変更はありません。」** と出力して停止します。
+3. `git fetch origin <base> --quiet && git diff origin/<base> --stat` を実行して、差分があるかどうかを確認します。差分がない場合は、同じメッセージを出力して停止します。
+
+---
+
+{{スコープ_ドリフト}}
 
 {{PLAN_COMPLETION_AUDIT_REVIEW}}
 
-## Step 2: Read the checklist
+## ステップ 2: チェックリストを読む
 
-Read `.claude/skills/review/checklist.md`.
+`.claude/skills/review/checklist.md` をお読みください。
 
-**If the file cannot be read, STOP and report the error.** Do not proceed without the checklist.
-
----
-
-## Step 2.5: Check for Greptile review comments
-
-Read `.claude/skills/review/greptile-triage.md` and follow the fetch, filter, classify, and **escalation detection** steps.
-
-**If no PR exists, `gh` fails, API returns an error, or there are zero Greptile comments:** Skip this step silently. Greptile integration is additive — the review works without it.
-
-**If Greptile comments are found:** Store the classifications (VALID & ACTIONABLE, VALID BUT ALREADY FIXED, FALSE POSITIVE, SUPPRESSED) — you will need them in Step 5.
+**ファイルを読み取れない場合は、停止してエラーを報告してください。** チェックリストなしで続行しないでください。
 
 ---
 
-## Step 3: Get the diff
+## ステップ 2.5: Greptile のレビュー コメントを確認する
 
-Fetch the latest base branch to avoid false positives from stale local state:
+`.claude/skills/review/greptile-triage.md` を読み、フェッチ、フィルター、分類、**エスカレーション検出**の手順に従います。
+
+**PR が存在しない場合、`gh` は失敗し、API はエラーを返すか、Greptile コメントがゼロです。** このステップをサイレントにスキップします。 Greptile の統合は追加的です。レビューはそれなしでも機能します。
+
+**Greptile コメントが見つかった場合:** 分類 (有効かつ実行可能、有効だがすでに修正済み、偽陽性、抑制) を保存します。これらはステップ 5 で必要になります。
+
+---
+
+## ステップ 3: 差分を取得する
+
+最新のベース ブランチをフェッチして、古いローカル状態による誤検出を回避します。
 
 ```bash
 git fetch origin <base> --quiet
 ```
 
-Run `git diff origin/<base>` to get the full diff. This includes both committed and uncommitted changes against the latest base branch.
+完全な差分を取得するには、`git diff origin/<base>` を実行します。 This includes both committed and uncommitted changes against the latest base branch.
 
 ---
 
 {{LEARNINGS_SEARCH}}
 
-## Step 4: Critical pass (core review)
+## ステップ 4: クリティカル パス (コア レビュー)
 
 Apply the CRITICAL categories from the checklist against the diff:
 SQL & Data Safety, Race Conditions & Concurrency, LLM Output Trust Boundary, Shell Injection, Enum & Value Completeness.

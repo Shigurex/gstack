@@ -1,60 +1,60 @@
-# Security Specialist Review Checklist
+# セキュリティスペシャリストレビューチェックリスト
 
-Scope: When SCOPE_AUTH=true OR (SCOPE_BACKEND=true AND diff > 100 lines)
-Output: JSON objects, one finding per line. Schema:
-{"severity":"CRITICAL|INFORMATIONAL","confidence":N,"path":"file","line":N,"category":"security","summary":"...","fix":"...","fingerprint":"path:line:security","specialist":"security"}
-If no findings: output `NO FINDINGS` and nothing else.
+スコープ: SCOPE_AUTH=true OR (SCOPE_BACKEND=true AND diff > 100 行) の場合
+出力: JSON オブジェクト、1 行に 1 つの結果。スキーマ:
+{"重大度":"重大|情報"、"信頼性":N、"パス":"ファイル"、"行":N、"カテゴリ":"セキュリティ"、"概要":"..."、"修正":"..."、"指紋":"パス:行:セキュリティ"、"スペシャリスト":"セキュリティ"}
+検出結果がない場合: `NO FINDINGS` を出力し、それ以外は何も出力しません。
 
 ---
 
-This checklist goes deeper than the main CRITICAL pass. The main agent already checks SQL injection, race conditions, LLM trust, and enum completeness. This specialist focuses on auth/authz patterns, cryptographic misuse, and attack surface expansion.
+このチェックリストは、メインの CRITICAL パスよりも詳しく説明されています。メイン エージェントは、SQL インジェクション、競合状態、LLM 信頼、列挙型の完全性をすでにチェックしています。このスペシャリストは、認証/認証パターン、暗号の悪用、攻撃対象領域の拡大に重点を置いています。
 
-## Categories
+## カテゴリ
 
-### Input Validation at Trust Boundaries
-- User input accepted without validation at controller/handler level
-- Query parameters used directly in database queries or file paths
-- Request body fields accepted without type checking or schema validation
-- File uploads without type/size/content validation
-- Webhook payloads processed without signature verification
+### 信頼境界での入力検証
+- コントローラー/ハンドラーレベルでの検証なしでユーザー入力が受け入れられました
+- データベースクエリまたはファイルパスで直接使用されるクエリパラメータ
+- リクエスト本文フィールドは型チェックやスキーマ検証なしで受け入れられます
+- タイプ/サイズ/コンテンツの検証を行わないファイルのアップロード
+- 署名検証なしで処理される Webhook ペイロード
 
 ### Auth & Authorization Bypass
-- Endpoints missing authentication middleware (check route definitions)
-- Authorization checks that default to "allow" instead of "deny"
-- Role escalation paths (user can modify their own role/permissions)
-- Direct object reference vulnerabilities (user A accesses user B's data by changing an ID)
-- Session fixation or session hijacking opportunities
-- Token/API key validation that doesn't check expiration
+- エンドポイントに認証ミドルウェアがありません (ルート定義を確認してください)
+- デフォルトで「拒否」ではなく「許可」になる承認チェック
+- ロール エスカレーション パス (ユーザーは自分のロール/権限を変更できます)
+- 直接オブジェクト参照の脆弱性 (ユーザー A が ID を変更してユーザー B のデータにアクセスする)
+- セッション固定またはセッションハイジャックの機会
+- 有効期限をチェックしないトークン/API キーの検証
 
-### Injection Vectors (beyond SQL)
-- Command injection via subprocess calls with user-controlled arguments
-- Template injection (Jinja2, ERB, Handlebars) with user input
-- LDAP injection in directory queries
-- SSRF via user-controlled URLs (fetch, redirect, webhook targets)
-- Path traversal via user-controlled file paths (../../etc/passwd)
-- Header injection via user-controlled values in HTTP headers
+### インジェクションベクター (SQL を超えたもの)
+- ユーザー制御の引数を使用したサブプロセス呼び出しによるコマンド インジェクション
+- ユーザー入力によるテンプレート インジェクション (Jinja2、ERB、ハンドルバー)
+- ディレクトリクエリでの LDAP インジェクション
+- ユーザー制御の URL 経由の SSRF (フェッチ、リダイレクト、Webhook ターゲット)
+- ユーザー制御のファイル パス (../../etc/passwd) を介したパス トラバーサル
+- HTTP ヘッダー内のユーザー制御値によるヘッダー インジェクション
 
-### Cryptographic Misuse
-- Weak hashing algorithms (MD5, SHA1) for security-sensitive operations
-- Predictable randomness (Math.random, rand()) for tokens or secrets
-- Non-constant-time comparisons (==) on secrets, tokens, or digests
+### 暗号の悪用
+- セキュリティが重要な操作のための弱いハッシュ アルゴリズム (MD5、SHA1)
+- トークンまたはシークレットの予測可能なランダム性 (Math.random、rand())
+- シークレット、トークン、またはダイジェストの非定時比較 (==)
 - Hardcoded encryption keys or IVs
 - Missing salt in password hashing
 
-### Secrets Exposure
-- API keys, tokens, or passwords in source code (even in comments)
-- Secrets logged in application logs or error messages
-- Credentials in URLs (query parameters or basic auth in URL)
+### 秘密の暴露
+- ソース コード内の API キー、トークン、またはパスワード (コメント内も含む)
+- アプリケーションログまたはエラーメッセージに記録されたシークレット
+- URL 内の認証情報 (URL 内のクエリ パラメータまたは基本認証)
 - Sensitive data in error responses returned to users
 - PII stored in plaintext when encryption is expected
 
-### XSS via Escape Hatches
-- Rails: .html_safe, raw() on user-controlled data
-- React: dangerouslySetInnerHTML with user content
-- Vue: v-html with user content
-- Django: |safe, mark_safe() on user input
-- General: innerHTML assignment with unsanitized data
+### エスケープハッチによる XSS
+- Rails: ユーザー制御データの .html_safe、raw()
+- React: ユーザーコンテンツを含む危険なSetInnerHTML
+- Vue: ユーザーコンテンツを含む v-html
+- Django: ユーザー入力に対する |safe、mark_safe()
+- 一般: サニタイズされていないデータを含む innerHTML 割り当て
 
-### Deserialization
-- Deserializing untrusted data (pickle, Marshal, YAML.load, JSON.parse of executable types)
-- Accepting serialized objects from user input or external APIs without schema validation
+### デシリアライゼーション
+- 信頼できないデータの逆シリアル化 (pickle、Marshal、YAML.load、実行可能タイプの JSON.parse)
+- スキーマ検証なしでユーザー入力または外部 API からシリアル化されたオブジェクトを受け入れる

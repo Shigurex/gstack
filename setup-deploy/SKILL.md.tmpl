@@ -1,58 +1,58 @@
 ---
-name: setup-deploy
-preamble-tier: 2
-version: 1.0.0
-description: |
-  Configure deployment settings for /land-and-deploy. Detects your deploy
-  platform (Fly.io, Render, Vercel, Netlify, Heroku, GitHub Actions, custom),
-  production URL, health check endpoints, and deploy status commands. Writes
-  the configuration to CLAUDE.md so all future deploys are automatic.
-  Use when: "setup deploy", "configure deployment", "set up land-and-deploy",
-  "how do I deploy with gstack", "add deploy config".
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - AskUserQuestion
+名前: セットアップ-デプロイ
+プリアンブル層: 2
+バージョン: 1.0.0
+説明: |
+  /land-and-deploy のデプロイメント設定を構成します。デプロイを検出します
+  プラットフォーム (Fly.io、Render、Vercel、Netlify、Heraku、GitHub Actions、カスタム)、
+  運用 URL、ヘルスチェックエンドポイント、およびデプロイステータスコマンド。書き込みます
+  構成を CLAUDE.md に変更すると、今後のデプロイはすべて自動的に行われます。
+  次の場合に使用します: 「デプロイのセットアップ」、「デプロイの構成」、「ランドアンドデプロイのセットアップ」、
+  「gstack を使用してデプロイするにはどうすればよいですか」、「デプロイ構成を追加します」。
+許可されたツール:
+  - バッシュ
+  - 読む
+  - 書く
+  - 編集
+  - グロブ
+  - グレップ
+  - ユーザーに質問する
 ---
 
-{{PREAMBLE}}
+{{前文}}
 
-# /setup-deploy — Configure Deployment for gstack
+# /setup-deploy — gstack のデプロイメントを構成する
 
-You are helping the user configure their deployment so `/land-and-deploy` works
-automatically. Your job is to detect the deploy platform, production URL, health
-checks, and deploy status commands — then persist everything to CLAUDE.md.
+`/land-and-deploy` が機能するようにユーザーが展開を構成するのを支援します。
+自動的に。あなたの仕事は、デプロイ プラットフォーム、運用 URL、健全性を検出することです。
+チェックしてステータス コマンドをデプロイし、すべてを CLAUDE.md に保存します。
 
-After this runs once, `/land-and-deploy` reads CLAUDE.md and skips detection entirely.
+これが一度実行されると、`/land-and-deploy` は CLAUDE.md を読み取り、検出を完全にスキップします。
 
-## User-invocable
-When the user types `/setup-deploy`, run this skill.
+## ユーザー呼び出し可能
+ユーザーが「`/setup-deploy`」と入力すると、このスキルが実行されます。
 
-## Instructions
+＃＃ 説明書
 
-### Step 1: Check existing configuration
+### ステップ 1: 既存の構成を確認する
 
 ```bash
 grep -A 20 "## Deploy Configuration" CLAUDE.md 2>/dev/null || echo "NO_CONFIG"
 ```
 
-If configuration already exists, show it and ask:
+構成がすでに存在する場合は、それを表示して次のように尋ねます。
 
-- **Context:** Deploy configuration already exists in CLAUDE.md.
-- **RECOMMENDATION:** Choose A to update if your setup changed.
-- A) Reconfigure from scratch (overwrite existing)
-- B) Edit specific fields (show current config, let me change one thing)
-- C) Done — configuration looks correct
+- **コンテキスト:** デプロイ構成はすでに CLAUDE.md に存在します。
+- **推奨:** 設定が変更された場合は、A を選択して更新します。
+- A) 最初から再構成する (既存のものを上書きする)
+- B) 特定のフィールドを編集します (現在の構成を表示します。1 つ変更させてください)
+- C) 完了 — 構成は正しいようです
 
-If the user picks C, stop.
+ユーザーが C を選択した場合は停止します。
 
-### Step 2: Detect platform
+### ステップ 2: プラットフォームの検出
 
-Run the platform detection from the deploy bootstrap:
+デプロイ ブートストラップからプラットフォーム検出を実行します。
 
 ```bash
 # Platform config files
@@ -73,91 +73,91 @@ done
 find . -maxdepth 1 -name '*.gemspec' 2>/dev/null | grep -q . && echo "PROJECT_TYPE:library"
 ```
 
-### Step 3: Platform-specific setup
+### ステップ 3: プラットフォーム固有のセットアップ
 
-Based on what was detected, guide the user through platform-specific configuration.
+検出された内容に基づいて、プラットフォーム固有の構成をユーザーに案内します。
 
 #### Fly.io
 
-If `fly.toml` detected:
+`fly.toml` が検出された場合:
 
-1. Extract app name: `grep -m1 "^app" fly.toml | sed 's/app = "\(.*\)"/\1/'`
-2. Check if `fly` CLI is installed: `which fly 2>/dev/null`
-3. If installed, verify: `fly status --app {app} 2>/dev/null`
-4. Infer URL: `https://{app}.fly.dev`
-5. Set deploy status command: `fly status --app {app}`
-6. Set health check: `https://{app}.fly.dev` (or `/health` if the app has one)
+1. アプリ名を抽出します: `grep -m1 "^app" fly.toml | sed 's/app = "\(.*\)"/\1/'`
+2. `fly` CLI がインストールされているかどうかを確認します: `which fly 2>/dev/null`
+3. インストールされている場合は、次のことを確認します: `fly status --app {app} 2>/dev/null`
+4. URL を推測: `https://{app}.fly.dev`
+5. デプロイステータスコマンドを設定します: `fly status --app {app}`
+6. ヘルスチェックを設定します: `https://{app}.fly.dev` (アプリにヘルスチェックがある場合は `/health`)
 
-Ask the user to confirm the production URL. Some Fly apps use custom domains.
+ユーザーに本番 URL を確認するよう依頼します。一部の Fly アプリはカスタム ドメインを使用します。
 
-#### Render
+＃＃＃＃ 与える
 
-If `render.yaml` detected:
+`render.yaml` が検出された場合:
 
-1. Extract service name and type from render.yaml
-2. Check for Render API key: `echo $RENDER_API_KEY | head -c 4` (don't expose the full key)
-3. Infer URL: `https://{service-name}.onrender.com`
-4. Render deploys automatically on push to the connected branch — no deploy workflow needed
-5. Set health check: the inferred URL
+1. render.yaml からサービス名とタイプを抽出します。
+2. Render API キーを確認します: `echo $RENDER_API_KEY | head -c 4` (完全なキーを公開しないでください)
+3. URL を推測: `https://{service-name}.onrender.com`
+4. 接続されたブランチへのプッシュ時にレンダリング デプロイが自動的に行われます。デプロイ ワークフローは必要ありません。
+5. ヘルスチェックの設定: 推測された URL
 
-Ask the user to confirm. Render uses auto-deploy from the connected git branch — after
-merge to main, Render picks it up automatically. The "deploy wait" in /land-and-deploy
-should poll the Render URL until it responds with the new version.
+ユーザーに確認を求めます。レンダリングは、接続された git ブランチからの自動デプロイを使用します — 後
+main にマージすると、Render が自動的にそれを選択します。 /land-and-deploy の「デプロイ待機」
+新しいバージョンで応答するまで、レンダー URL をポーリングする必要があります。
 
-#### Vercel
+#### ヴェルセル
 
-If vercel.json or .vercel detected:
+vercel.json または .vercel が検出された場合:
 
-1. Check for `vercel` CLI: `which vercel 2>/dev/null`
-2. If installed: `vercel ls --prod 2>/dev/null | head -3`
-3. Vercel deploys automatically on push — preview on PR, production on merge to main
-4. Set health check: the production URL from vercel project settings
+1. `vercel` CLI を確認します: `which vercel 2>/dev/null`
+2. インストールされている場合: `vercel ls --prod 2>/dev/null | head -3`
+3. Vercel はプッシュ時に自動的にデプロイされます — PR でプレビュー、メインにマージすると本番環境になります
+4. ヘルスチェックの設定: vercel プロジェクト設定からの本番 URL
 
 #### Netlify
 
-If netlify.toml detected:
 
-1. Extract site info from netlify.toml
-2. Netlify deploys automatically on push
-3. Set health check: the production URL
 
-#### GitHub Actions only
+1. netlify.toml からサイト情報を抽出します。
+2. Netlify はプッシュ時に自動的にデプロイされます
+3. ヘルスチェックの設定: 運用 URL
 
-If deploy workflows detected but no platform config:
+#### GitHub アクションのみ
 
-1. Read the workflow file to understand what it does
-2. Extract the deploy target (if mentioned)
-3. Ask the user for the production URL
+デプロイワークフローは検出されたが、プラットフォーム構成が検出されなかった場合:
 
-#### Custom / Manual
+1. ワークフロー ファイルを読んで、その内容を理解します。
+2. デプロイターゲットを抽出します (記載されている場合)
+3. ユーザーに本番 URL を尋ねます。
 
-If nothing detected:
+#### カスタム / マニュアル
 
-Use AskUserQuestion to gather the information:
+何も検出されなかった場合:
 
-1. **How are deploys triggered?**
-   - A) Automatically on push to main (Fly, Render, Vercel, Netlify, etc.)
-   - B) Via GitHub Actions workflow
-   - C) Via a deploy script or CLI command (describe it)
-   - D) Manually (SSH, dashboard, etc.)
-   - E) This project doesn't deploy (library, CLI, tool)
+AskUserQuestion を使用して情報を収集します。
 
-2. **What's the production URL?** (Free text — the URL where the app runs)
+1. **デプロイはどのようにトリガーされますか?**
+   - A) メインへのプッシュ時に自動的に (Fly、Render、Vercel、Netlify など)
+   - B) GitHub Actions ワークフロー経由
+   - C) デプロイスクリプトまたは CLI コマンド経由 (説明)
+   - D) 手動（SSH、ダッシュボードなど）
+   - E) このプロジェクトはデプロイされません (ライブラリ、CLI、ツール)
 
-3. **How can gstack check if a deploy succeeded?**
-   - A) HTTP health check at a specific URL (e.g., /health, /api/status)
-   - B) CLI command (e.g., `fly status`, `kubectl rollout status`)
-   - C) Check the GitHub Actions workflow status
-   - D) No automated way — just check the URL loads
+2. **運用 URL は何ですか?** (フリーテキスト - アプリが実行される URL)
 
-4. **Any pre-merge or post-merge hooks?**
-   - Commands to run before merging (e.g., `bun run build`)
-   - Commands to run after merge but before deploy verification
+3. **gstack はデプロイが成功したかどうかをどのように確認できますか?**
+   - A) 特定の URL での HTTP ヘルスチェック (/health、/api/status など)
+   - B) CLI コマンド (例: `fly status`、`kubectl rollout status`)
+   - C) GitHub Actions ワークフローのステータスを確認する
+   - D) 自動化された方法はありません - URL の読み込みを確認するだけです
 
-### Step 4: Write configuration
+4. **マージ前またはマージ後のフックはありますか?**
+   - マージ前に実行するコマンド (例: `bun run build`)
+   - マージ後、デプロイ検証前に実行するコマンド
 
-Read CLAUDE.md (or create it). Find and replace the `## Deploy Configuration` section
-if it exists, or append it at the end.
+### ステップ 4: 構成の書き込み
+
+CLAUDE.mdを読み込みます（または作成します）。 `## Deploy Configuration` セクションを検索して置換します
+存在する場合は、最後に追加します。
 
 ```markdown
 ## Deploy Configuration (configured by /setup-deploy)
@@ -176,24 +176,24 @@ if it exists, or append it at the end.
 - Health check: {URL or command}
 ```
 
-### Step 5: Verify
+### ステップ 5: 確認する
 
-After writing, verify the configuration works:
+書き込んだ後、構成が機能することを確認します。
 
-1. If a health check URL was configured, try it:
+1. ヘルスチェック URL が設定されている場合は、それを試してください。
 ```bash
 curl -sf "{health-check-url}" -o /dev/null -w "%{http_code}" 2>/dev/null || echo "UNREACHABLE"
 ```
 
-2. If a deploy status command was configured, try it:
+2. デプロイステータスコマンドが設定されている場合は、それを試してください。
 ```bash
 {deploy-status-command} 2>/dev/null | head -5 || echo "COMMAND_FAILED"
 ```
 
-Report results. If anything failed, note it but don't block — the config is still
-useful even if the health check is temporarily unreachable.
+結果を報告します。何か失敗した場合は、ブロックしないでください。設定はまだ残っています。
+ヘルスチェックに一時的にアクセスできない場合でも役立ちます。
 
-### Step 6: Summary
+### ステップ 6: まとめ
 
 ```
 DEPLOY CONFIGURATION — COMPLETE
@@ -212,10 +212,10 @@ Next steps:
 - Run /setup-deploy again to reconfigure
 ```
 
-## Important Rules
+## 重要なルール
 
-- **Never expose secrets.** Don't print full API keys, tokens, or passwords.
-- **Confirm with the user.** Always show the detected config and ask for confirmation before writing.
-- **CLAUDE.md is the source of truth.** All configuration lives there — not in a separate config file.
-- **Idempotent.** Running /setup-deploy multiple times overwrites the previous config cleanly.
-- **Platform CLIs are optional.** If `fly` or `vercel` CLI isn't installed, fall back to URL-based health checks.
+- **秘密を決して公開しないでください。** 完全な API キー、トークン、またはパスワードを印刷しないでください。
+- **ユーザーに確認してください。** 書き込む前に、検出された構成を必ず表示し、確認を求めます。
+- **CLAUDE.md は真実の情報源です。** すべての設定は、別個の設定ファイルではなく、そこに存在します。
+- **冪等。** /setup-deploy を複数回実行すると、以前の構成がきれいに上書きされます。
+- **プラットフォーム CLI はオプションです。** `fly` または `vercel` CLI がインストールされていない場合は、URL ベースのヘルスチェックに戻ります。

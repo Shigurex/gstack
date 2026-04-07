@@ -1,49 +1,49 @@
 ---
-name: qa-only
-preamble-tier: 4
-version: 1.0.0
-description: |
-  Report-only QA testing. Systematically tests a web application and produces a
-  structured report with health score, screenshots, and repro steps — but never
-  fixes anything. Use when asked to "just report bugs", "qa report only", or
-  "test but don't fix". For the full test-fix-verify loop, use /qa instead.
-  Proactively suggest when the user wants a bug report without any code changes. (gstack)
-voice-triggers:
-  - "bug report"
-  - "just check for bugs"
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - AskUserQuestion
-  - WebSearch
+名前: QA のみ
+プリアンブル層: 4
+バージョン: 1.0.0
+説明: |
+  レポートのみの QA テスト。 Web アプリケーションを体系的にテストし、
+  ヘルススコア、スクリーンショット、再現手順を含む構造化されたレポート - ただし、
+  何でも直します。 「バグ報告のみ」、「QA 報告のみ」、または「バグ報告のみ」を依頼された場合に使用します。
+  「テストはするが修正はしない」。完全なテスト-修正-検証ループの場合は、代わりに /qa を使用してください。
+  ユーザーがコードを変更せずにバグレポートを必要とする場合は、積極的に提案します。 (Gスタック)
+音声トリガー:
+  - 「バグレポート」
+  - 「バグがないかチェックするだけです」
+許可されたツール:
+  - バッシュ
+  - 読む
+  - 書く
+  - ユーザーに質問する
+  - ウェブ検索
 ---
 
-{{PREAMBLE}}
+{{前文}}
 
-# /qa-only: Report-Only QA Testing
 
-You are a QA engineer. Test web applications like a real user — click everything, fill every form, check every state. Produce a structured report with evidence. **NEVER fix anything.**
 
-## Setup
+あなたは QA エンジニアです。実際のユーザーのように Web アプリケーションをテストします。すべてをクリックし、すべてのフォームに入力し、すべての状態を確認します。証拠を含む構造化されたレポートを作成します。 **決して修正しないでください。**
 
-**Parse the user's request for these parameters:**
+＃＃ 設定
 
-| Parameter | Default | Override example |
-|-----------|---------|-----------------:|
-| Target URL | (auto-detect or required) | `https://myapp.com`, `http://localhost:3000` |
-| Mode | full | `--quick`, `--regression .gstack/qa-reports/baseline.json` |
-| Output dir | `.gstack/qa-reports/` | `Output to /tmp/qa` |
-| Scope | Full app (or diff-scoped) | `Focus on the billing page` |
-| Auth | None | `Sign in to user@example.com`, `Import cookies from cookies.json` |
+**次のパラメータに対するユーザーのリクエストを解析します:**
 
-**If no URL is given and you're on a feature branch:** Automatically enter **diff-aware mode** (see Modes below). This is the most common case — the user just shipped code on a branch and wants to verify it works.
+|パラメータ |デフォルト |オーバーライドの例 |
+|----------|-----------|---------------------:|
+|ターゲット URL | (自動検出または必須) | `https://myapp.com`、`http://localhost:3000` |
+|モード |いっぱい | `--quick`、`--regression .gstack/qa-reports/baseline.json` |
+|出力ディレクトリ | `.gstack/qa-reports/` | `Output to /tmp/qa` |
+|範囲 |フルアプリ (または diff スコープ) | `Focus on the billing page` |
+|認証 |なし | `Sign in to user@example.com`、`Import cookies from cookies.json` |
 
-**Find the browse binary:**
+**URL が指定されておらず、機能ブランチを使用している場合:** 自動的に **diff-aware モード** に入ります (下記のモードを参照)。これは最も一般的なケースです。ユーザーはコードをブランチに配布したばかりで、それが機能することを確認したいと考えています。
+
+**ブラウズバイナリを見つけます:**
 
 {{BROWSE_SETUP}}
 
-**Create output directories:**
+**出力ディレクトリを作成します:**
 
 ```bash
 REPORT_DIR=".gstack/qa-reports"
@@ -54,18 +54,18 @@ mkdir -p "$REPORT_DIR/screenshots"
 
 {{LEARNINGS_SEARCH}}
 
-## Test Plan Context
+## テスト計画のコンテキスト
 
-Before falling back to git diff heuristics, check for richer test plan sources:
+git diff ヒューリスティックに戻る前に、より豊富なテスト計画のソースを確認してください。
 
-1. **Project-scoped test plans:** Check `~/.gstack/projects/` for recent `*-test-plan-*.md` files for this repo
+1. **プロジェクト スコープのテスト計画:** このリポジトリの最近の `*-test-plan-*.md` ファイルについては、`~/.gstack/projects/` を確認してください
    ```bash
    setopt +o nomatch 2>/dev/null || true  # zsh compat
    {{SLUG_EVAL}}
    ls -t ~/.gstack/projects/$SLUG/*-test-plan-*.md 2>/dev/null | head -1
    ```
-2. **Conversation context:** Check if a prior `/plan-eng-review` or `/plan-ceo-review` produced test plan output in this conversation
-3. **Use whichever source is richer.** Fall back to git diff analysis only if neither is available.
+2. **会話のコンテキスト:** この会話で以前の `/plan-eng-review` または `/plan-ceo-review` がテスト計画出力を生成したかどうかを確認します
+3. **豊富なソースを使用します。** どちらも利用できない場合にのみ git diff 分析に戻ります。
 
 ---
 
@@ -73,19 +73,19 @@ Before falling back to git diff heuristics, check for richer test plan sources:
 
 ---
 
-## Output
+## 出力
 
-Write the report to both local and project-scoped locations:
+ローカルとプロジェクト範囲の両方の場所にレポートを書き込みます。
 
-**Local:** `.gstack/qa-reports/qa-report-{domain}-{YYYY-MM-DD}.md`
+**ローカル:** `.gstack/qa-reports/qa-report-{domain}-{YYYY-MM-DD}.md`
 
-**Project-scoped:** Write test outcome artifact for cross-session context:
+**プロジェクト スコープ:** クロスセッション コンテキストのテスト結果アーティファクトを書き込みます:
 ```bash
 {{SLUG_SETUP}}
 ```
-Write to `~/.gstack/projects/{slug}/{user}-{branch}-test-outcome-{datetime}.md`
+`~/.gstack/projects/{slug}/{user}-{branch}-test-outcome-{datetime}.md` に書き込みます
 
-### Output Structure
+### 出力構造
 
 ```
 .gstack/qa-reports/
@@ -98,13 +98,13 @@ Write to `~/.gstack/projects/{slug}/{user}-{branch}-test-outcome-{datetime}.md`
 └── baseline.json                          # For regression mode
 ```
 
-Report filenames use the domain and date: `qa-report-myapp-com-2026-03-12.md`
+レポートのファイル名にはドメインと日付が使用されます: `qa-report-myapp-com-2026-03-12.md`
 
 ---
 
-{{LEARNINGS_LOG}}
+{{ラーニング_ログ}}
 
-## Additional Rules (qa-only specific)
+## 追加ルール (QA のみに固有)
 
-11. **Never fix bugs.** Find and document only. Do not read source code, edit files, or suggest fixes in the report. Your job is to report what's broken, not to fix it. Use `/qa` for the test-fix-verify loop.
-12. **No test framework detected?** If the project has no test infrastructure (no test config files, no test directories), include in the report summary: "No test framework detected. Run `/qa` to bootstrap one and enable regression test generation."
+11. **Never fix bugs.** Find and document only.レポート内のソース コードを読んだり、ファイルを編集したり、修正を提案したりしないでください。あなたの仕事は、壊れたものを報告することであり、それを直すことではありません。テスト-修正-検証ループには `/qa` を使用します。
+12. **テスト フレームワークが検出されませんか?** プロジェクトにテスト インフラストラクチャがない (テスト構成ファイルやテスト ディレクトリがない) 場合は、レポートの概要に「テスト フレームワークが検出されませんでした。`/qa` を実行してブートストラップし、回帰テストの生成を有効にします。」と含めます。

@@ -1,48 +1,48 @@
-# Design Review Checklist (Lite)
 
-> **Subset of DESIGN_METHODOLOGY** — when adding items here, also update `generateDesignMethodology()` in `scripts/gen-skill-docs.ts`, and vice versa.
 
-## Instructions
+> **DESIGN_METHODOLOGY のサブセット** — ここに項目を追加するときは、`scripts/gen-skill-docs.ts` の `generateDesignMethodology()` も更新し、その逆も同様です。
 
-This checklist applies to **source code in the diff** — not rendered output. Read each changed frontend file (full file, not just diff hunks) and flag anti-patterns.
+＃＃ 説明書
 
-**Trigger:** Only run this checklist if the diff touches frontend files. Use `gstack-diff-scope` to detect:
+このチェックリストは、レンダリングされた出力ではなく、**差分内のソース コード**に適用されます。変更された各フロントエンド ファイル (差分ハンクだけでなく完全なファイル) を読み取り、アンチパターンにフラグを立てます。
+
+**トリガー:** このチェックリストは、差分がフロントエンド ファイルに影響を与える場合にのみ実行します。 `gstack-diff-scope` を使用して以下を検出します。
 
 ```bash
 source <(~/.claude/skills/gstack/bin/gstack-diff-scope <base> 2>/dev/null)
 ```
 
-If `SCOPE_FRONTEND=false`, skip the entire design review silently.
+`SCOPE_FRONTEND=false` の場合は、サイレントに設計レビュー全体をスキップします。
 
-**DESIGN.md calibration:** If `DESIGN.md` or `design-system.md` exists in the repo root, read it first. All findings are calibrated against the project's stated design system. Patterns explicitly blessed in DESIGN.md are NOT flagged. If no DESIGN.md exists, use universal design principles.
-
----
-
-## Confidence Tiers
-
-Each item is tagged with a detection confidence level:
-
-- **[HIGH]** — Reliably detectable via grep/pattern match. Definitive findings.
-- **[MEDIUM]** — Detectable via pattern aggregation or heuristic. Flag as findings but expect some noise.
-- **[LOW]** — Requires understanding visual intent. Present as: "Possible issue — verify visually or run /design-review."
+**DESIGN.md キャリブレーション:** `DESIGN.md` または `design-system.md` がリポジトリ ルートに存在する場合は、最初にそれを読み取ります。すべての調査結果は、プロジェクトで規定されている設計システムに対して調整されます。 DESIGN.md で明示的に祝福されたパターンにはフラグが立てられません。 DESIGN.md が存在しない場合は、ユニバーサル デザインの原則を使用してください。
 
 ---
 
-## Classification
+## 信頼度階層
 
-**AUTO-FIX** (mechanical CSS fixes only — HIGH confidence, no design judgment needed):
-- `outline: none` without replacement → add `outline: revert` or `&:focus-visible { outline: 2px solid currentColor; }`
-- `!important` in new CSS → remove and fix specificity
-- `font-size` < 16px on body text → bump to 16px
+各項目には、検出信頼度レベルがタグ付けされています。
 
-**ASK** (everything else — requires design judgment):
-- All AI slop findings, typography structure, spacing choices, interaction state gaps, DESIGN.md violations
-
-**LOW confidence items** → present as "Possible: [description]. Verify visually or run /design-review." Never AUTO-FIX.
+- **[HIGH]** — grep/パターン一致により確実に検出可能。決定的な所見。
+- **[MEDIUM]** — パターン集約またはヒューリスティックによって検出可能。所見としてフラグを立てますが、多少のノイズが予想されます。
+- **[低]** — 視覚的な意図を理解する必要があります。 「考えられる問題 — 視覚的に確認するか、/design-review を実行します。」として提示します。
 
 ---
 
-## Output Format
+## 分類
+
+**自動修正** (機械的な CSS 修正のみ - 信頼性が高く、設計上の判断は必要ありません):
+- `outline: none` 置換なし → `outline: revert` または `&:focus-visible { outline: 2px solid currentColor; }` を追加
+- 新しい CSS の `!important` → 特異性を削除して修正
+- `font-size` 本文テキストの < 16px → 16px に変更
+
+**質問してください** (その他すべて - 設計上の判断が必要です):
+- すべての AI スロップ結果、タイポグラフィ構造、間隔の選択、インタラクション状態のギャップ、DESIGN.md 違反
+
+**信頼性の低い項目** → 「可能性: [説明]。目視で確認するか、/design-review を実行してください。」として表示されます。決して自動修正しないでください。
+
+---
+
+## 出力フォーマット
 
 ```
 Design Review: N issues (X auto-fixable, Y need input, Z possible)
@@ -58,75 +58,75 @@ Design Review: N issues (X auto-fixable, Y need input, Z possible)
 - [file:line] Possible issue — verify with /design-review
 ```
 
-If no issues found: `Design Review: No issues found.`
 
-If no frontend files changed: skip silently, no output.
+
+フロントエンド ファイルが変更されていない場合: サイレントにスキップし、出力はありません。
 
 ---
 
-## Categories
+## カテゴリ
 
-### 1. AI Slop Detection (6 items) — highest priority
+### 1. AI スロップ検出 (6 項目) — 最優先
 
 These are the telltale signs of AI-generated UI that no designer at a respected studio would ship.
 
-- **[MEDIUM]** Purple/violet/indigo gradient backgrounds or blue-to-purple color schemes. Look for `linear-gradient` with values in the `#6366f1`–`#8b5cf6` range, or CSS custom properties resolving to purple/violet.
+- **[MEDIUM]** 紫/紫/藍のグラデーション背景または青から紫の配色。 `#6366f1`–`#8b5cf6` の範囲の値を持つ `linear-gradient`、または紫/紫に解決される CSS カスタム プロパティを探します。
 
-- **[LOW]** The 3-column feature grid: icon-in-colored-circle + bold title + 2-line description, repeated 3x symmetrically. Look for a grid/flex container with exactly 3 children that each contain a circular element + heading + paragraph.
+- **[低]** 3 列の機能グリッド: 色付きの円内のアイコン + 太字のタイトル + 2 行の説明。対称的に 3 回繰り返されます。それぞれに円形要素 + 見出し + 段落が含まれるちょうど 3 つの子を持つグリッド/フレックス コンテナを探します。
 
-- **[LOW]** Icons in colored circles as section decoration. Look for elements with `border-radius: 50%` + a background color used as decorative containers for icons.
+- **[低]** セクションの装飾として色付きの円内のアイコン。 `border-radius: 50%` + アイコンの装飾コンテナとして使用される背景色を持つ要素を探します。
 
-- **[HIGH]** Centered everything: `text-align: center` on all headings, descriptions, and cards. Grep for `text-align: center` density — if >60% of text containers use center alignment, flag it.
+- **[高]** すべてを中央に配置: すべての見出し、説明、カードの `text-align: center`。 `text-align: center` 密度を grep します — テキスト コンテナーの 60% を超えて中央揃えが使用されている場合は、それにフラグを立てます。
 
-- **[MEDIUM]** Uniform bubbly border-radius on every element: same large radius (16px+) applied to cards, buttons, inputs, containers uniformly. Aggregate `border-radius` values — if >80% use the same value ≥16px, flag it.
+- **[MEDIUM]** すべての要素の均一なバブル境界半径: カード、ボタン、入力、コンテナに同じ大きな半径 (16px+) が均一に適用されます。 `border-radius` 値を集計します — >80% が同じ値 ≥16px を使用している場合、フラグを立てます。
 
-- **[MEDIUM]** Generic hero copy: "Welcome to [X]", "Unlock the power of...", "Your all-in-one solution for...", "Revolutionize your...", "Streamline your workflow". Grep HTML/JSX content for these patterns.
+- **[中]** 一般的なヒーロー コピー: 「[X] へようこそ」、「... のパワーをアンロック」、「... のためのオールインワン ソリューション」、「... に革命を起こす」、「ワークフローを合理化」。これらのパターンの HTML/JSX コンテンツを Grep します。
 
-### 2. Typography (4 items)
+### 2. タイポグラフィー (4 項目)
 
-- **[HIGH]** Body text `font-size` < 16px. Grep for `font-size` declarations on `body`, `p`, `.text`, or base styles. Values below 16px (or 1rem when base is 16px) are flagged.
+- **[HIGH]** Body text `font-size` < 16px. `body`、`p`、`.text`、または基本スタイルの `font-size` 宣言を grep します。 16px (base が 16px の場合は 1rem) 未満の値にはフラグが立てられます。
 
-- **[HIGH]** More than 3 font families introduced in the diff. Count distinct `font-family` declarations. Flag if >3 unique families appear across changed files.
+- **[高]** 差分に 3 つ以上のフォント ファミリが導入されています。個別の `font-family` 宣言をカウントします。変更されたファイル全体に 3 つを超える一意のファミリが表示される場合にフラグを立てます。
 
-- **[HIGH]** Heading hierarchy skipping levels: `h1` followed by `h3` without an `h2` in the same file/component. Check HTML/JSX for heading tags.
+- **[HIGH]** 見出し階層のスキップ レベル: 同じファイル/コンポーネント内で `h2` を含まない、`h1` の後に `h3` が続きます。 HTML/JSX の見出しタグを確認してください。
 
-- **[HIGH]** Blacklisted fonts: Papyrus, Comic Sans, Lobster, Impact, Jokerman. Grep `font-family` for these names.
+- **[高]** ブラックリストに登録されているフォント: Papyrus、Comic Sans、Lobster、Impact、Jokerman。これらの名前については、`font-family` を Grep してください。
 
-### 3. Spacing & Layout (4 items)
+### 3. 間隔とレイアウト (4 項目)
 
-- **[MEDIUM]** Arbitrary spacing values not on a 4px or 8px scale, when DESIGN.md specifies a spacing scale. Check `margin`, `padding`, `gap` values against the stated scale. Only flag when DESIGN.md defines a scale.
+- **[MEDIUM]** DESIGN.md で間隔スケールが指定されている場合、4 ピクセルまたは 8 ピクセル スケールにない任意の間隔値。 `margin`、`padding`、`gap` の値を指定されたスケールと比較して確認します。 Only flag when DESIGN.md defines a scale.
 
-- **[MEDIUM]** Fixed widths without responsive handling: `width: NNNpx` on containers without `max-width` or `@media` breakpoints. Risk of horizontal scroll on mobile.
+- **[MEDIUM]** レスポンシブ処理を行わない固定幅: `max-width` または `@media` ブレークポイントのないコンテナーの `width: NNNpx`。モバイルでの横スクロールの危険性。
 
-- **[MEDIUM]** Missing `max-width` on text containers: body text or paragraph containers with no `max-width` set, allowing lines >75 characters. Check for `max-width` on text wrappers.
+- **[MEDIUM]** テキスト コンテナーに `max-width` がありません: `max-width` が設定されていない本文テキストまたは段落コンテナー。行は 75 文字を超えます。テキスト ラッパーで `max-width` を確​​認します。
 
-- **[HIGH]** `!important` in new CSS rules. Grep for `!important` in added lines. Almost always a specificity escape hatch that should be fixed properly.
+- **[高]** `!important` 新しい CSS ルール。追加された行の `!important` を grep します。ほとんどの場合、適切に修正する必要がある特異性の避難ハッチ。
 
-### 4. Interaction States (3 items)
 
-- **[MEDIUM]** Interactive elements (buttons, links, inputs) missing hover/focus states. Check if `:hover` and `:focus` or `:focus-visible` pseudo-classes exist for new interactive element styles.
 
-- **[HIGH]** `outline: none` or `outline: 0` without a replacement focus indicator. Grep for `outline:\s*none` or `outline:\s*0`. This removes keyboard accessibility.
+- **[中]** インタラクティブ要素 (ボタン、リンク、入力) にホバー/フォーカス状態がありません。新しいインタラクティブ要素スタイルに `:hover` および `:focus` または `:focus-visible` 疑似クラスが存在するかどうかを確認します。
 
-- **[LOW]** Touch targets < 44px on interactive elements. Check `min-height`/`min-width`/`padding` on buttons and links. Requires computing effective size from multiple properties — low confidence from code alone.
+- **[HIGH]** `outline: none` または `outline: 0` 交換用フォーカスインジケーターなし。 `outline:\s*none` または `outline:\s*0` を grep します。これにより、キーボードのアクセシビリティが失われます。
 
-### 5. DESIGN.md Violations (3 items, conditional)
+- **[低]** インタラクティブ要素上の 44 ピクセル未満のタッチ ターゲット。ボタンやリンクの`min-height`/`min-width`/`padding`をご確認ください。複数のプロパティから有効サイズを計算する必要があります。コードだけでは信頼性が低くなります。
 
-Only apply if `DESIGN.md` or `design-system.md` exists:
+### 5. DESIGN.md 違反 (3 項目、条件付き)
 
-- **[MEDIUM]** Colors not in the stated palette. Compare color values in changed CSS against the palette defined in DESIGN.md.
+`DESIGN.md` または `design-system.md` が存在する場合にのみ適用されます:
 
-- **[MEDIUM]** Fonts not in the stated typography section. Compare `font-family` values against DESIGN.md's font list.
+- **[MEDIUM]** 指定されたパレットにない色。変更された CSS の色の値を、DESIGN.md で定義されたパレットと比較します。
 
-- **[MEDIUM]** Spacing values outside the stated scale. Compare `margin`/`padding`/`gap` values against DESIGN.md's spacing scale.
+- **[MEDIUM]** 指定されたタイポグラフィ セクションにないフォント。 `font-family` の値を DESIGN.md のフォント リストと比較します。
+
+- **[MEDIUM]** 指定されたスケール外の間隔値。 `margin`/`padding`/`gap` の値を DESIGN.md の間隔スケールと比較します。
 
 ---
 
-## Suppressions
+## 抑制
 
-Do NOT flag:
-- Patterns explicitly documented in DESIGN.md as intentional choices
-- Third-party/vendor CSS files (node_modules, vendor directories)
-- CSS resets or normalize stylesheets
-- Test fixture files
-- Generated/minified CSS
+次の場合はフラグを立てないでください。
+- 意図的な選択として DESIGN.md に明示的に文書化されたパターン
+- サードパーティ/ベンダーの CSS ファイル (node_modules、ベンダー ディレクトリ)
+- CSS はスタイルシートをリセットまたは正規化します
+- テストフィクスチャファイル
+- 生成/縮小されたCSS

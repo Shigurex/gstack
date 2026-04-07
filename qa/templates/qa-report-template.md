@@ -1,126 +1,124 @@
-# QA Report: {APP_NAME}
+# QA レポート: {APP_NAME}
 
-| Field | Value |
-|-------|-------|
-| **Date** | {DATE} |
+|フィールド |値 |
+|------|------|
+| **日付** | {日付} |
 | **URL** | {URL} |
-| **Branch** | {BRANCH} |
-| **Commit** | {COMMIT_SHA} ({COMMIT_DATE}) |
-| **PR** | {PR_NUMBER} ({PR_URL}) or "—" |
-| **Tier** | Quick / Standard / Exhaustive |
-| **Scope** | {SCOPE or "Full app"} |
-| **Duration** | {DURATION} |
-| **Pages visited** | {COUNT} |
-| **Screenshots** | {COUNT} |
-| **Framework** | {DETECTED or "Unknown"} |
-| **Index** | [All QA runs](./index.md) |
+| **支店** | {支店} |
+| **コミット** | {COMMIT_SHA} ({COMMIT_DATE}) |
+| **PR** | {PR_NUMBER} ({PR_URL}) または "—" |
+| **ティア** |クイック / 標準 / 網羅 |
+| **範囲** | {スコープまたは「完全なアプリ」} |
+| **期間** | {期間} |
+| **訪問したページ** | {カウント} |
+| **スクリーンショット** | {カウント} |
+| **フレームワーク** | {検出または「不明」} |
+| **インデックス** | [すべての QA の実行](./index.md) |
 
-## Health Score: {SCORE}/100
 
-| Category | Score |
-|----------|-------|
-| Console | {0-100} |
-| Links | {0-100} |
-| Visual | {0-100} |
-| Functional | {0-100} |
+
+|カテゴリー |スコア |
+|----------|----------|
+|コンソール | {0-100} |
+|リンク | {0-100} |
+|ビジュアル | {0-100} |
+|機能性 | {0-100} |
 | UX | {0-100} |
-| Performance | {0-100} |
-| Accessibility | {0-100} |
+|パフォーマンス | {0-100} |
+|アクセシビリティ | {0-100} |
 
-## Top 3 Things to Fix
+## 修正すべきトップ 3
 
-1. **{ISSUE-NNN}: {title}** — {one-line description}
-2. **{ISSUE-NNN}: {title}** — {one-line description}
-3. **{ISSUE-NNN}: {title}** — {one-line description}
+1. **{問題-NNN}: {タイトル}** — {1 行の説明}
+2. **{問題-NNN}: {タイトル}** — {1 行の説明}
+3. **{問題-NNN}: {タイトル}** — {1 行の説明}
 
-## Console Health
+## コンソールの状態
 
-| Error | Count | First seen |
-|-------|-------|------------|
-| {error message} | {N} | {URL} |
+|エラー |カウント |初めて見た |
+|------|-------|-----------|
+| {エラーメッセージ} | {N} | {URL} |
 
-## Summary
+＃＃ まとめ
 
-| Severity | Count |
-|----------|-------|
-| Critical | 0 |
-| High | 0 |
-| Medium | 0 |
-| Low | 0 |
-| **Total** | **0** |
+|重大度 |カウント |
+|----------|----------|
+|クリティカル | 0 |
+|高 | 0 |
+|中 | 0 |
+|低い | 0 |
+| **合計** | **0** |
 
-## Issues
+＃＃ 問題
 
-### ISSUE-001: {Short title}
+### ISSUE-001: {短いタイトル}
 
-| Field | Value |
-|-------|-------|
-| **Severity** | critical / high / medium / low |
-| **Category** | visual / functional / ux / content / performance / console / accessibility |
-| **URL** | {page URL} |
+|フィールド |値 |
+|------|------|
+| **重大度** |クリティカル / 高 / 中 / 低 |
+| **カテゴリー** |ビジュアル / 機能 / UX / コンテンツ / パフォーマンス / コンソール / アクセシビリティ |
+| **URL** | {ページ URL} |
 
-**Description:** {What is wrong, expected vs actual.}
+**説明:** {何が間違っているのか、予想と実際。}
 
-**Repro Steps:**
+**再現手順:**
 
-1. Navigate to {URL}
+1. {URL} に移動します
    ![Step 1](screenshots/issue-001-step-1.png)
-2. {Action}
+2. {アクション}
    ![Step 2](screenshots/issue-001-step-2.png)
 3. **Observe:** {what goes wrong}
    ![Result](screenshots/issue-001-result.png)
 
 ---
 
-## Fixes Applied (if applicable)
 
-| Issue | Fix Status | Commit | Files Changed |
-|-------|-----------|--------|---------------|
-| ISSUE-NNN | verified / best-effort / reverted / deferred | {SHA} | {files} |
 
-### Before/After Evidence
+|問題 |ステータスを修正 |コミット |変更されたファイル |
+|------|-----------|----------|---------------|
+|問題-NNN |検証済み / ベストエフォート / 取り消し / 延期 | {シャ} | {ファイル} |
 
-#### ISSUE-NNN: {title}
-**Before:** ![Before](screenshots/issue-NNN-before.png)
-**After:** ![After](screenshots/issue-NNN-after.png)
+### 証拠の前後
+
+#### 問題-NNN: {タイトル}
+**前:** ![前](スクリーンショット/issue-NNN-before.png)
+**後:** ![後](スクリーンショット/issue-NNN-after.png)
 
 ---
 
-## Regression Tests
+## 回帰テスト
 
-| Issue | Test File | Status | Description |
+|問題 |テストファイル |ステータス |説明 |
 |-------|-----------|--------|-------------|
-| ISSUE-NNN | path/to/test | committed / deferred / skipped | description |
+|問題-NNN |パス/への/テスト | committed / deferred / skipped |説明 |
 
-### Deferred Tests
+### 延期されたテスト
 
-#### ISSUE-NNN: {title}
-**Precondition:** {setup state that triggers the bug}
-**Action:** {what the user does}
-**Expected:** {correct behavior}
-**Why deferred:** {reason}
-
----
-
-## Ship Readiness
-
-| Metric | Value |
-|--------|-------|
-| Health score | {before} → {after} ({delta}) |
-| Issues found | N |
-| Fixes applied | N (verified: X, best-effort: Y, reverted: Z) |
-| Deferred | N |
-
-**PR Summary:** "QA found N issues, fixed M, health score X → Y."
+#### 問題-NNN: {タイトル}
+**前提条件:** {バグを引き起こすセットアップ状態}
+**アクション:** {ユーザーが行うこと}
+**期待される内容:** {正しい動作}
+**延期の理由:** {reason}
 
 ---
 
-## Regression (if applicable)
+## 出荷準備完了
 
-| Metric | Baseline | Current | Delta |
+|メトリック |値 |
+|------|------|
+|健康スコア | {前} → {後} ({デルタ}) |
+|見つかった問題 | N |
+|適用された修正 | N (検証: X、ベストエフォート: Y、取り消し: Z) |
+|延期 | N |
+
+**PR 概要:** 「QA で N 個の問題が見つかり、M 個が修正され、健全性スコア X → Y。」
+
+---
+
+## 回帰 (該当する場合)
+
+|メトリック |ベースライン |現在 |デルタ |
 |--------|----------|---------|-------|
-| Health score | {N} | {N} | {+/-N} |
-| Issues | {N} | {N} | {+/-N} |
+|健康スコア | {N} | {N} | {+/-N} |
+|問題点 | {N} | {N} | {+/-N} |
 
-**Fixed since baseline:** {list}
-**New since baseline:** {list}

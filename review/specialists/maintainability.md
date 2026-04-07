@@ -1,13 +1,13 @@
-# Maintainability Specialist Review Checklist
+# 保守性スペシャリストによるレビュー チェックリスト
 
-Scope: Always-on (every review)
-Output: JSON objects, one finding per line. Schema:
-{"severity":"INFORMATIONAL","confidence":N,"path":"file","line":N,"category":"maintainability","summary":"...","fix":"...","fingerprint":"path:line:maintainability","specialist":"maintainability"}
-If no findings: output `NO FINDINGS` and nothing else.
+範囲: 常時オン (すべてのレビュー)
+出力: JSON オブジェクト、1 行に 1 つの結果。スキーマ:
+{"重大度":"情報","信頼性":N,"パス":"ファイル","行":N,"カテゴリ":"保守性","概要":"...","修正":"...","フィンガープリント":"パス:行:保守性","スペシャリスト":"保守性"}
+検出結果がない場合: `NO FINDINGS` を出力し、それ以外は何も出力しません。
 
 ---
 
-## Categories
+## カテゴリ
 
 ### Dead Code & Unused Imports
 - Variables assigned but never read in the changed files
@@ -15,31 +15,31 @@ If no findings: output `NO FINDINGS` and nothing else.
 - Imports/requires that are no longer referenced after the change
 - Commented-out code blocks (either remove or explain why they exist)
 
-### Magic Numbers & String Coupling
-- Bare numeric literals used in logic (thresholds, limits, retry counts) — should be named constants
-- Error message strings used as query filters or conditionals elsewhere
-- Hardcoded URLs, ports, or hostnames that should be config
-- Duplicated literal values across multiple files
+### マジックナンバーと文字列の結合
+- ロジックで使用される直接の数値リテラル (しきい値、制限、再試行回数) — 定数という名前を付ける必要があります
+- 他の場所でクエリ フィルターまたは条件として使用されるエラー メッセージ文字列
+- 構成する必要があるハードコーディングされた URL、ポート、またはホスト名
+- 複数のファイル間でリテラル値が重複している
 
-### Stale Comments & Docstrings
-- Comments that describe old behavior after the code was changed in this diff
-- TODO/FIXME comments that reference completed work
-- Docstrings with parameter lists that don't match the current function signature
-- ASCII diagrams in comments that no longer match the code flow
+### 古いコメントとドキュメント文字列
+- この差分でコードが変更された後の古い動作を説明するコメント
+- 完了した作業を参照する TODO/FIXME コメント
+- 現在の関数シグネチャと一致しないパラメータ リストを含むドキュメント文字列
+- コメント内の ASCII 図がコード フローと一致しなくなった
 
-### DRY Violations
-- Similar code blocks (3+ lines) appearing multiple times within the diff
-- Copy-paste patterns where a shared helper would be cleaner
-- Configuration or setup logic duplicated across test files
-- Repeated conditional chains that could be a lookup table or map
+### DRY 違反
+- 類似のコード ブロック (3 行以上) が diff 内に複数回出現します。
+- 共有ヘルパーの方がすっきりするコピー＆ペーストのパターン
+- テスト ファイル間で複製された構成またはセットアップ ロジック
+- ルックアップ テーブルまたはマップの可能性がある繰り返しの条件付きチェーン
 
-### Conditional Side Effects
-- Code paths that branch on a condition but forget a side effect on one branch
-- Log messages that claim an action happened but the action was conditionally skipped
-- State transitions where one branch updates related records but the other doesn't
-- Event emissions that only fire on the happy path, missing error/edge paths
+### 条件付きの副作用
+- 条件に基づいて分岐するが、1 つの分岐での副作用を忘れるコード パス
+- アクションが発生したが、そのアクションが条件付きでスキップされたと主張するログ メッセージ
+- 1 つのブランチが関連レコードを更新するが、もう 1 つのブランチは更新しない状態遷移
+- ハッピー パスでのみ起動されるイベント エミッション、欠落したエラー/エッジ パス
 
-### Module Boundary Violations
-- Reaching into another module's internal implementation (accessing private-by-convention methods)
-- Direct database queries in controllers/views that should go through a service/model
-- Tight coupling between components that should communicate through interfaces
+### モジュール境界違反
+- 別のモジュールの内部実装にアクセスする (規約によるプライベート メソッドにアクセスする)
+- サービス/モデルを経由するコントローラー/ビューでの直接データベース クエリ
+- インターフェースを介して通信する必要があるコンポーネント間の緊密な結合

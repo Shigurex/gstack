@@ -1,33 +1,33 @@
 ---
-name: gstack-upgrade
-version: 1.1.0
-description: |
-  Upgrade gstack to the latest version. Detects global vs vendored install,
-  runs the upgrade, and shows what's new. Use when asked to "upgrade gstack",
-  "update gstack", or "get latest version".
-voice-triggers:
-  - "upgrade the tools"
-  - "update the tools"
-  - "gee stack upgrade"
-  - "g stack upgrade"
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - AskUserQuestion
+名前: gstack-upgrade
+バージョン: 1.1.0
+説明: |
+  gstack を最新バージョンにアップグレードします。グローバルインストールとベンダーインストールを検出し、
+  アップグレードを実行し、新機能を表示します。 「gstack をアップグレードする」ように求められた場合に使用します。
+  「gstack を更新する」または「最新バージョンを取得する」。
+音声トリガー:
+  - 「ツールをアップグレードする」
+  - 「ツールを更新する」
+  - 「スタックアップグレード」
+  - 「Gスタックアップグレード」
+許可されたツール:
+  - バッシュ
+  - 読む
+  - 書く
+  - ユーザーに質問する
 ---
 
 # /gstack-upgrade
 
-Upgrade gstack to the latest version and show what's new.
+gstack を最新バージョンにアップグレードして、新機能を表示します。
 
-## Inline upgrade flow
+## インライン アップグレード フロー
 
-This section is referenced by all skill preambles when they detect `UPGRADE_AVAILABLE`.
+このセクションは、すべてのスキル プリアンブルが `UPGRADE_AVAILABLE` を検出したときに参照します。
 
-### Step 1: Ask the user (or auto-upgrade)
+### ステップ 1: ユーザーに質問する (または自動アップグレード)
 
-First, check if auto-upgrade is enabled:
+まず、自動アップグレードが有効になっているかどうかを確認します。
 ```bash
 _AUTO=""
 [ "${GSTACK_AUTO_UPGRADE:-}" = "1" ] && _AUTO="true"
@@ -35,21 +35,21 @@ _AUTO=""
 echo "AUTO_UPGRADE=$_AUTO"
 ```
 
-**If `AUTO_UPGRADE=true` or `AUTO_UPGRADE=1`:** Skip AskUserQuestion. Log "Auto-upgrading gstack v{old} → v{new}..." and proceed directly to Step 2. If `./setup` fails during auto-upgrade, restore from backup (`.bak` directory) and warn the user: "Auto-upgrade failed — restored previous version. Run `/gstack-upgrade` manually to retry."
+**`AUTO_UPGRADE=true` または `AUTO_UPGRADE=1` の場合:** AskUserQuestion をスキップします。 「自動アップグレード gstack v{old} → v{new}...」をログに記録し、ステップ 2 に直接進みます。自動アップグレード中に `./setup` が失敗した場合は、バックアップ (`.bak` ディレクトリ) から復元し、ユーザーに「自動アップグレードに失敗しました — 前のバージョンが復元されました。`/gstack-upgrade` を手動で実行して再試行してください。」と警告します。
 
-**Otherwise**, use AskUserQuestion:
-- Question: "gstack **v{new}** is available (you're on v{old}). Upgrade now?"
-- Options: ["Yes, upgrade now", "Always keep me up to date", "Not now", "Never ask again"]
+**それ以外の場合**、AskUserQuestion を使用します。
+- 質問: 「gstack **v{new}** は利用可能です (v{old} を使用しています)。今すぐアップグレードしますか?」
+- オプション: [「はい、今すぐアップグレードします」、「常に最新の状態に保ちます」、「今はしない」、「二度と質問しない」]
 
-**If "Yes, upgrade now":** Proceed to Step 2.
+**「はい、今すぐアップグレードします」の場合:** ステップ 2 に進みます。
 
-**If "Always keep me up to date":**
+**「常に最新の情報を入手する」場合:**
 ```bash
 ~/.claude/skills/gstack/bin/gstack-config set auto_upgrade true
 ```
-Tell user: "Auto-upgrade enabled. Future updates will install automatically." Then proceed to Step 2.
+ユーザーに「自動アップグレードが有効になっています。今後のアップデートは自動的にインストールされます。」と伝えます。その後、ステップ 2 に進みます。
 
-**If "Not now":** Write snooze state with escalating backoff (first snooze = 24h, second = 48h, third+ = 1 week), then continue with the current skill. Do not mention the upgrade again.
+**「今は実行しない」場合:** エスカレートするバックオフでスヌーズ状態を書き込み (最初のスヌーズ = 24 時間、2 回目 = 48 時間、3 回目以降 = 1 週間)、現在のスキルを続行します。アップグレードについては再度言及しないでください。
 ```bash
 _SNOOZE_FILE=~/.gstack/update-snoozed
 _REMOTE_VER="{new}"
@@ -65,18 +65,18 @@ _NEW_LEVEL=$((_CUR_LEVEL + 1))
 [ "$_NEW_LEVEL" -gt 3 ] && _NEW_LEVEL=3
 echo "$_REMOTE_VER $_NEW_LEVEL $(date +%s)" > "$_SNOOZE_FILE"
 ```
-Note: `{new}` is the remote version from the `UPGRADE_AVAILABLE` output — substitute it from the update check result.
+注: `{new}` は、`UPGRADE_AVAILABLE` 出力のリモート バージョンです。更新チェック結果から置き換えてください。
 
-Tell user the snooze duration: "Next reminder in 24h" (or 48h or 1 week, depending on level). Tip: "Set `auto_upgrade: true` in `~/.gstack/config.yaml` for automatic upgrades."
+ユーザーにスヌーズ期間を伝えます:「次のリマインダーは 24 時間以内」(レベルに応じて 48 時間または 1 週間)。ヒント: 「自動アップグレードするには、`~/.gstack/config.yaml` に `auto_upgrade: true` を設定します。」
 
-**If "Never ask again":**
+**「二度と質問しない」場合:**
 ```bash
 ~/.claude/skills/gstack/bin/gstack-config set update_check false
 ```
-Tell user: "Update checks disabled. Run `~/.claude/skills/gstack/bin/gstack-config set update_check true` to re-enable."
-Continue with the current skill.
+ユーザーに「更新チェックが無効になっています。再度有効にするには、`~/.claude/skills/gstack/bin/gstack-config set update_check true` を実行してください。」と伝えます。
+現在のスキルを継続します。
 
-### Step 2: Detect install type
+
 
 ```bash
 if [ -d "$HOME/.claude/skills/gstack/.git" ]; then
@@ -104,21 +104,21 @@ fi
 echo "Install type: $INSTALL_TYPE at $INSTALL_DIR"
 ```
 
-The install type and directory path printed above will be used in all subsequent steps.
+上で出力されたインストール タイプとディレクトリ パスは、後続のすべての手順で使用されます。
 
-### Step 3: Save old version
 
-Use the install directory from Step 2's output below:
+
+以下のステップ 2 の出力からのインストール ディレクトリを使用します。
 
 ```bash
 OLD_VERSION=$(cat "$INSTALL_DIR/VERSION" 2>/dev/null || echo "unknown")
 ```
 
-### Step 4: Upgrade
+### ステップ 4: アップグレード
 
-Use the install type and directory detected in Step 2:
+ステップ 2 で検出されたインストール タイプとディレクトリを使用します。
 
-**For git installs** (global-git, local-git):
+**git インストールの場合** (グローバル git、ローカル git):
 ```bash
 cd "$INSTALL_DIR"
 STASH_OUTPUT=$(git stash 2>&1)
@@ -126,9 +126,9 @@ git fetch origin
 git reset --hard origin/main
 ./setup
 ```
-If `$STASH_OUTPUT` contains "Saved working directory", warn the user: "Note: local changes were stashed. Run `git stash pop` in the skill directory to restore them."
+`$STASH_OUTPUT` に「保存された作業ディレクトリ」が含まれている場合は、ユーザーに次のように警告します。「注: ローカルの変更は隠されています。それらを復元するには、スキル ディレクトリで `git stash pop` を実行してください。」
 
-**For vendored installs** (vendored, vendored-global):
+**ベンダー インストールの場合** (ベンダー、ベンダー グローバル):
 ```bash
 PARENT=$(dirname "$INSTALL_DIR")
 TMP_DIR=$(mktemp -d)
@@ -139,7 +139,7 @@ cd "$INSTALL_DIR" && ./setup
 rm -rf "$INSTALL_DIR.bak" "$TMP_DIR"
 ```
 
-### Step 4.5: Sync local vendored copy
+### ステップ 4.5: ローカルのベンダーのコピーを同期する
 
 Use the install directory from Step 2. Check if there's also a local vendored copy that needs updating:
 
@@ -195,9 +195,9 @@ if [ -d "$MIGRATIONS_DIR" ]; then
 fi
 ```
 
-Migrations are idempotent bash scripts in `gstack-upgrade/migrations/`. Each is named
-`v{VERSION}.sh` and runs only when upgrading from an older version. See CONTRIBUTING.md
-for how to add new migrations.
+移行は、`gstack-upgrade/migrations/` のべき等な bash スクリプトです。それぞれに名前が付けられています
+`v{VERSION}.sh` は、古いバージョンからアップグレードする場合にのみ実行されます。 CONTRIBUTING.md を参照してください。
+新しい移行を追加する方法については、こちらを参照してください。
 
 ### Step 5: Write marker + clear cache
 
@@ -208,11 +208,11 @@ rm -f ~/.gstack/last-update-check
 rm -f ~/.gstack/update-snoozed
 ```
 
-### Step 6: Show What's New
+### ステップ 6: 新機能を表示する
 
 Read `$INSTALL_DIR/CHANGELOG.md`. Find all version entries between the old version and the new version. Summarize as 5-7 bullets grouped by theme. Don't overwhelm — focus on user-facing changes. Skip internal refactors unless they're significant.
 
-Format:
+形式:
 ```
 gstack v{new} — upgraded from v{old}!
 
@@ -224,7 +224,7 @@ What's new:
 Happy shipping!
 ```
 
-### Step 7: Continue
+### ステップ 7: 続行
 
 After showing What's New, continue with whatever skill the user originally invoked. The upgrade is done — no further action needed.
 
@@ -234,28 +234,28 @@ After showing What's New, continue with whatever skill the user originally invok
 
 When invoked directly as `/gstack-upgrade` (not from a preamble):
 
-1. Force a fresh update check (bypass cache):
+1. 新しい更新チェックを強制します (キャッシュをバイパス):
 ```bash
 ~/.claude/skills/gstack/bin/gstack-update-check --force 2>/dev/null || \
 .claude/skills/gstack/bin/gstack-update-check --force 2>/dev/null || true
 ```
-Use the output to determine if an upgrade is available.
+出力を使用して、アップグレードが利用可能かどうかを判断します。
 
-2. If `UPGRADE_AVAILABLE <old> <new>`: follow Steps 2-6 above.
+2. `UPGRADE_AVAILABLE <old> <new>` の場合: 上記の手順 2 ～ 6 に従います。
 
-3. If no output (primary is up to date): check for a stale local vendored copy.
+3. 出力がない場合 (プライマリが最新の場合): ローカル ベンダーの古いコピーがないか確認します。
 
-Run the Step 2 bash block above to detect the primary install type and directory (`INSTALL_TYPE` and `INSTALL_DIR`). Then run the Step 4.5 detection bash block above to check for a local vendored copy (`LOCAL_GSTACK`).
+上記のステップ 2 の bash ブロックを実行して、プライマリ インストール タイプとディレクトリ (`INSTALL_TYPE` および `INSTALL_DIR`) を検出します。次に、上記のステップ 4.5 検出 bash ブロックを実行して、ローカル ベンダーのコピー (`LOCAL_GSTACK`) を確認します。
 
-**If `LOCAL_GSTACK` is empty** (no local vendored copy): tell the user "You're already on the latest version (v{version})."
+**`LOCAL_GSTACK` が空の場合** (ローカル ベンダーのコピーがない): ユーザーに「すでに最新バージョン (v{version}) を使用しています。」と伝えます。
 
-**If `LOCAL_GSTACK` is non-empty**, compare versions:
+**`LOCAL_GSTACK` が空でない場合**、バージョンを比較します。
 ```bash
 PRIMARY_VER=$(cat "$INSTALL_DIR/VERSION" 2>/dev/null || echo "unknown")
 LOCAL_VER=$(cat "$LOCAL_GSTACK/VERSION" 2>/dev/null || echo "unknown")
 echo "PRIMARY=$PRIMARY_VER LOCAL=$LOCAL_VER"
 ```
 
-**If versions differ:** follow the Step 4.5 sync bash block above to update the local copy from the primary. Tell user: "Global v{PRIMARY_VER} is up to date. Updated local vendored copy from v{LOCAL_VER} → v{PRIMARY_VER}. Commit `.claude/skills/gstack/` when you're ready."
+**バージョンが異なる場合:** 上記のステップ 4.5 同期 bash ブロックに従って、プライマリからローカル コピーを更新します。ユーザーに次のように伝えます: 「グローバル v{PRIMARY_VER} は最新です。ローカル ベンダーのコピーを v{LOCAL_VER} → v{PRIMARY_VER} に更新しました。準備ができたら `.claude/skills/gstack/` をコミットしてください。」
 
-**If versions match:** tell the user "You're on the latest version (v{PRIMARY_VER}). Global and local vendored copy are both up to date."
+**バージョンが一致する場合:** ユーザーに「最新バージョン (v{PRIMARY_VER}) を使用しています。グローバル コピーとローカル ベンダー コピーは両方とも最新です。」と伝えます。

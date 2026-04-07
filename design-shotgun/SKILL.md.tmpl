@@ -90,51 +90,51 @@ setopt +o nomatch 2>/dev/null || true
 ls ~/.gstack/projects/$SLUG/*office-hours* 2>/dev/null | head -5
 ```
 
-If DESIGN.md exists, tell the user: "I'll follow your design system in DESIGN.md by
-default. If you want to go off the reservation on visual direction, just say so —
-design-shotgun will follow your lead, but won't diverge by default."
+DESIGN.md が存在する場合は、ユーザーに次のように伝えます。「DESIGN.md のデザイン システムに従います。
+デフォルト。視覚的な方向性について予約を外したい場合は、そのように言ってください —
+design-shotgun はあなたのリードに従いますが、デフォルトでは分岐しません。」
 
-**Check for a live site to screenshot** (for the "I don't like THIS" use case):
+**スクリーンショットを撮るライブ サイトを確認します** (「これは気に入らない」使用例の場合):
 
 ```bash
 curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 2>/dev/null || echo "NO_LOCAL_SITE"
 ```
 
-If a local site is running AND the user referenced a URL or said something like "I don't
-like how this looks," screenshot the current page and use `$D evolve` instead of
-`$D variants` to generate improvement variants from the existing design.
+ローカル サイトが実行中で、かつユーザーが URL を参照したか、「私はしません」のような発言をした場合
+この見た目が好きです」と表示される場合は、現在のページのスクリーンショットを撮り、代わりに `$D evolve` を使用してください。
+`$D variants` を使用して、既存の設計から改良バリアントを生成します。
 
-**AskUserQuestion with pre-filled context:** Pre-fill what you inferred from the codebase,
-DESIGN.md, and office-hours output. Then ask for what's missing. Frame as ONE question
-covering all gaps:
+**事前に入力されたコンテキストを含む AskUserQuestion:** コードベースから推測した内容を事前に入力します。
+DESIGN.md, and office-hours output. Then ask for what's missing. 1 つの質問としてフレーム化する
+すべての隙間をカバーする:
 
-> "Here's what I know: [pre-filled context]. I'm missing [gaps].
+> 「私が知っていることは次のとおりです: [事前に入力されたコンテキスト]。[ギャップ] が不足しています。
 > Tell me: [specific questions about the gaps].
-> How many variants? (default 3, up to 8 for important screens)"
+> バリエーションはいくつありますか? (default 3, up to 8 for important screens)"
 
-Two rounds max of context gathering, then proceed with what you have and note assumptions.
+最大 2 ラウンドでコンテキストを収集し、その後、手持ちの情報に基づいて作業を進め、仮定をメモします。
 
-## Step 2: Taste Memory
+## ステップ 2: 記憶を味わう
 
-Read prior approved designs to bias generation toward the user's demonstrated taste:
+以前に承認されたデザインを読んで、ユーザーの実証済みの好みに基づいて生成をバイアスします。
 
 ```bash
 setopt +o nomatch 2>/dev/null || true
 _TASTE=$(find ~/.gstack/projects/$SLUG/designs/ -name "approved.json" -maxdepth 2 2>/dev/null | sort -r | head -10)
 ```
 
-If prior sessions exist, read each `approved.json` and extract patterns from the
-approved variants. Include a taste summary in the design brief:
+以前のセッションが存在する場合は、それぞれの `approved.json` を読み取り、セッションからパターンを抽出します。
+承認されたバリアント。デザイン概要にテイストの概要を含めます。
 
-"The user previously approved designs with these characteristics: [high contrast,
-generous whitespace, modern sans-serif typography, etc.]. Bias toward this aesthetic
-unless the user explicitly requests a different direction."
+「ユーザーは以前に次の特性を持つデザインを承認しました: [高コントラスト、
+たっぷりとした余白、モダンなサンセリフのタイポグラフィーなど]。この美学に対する偏見
+ユーザーが明示的に別の方向を要求しない限り。」
 
-Limit to last 10 sessions. Try/catch JSON parse on each (skip corrupted files).
+最後の 10 セッションに制限します。それぞれで JSON 解析を試行/キャッチします (破損したファイルはスキップします)。
 
-## Step 3: Generate Variants
+## ステップ 3: バリアントの生成
 
-Set up the output directory:
+出力ディレクトリを設定します。
 
 ```bash
 eval "$(~/.claude/skills/gstack/bin/gstack-slug 2>/dev/null)"
@@ -143,13 +143,13 @@ mkdir -p "$_DESIGN_DIR"
 echo "DESIGN_DIR: $_DESIGN_DIR"
 ```
 
-Replace `<screen-name>` with a descriptive kebab-case name from the context gathering.
+`<screen-name>` を、コンテキスト収集から得たわかりやすいケバブケース名に置き換えます。
 
-### Step 3a: Concept Generation
+### ステップ 3a: コンセプトの生成
 
-Before any API calls, generate N text concepts describing each variant's design direction.
-Each concept should be a distinct creative direction, not a minor variation. Present them
-as a lettered list:
+API 呼び出しの前に、各バリアントの設計方向を説明する N 個のテキスト概念を生成します。
+それぞれのコンセプトは、小さなバリエーションではなく、明確な創造的な方向性である必要があります。提示する
+文字付きリストとして:
 
 ```
 I'll explore 3 directions:
@@ -159,43 +159,43 @@ B) "Name" — one-line visual description of this direction
 C) "Name" — one-line visual description of this direction
 ```
 
-Draw on DESIGN.md, taste memory, and the user's request to make each concept distinct.
+DESIGN.md に基づいて、記憶を味わい、各コンセプトを明確にするユーザーのリクエストを反映します。
 
-### Step 3b: Concept Confirmation
+### ステップ 3b: コンセプトの確認
 
-Use AskUserQuestion to confirm before spending API credits:
+API クレジットを消費する前に、AskUserQuestion を使用して確認します。
 
-> "These are the {N} directions I'll generate. Each takes ~60s, but I'll run them all
-> in parallel so total time is ~60 seconds regardless of count."
+> 「これらは私が生成する {N} 方向のルートです。それぞれに最大 60 秒かかりますが、すべて実行します
+> 並行して実行されるため、カウントに関係なく合計時間は約 60 秒になります。」
 
-Options:
-- A) Generate all {N} — looks good
-- B) I want to change some concepts (tell me which)
-- C) Add more variants (I'll suggest additional directions)
-- D) Fewer variants (tell me which to drop)
+オプション:
+- A) すべての {N} を生成します — 良さそうです
+- B) いくつかの概念を変更したいです (どれを教えてください)
+- C) バリエーションをさらに追加します (追加の指示を提案します)
+- D) バリエーションの減少 (どれを削除するかを教えてください)
 
-If B: incorporate feedback, re-present concepts, re-confirm. Max 2 rounds.
-If C: add concepts, re-present, re-confirm.
-If D: drop specified concepts, re-present, re-confirm.
+B の場合: フィードバックを取り入れ、コンセプトを再提示し、再確認します。最大2ラウンド。
+C の場合: 概念を追加し、再提示し、再確認します。
+D の場合: 指定された概念を削除し、再提示し、再確認します。
 
-### Step 3c: Parallel Generation
+### ステップ 3c: 並列生成
 
-**If evolving from a screenshot** (user said "I don't like THIS"), take ONE screenshot
-first:
+**スクリーンショットから進化する場合** (ユーザーが「これは気に入らない」と言った)、スクリーンショットを 1 枚撮ります。
+最初に:
 
 ```bash
 $B screenshot "$_DESIGN_DIR/current.png"
 ```
 
-**Launch N Agent subagents in a single message** (parallel execution). Use the Agent
-tool with `subagent_type: "general-purpose"` for each variant. Each agent is independent
-and handles its own generation, quality check, verification, and retry.
+**単一メッセージで N 個のエージェント サブエージェントを起動します** (並列実行)。エージェントを使用する
+各バリアントの `subagent_type: "general-purpose"` を備えたツール。各エージェントは独立しています
+独自の生成、品質チェック、検証、再試行を処理します。
 
-**Important: $D path propagation.** The `$D` variable from DESIGN SETUP is a shell
-variable that agents do NOT inherit. Substitute the resolved absolute path (from the
-`DESIGN_READY: /path/to/design` output in Step 0) into each agent prompt.
+**重要: $D パスの伝播。** DESIGN SETUP の `$D` 変数はシェルです
+エージェントが継承しない変数。解決された絶対パスを置き換えます（
+`DESIGN_READY: /path/to/design` ステップ 0) の出力を各エージェント プロンプトに入力します。
 
-**Agent prompt template** (one per variant, substitute all `{...}` values):
+
 
 ```
 Generate a design variant and save it.
@@ -220,80 +220,80 @@ Steps:
    VARIANT_{letter}_RATE_LIMITED: exhausted retries
 ```
 
-For the evolve path, replace step 1 with:
+進化パスについては、ステップ 1 を次のように置き換えます。
 ```
 {$D path} evolve --screenshot {_DESIGN_DIR}/current.png --brief "{brief}" --output /tmp/variant-{letter}.png
 ```
 
-**Why /tmp/ then cp?** In observed sessions, `$D generate --output ~/.gstack/...`
-failed with "The operation was aborted" while `--output /tmp/...` succeeded. This is
-a sandbox restriction. Always generate to `/tmp/` first, then `cp`.
+**なぜ /tmp/ の次に cp なのでしょうか?** 観察されたセッションでは、`$D generate --output ~/.gstack/...`
+`--output /tmp/...` は成功しましたが、「操作は中止されました」で失敗しました。これは
+サンドボックスの制限。常に最初に `/tmp/` まで生成し、次に `cp` を生成します。
 
-### Step 3d: Results
+### ステップ 3d: 結果
 
-After all agents complete:
+すべてのエージェントが完了したら、次の操作を行います。
 
-1. Read each generated PNG inline (Read tool) so the user sees all variants at once.
-2. Report status: "All {N} variants generated in ~{actual time}. {successes} succeeded,
-   {failures} failed."
-3. For any failures: report explicitly with the error. Do NOT silently skip.
-4. If zero variants succeeded: fall back to sequential generation (one at a time with
-   `$D generate`, showing each as it lands). Tell the user: "Parallel generation failed
-   (likely rate limiting). Falling back to sequential..."
-5. Proceed to Step 4 (comparison board).
+1. 生成された各 PNG をインラインで読み取り (読み取りツール)、ユーザーがすべてのバリアントを一度に確認できるようにします。
+2. レポートのステータス: 「すべての {N} 個のバリアントが ~{実際の時間} で生成されました。{successes} は成功しました。
+   {失敗} 失敗しました。」
+3. 失敗の場合: エラーを明示的に報告します。黙ってスキップしないでください。
+4. 成功したバリアントがゼロの場合: 順次生成にフォールバックします (一度に 1 つずつ生成)
+   `$D generate`、それぞれが着陸する様子を示しています)。ユーザーに「並列生成に失敗しました」と伝えます。
+   (おそらくレート制限)。シーケンシャルに戻ります...」
+5. ステップ 4 (比較ボード) に進みます。
 
-**Dynamic image list for comparison board:** When proceeding to Step 4, construct the
-image list from whatever variant files actually exist, not a hardcoded A/B/C list:
+**比較ボードの動的画像リスト:** ステップ 4 に進む場合、
+ハードコードされた A/B/C リストではなく、実際に存在するバリアント ファイルからの画像リスト:
 
 ```bash
 setopt +o nomatch 2>/dev/null || true  # zsh compat
 _IMAGES=$(ls "$_DESIGN_DIR"/variant-*.png 2>/dev/null | tr '\n' ',' | sed 's/,$//')
 ```
 
-Use `$_IMAGES` in the `$D compare --images` command.
+`$D compare --images` コマンドで `$_IMAGES` を使用します。
 
-## Step 4: Comparison Board + Feedback Loop
+## ステップ 4: 比較ボード + フィードバック ループ
 
 {{DESIGN_SHOTGUN_LOOP}}
 
-## Step 5: Feedback Confirmation
+## ステップ 5: フィードバックの確認
 
-After receiving feedback (via HTTP POST or AskUserQuestion fallback), output a clear
-summary confirming what was understood:
+(HTTP POST または AskUserQuestion フォールバック経由で) フィードバックを受信した後、クリアなメッセージを出力します。
+理解した内容を確認する要約:
 
-"Here's what I understood from your feedback:
+「あなたのフィードバックから私が理解したのは次のとおりです。
 
-PREFERRED: Variant [X]
-RATINGS: A: 4/5, B: 3/5, C: 2/5
-YOUR NOTES: [full text of per-variant and overall comments]
-DIRECTION: [regenerate action if any]
+推奨: バリアント [X]
+評価: A: 4/5、B: 3/5、C: 2/5
+あなたのメモ: [バリアントごとおよび全体的なコメントの全文]
+方向: [アクションがあれば再生成]
 
-Is this right?"
+これは正しいですか？」
 
-Use AskUserQuestion to confirm before saving.
+保存する前に、AskUserQuestion を使用して確認してください。
 
-## Step 6: Save & Next Steps
+## ステップ 6: 保存して次のステップ
 
-Write `approved.json` to `$_DESIGN_DIR/` (handled by the loop above).
+`approved.json` を `$_DESIGN_DIR/` に書き込みます (上記のループで処理されます)。
 
-If invoked from another skill: return the structured feedback for that skill to consume.
-The calling skill reads `approved.json` and the approved variant PNG.
+別のスキルから呼び出された場合: そのスキルが消費する構造化されたフィードバックを返します。
+呼び出しスキルは `approved.json` と承認されたバリアント PNG を読み取ります。
 
-If standalone, offer next steps via AskUserQuestion:
+スタンドアロンの場合は、AskUserQuestion 経由で次のステップを提案します。
 
-> "Design direction locked in. What's next?
-> A) Iterate more — refine the approved variant with specific feedback
-> B) Finalize — generate production Pretext-native HTML/CSS with /design-html
-> C) Save to plan — add this as an approved mockup reference in the current plan
-> D) Done — I'll use this later"
+> 「デザインの方向性が固まりました。次は何ですか?」
+> A) さらに反復する — 承認されたバリアントを特定のフィードバックで改良する
+> B) ファイナライズ — /design-html を使用してプロダクション プレテキスト ネイティブ HTML/CSS を生成します
+> C) 計画に保存 — これを承認されたモックアップ参照として現在の計画に追加します
+> D) 完了 — これは後で使用します。」
 
-## Important Rules
+## 重要なルール
 
-1. **Never save to `.context/`, `docs/designs/`, or `/tmp/`.** All design artifacts go
-   to `~/.gstack/projects/$SLUG/designs/`. This is enforced. See DESIGN_SETUP above.
-2. **Show variants inline before opening the board.** The user should see designs
-   immediately in their terminal. The browser board is for detailed feedback.
-3. **Confirm feedback before saving.** Always summarize what you understood and verify.
-4. **Taste memory is automatic.** Prior approved designs inform new generations by default.
-5. **Two rounds max on context gathering.** Don't over-interrogate. Proceed with assumptions.
-6. **DESIGN.md is the default constraint.** Unless the user says otherwise.
+1. **`.context/`、`docs/designs/`、または `/tmp/` には決して保存しないでください。** すべてのデザイン成果物は保存されます。
+   `~/.gstack/projects/$SLUG/designs/` まで。これは強制されます。上記の DESIGN_SETUP を参照してください。
+2. **ボードを開く前にバリアントをインラインで表示します。** ユーザーにはデザインが表示されます。
+   すぐに端末にアクセスできます。ブラウザ ボードは詳細なフィードバック用です。
+3. **保存する前にフィードバックを確認してください。** 理解した内容を必ず要約し、確認してください。
+4. **味の記憶は自動的に行われます。** デフォルトで、事前に承認されたデザインが新しい世代に通知されます。
+5. **コンテキスト収集は最大 2 ラウンドです。** 過度に尋問しないでください。仮定を置いて進めます。
+6. **DESIGN.md はデフォルトの制約です。** ユーザーが別の指示をしない限り。

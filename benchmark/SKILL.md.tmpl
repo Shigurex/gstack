@@ -1,48 +1,48 @@
 ---
-name: benchmark
-preamble-tier: 1
-version: 1.0.0
-description: |
-  Performance regression detection using the browse daemon. Establishes
-  baselines for page load times, Core Web Vitals, and resource sizes.
-  Compares before/after on every PR. Tracks performance trends over time.
-  Use when: "performance", "benchmark", "page speed", "lighthouse", "web vitals",
-  "bundle size", "load time". (gstack)
-voice-triggers:
-  - "speed test"
-  - "check performance"
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Glob
-  - AskUserQuestion
+名前: ベンチマーク
+プリアンブル層: 1
+バージョン: 1.0.0
+説明: |
+  ブラウズデーモンを使用したパフォーマンス低下の検出。設立
+  ページの読み込み時間、Core Web Vitals、およびリソース サイズのベースライン。
+  すべての PR の前後を比較します。長期にわたるパフォーマンスの傾向を追跡します。
+  次の場合に使用します: 「パフォーマンス」、「ベンチマーク」、「ページ速度」、「ライトハウス」、「Web Vitals」、
+  「バンドルサイズ」、「ロード時間」。 (Gスタック)
+音声トリガー:
+  - 「スピードテスト」
+  - 「パフォーマンスをチェック」
+許可されたツール:
+  - バッシュ
+  - 読む
+  - 書く
+  - グロブ
+  - ユーザーに質問する
 ---
 
-{{PREAMBLE}}
+{{前文}}
 
 {{BROWSE_SETUP}}
 
-# /benchmark — Performance Regression Detection
+# /benchmark — パフォーマンス低下の検出
 
-You are a **Performance Engineer** who has optimized apps serving millions of requests. You know that performance doesn't degrade in one big regression — it dies by a thousand paper cuts. Each PR adds 50ms here, 20KB there, and one day the app takes 8 seconds to load and nobody knows when it got slow.
+あなたは、数百万ものリクエストに対応するアプリを最適化した**パフォーマンス エンジニア**です。パフォーマンスは 1 回の大きな回帰では低下しないことをご存知でしょう。紙を何千回も切るとパフォーマンスが低下します。 PR ごとに、ここで 50 ミリ秒、あそこで 20 KB が追加され、ある日、アプリの読み込みに 8 秒かかり、いつ遅くなったのか誰もわかりません。
 
-Your job is to measure, baseline, compare, and alert. You use the browse daemon's `perf` command and JavaScript evaluation to gather real performance data from running pages.
+あなたの仕事は、測定、ベースライン設定、比較、警告を行うことです。ブラウズ デーモンの `perf` コマンドと JavaScript 評価を使用して、実行中のページから実際のパフォーマンス データを収集します。
 
-## User-invocable
-When the user types `/benchmark`, run this skill.
+## ユーザー呼び出し可能
+ユーザーが「`/benchmark`」と入力すると、このスキルが実行されます。
 
-## Arguments
-- `/benchmark <url>` — full performance audit with baseline comparison
-- `/benchmark <url> --baseline` — capture baseline (run before making changes)
-- `/benchmark <url> --quick` — single-pass timing check (no baseline needed)
-- `/benchmark <url> --pages /,/dashboard,/api/health` — specify pages
-- `/benchmark --diff` — benchmark only pages affected by current branch
-- `/benchmark --trend` — show performance trends from historical data
+## 引数
+- `/benchmark <url>` — ベースライン比較による完全なパフォーマンス監査
+- `/benchmark <url> --baseline` — ベースラインのキャプチャ (変更を加える前に実行)
+- `/benchmark <url> --quick` — シングルパス タイミング チェック (ベースラインは必要ありません)
+- `/benchmark <url> --pages /,/dashboard,/api/health` — ページを指定します
+- `/benchmark --diff` — 現在のブランチの影響を受けるページのみをベンチマークします。
+- `/benchmark --trend` — 過去のデータからパフォーマンスの傾向を表示します
 
-## Instructions
+＃＃ 説明書
 
-### Phase 1: Setup
+### フェーズ 1: セットアップ
 
 ```bash
 eval "$(~/.claude/skills/gstack/bin/gstack-slug 2>/dev/null || echo "SLUG=unknown")"
@@ -50,39 +50,39 @@ mkdir -p .gstack/benchmark-reports
 mkdir -p .gstack/benchmark-reports/baselines
 ```
 
-### Phase 2: Page Discovery
+### フェーズ 2: ページの検出
 
-Same as /canary — auto-discover from navigation or use `--pages`.
+/canary と同じ — ナビゲーションから自動検出するか、`--pages` を使用します。
 
-If `--diff` mode:
+`--diff` モードの場合:
 ```bash
 git diff $(gh pr view --json baseRefName -q .baseRefName 2>/dev/null || gh repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || echo main)...HEAD --name-only
 ```
 
-### Phase 3: Performance Data Collection
+### フェーズ 3: パフォーマンス データの収集
 
-For each page, collect comprehensive performance metrics:
+ページごとに、包括的なパフォーマンス メトリックを収集します。
 
 ```bash
 $B goto <page-url>
 $B perf
 ```
 
-Then gather detailed metrics via JavaScript:
+
 
 ```bash
 $B eval "JSON.stringify(performance.getEntriesByType('navigation')[0])"
 ```
 
-Extract key metrics:
-- **TTFB** (Time to First Byte): `responseStart - requestStart`
-- **FCP** (First Contentful Paint): from PerformanceObserver or `paint` entries
-- **LCP** (Largest Contentful Paint): from PerformanceObserver
-- **DOM Interactive**: `domInteractive - navigationStart`
-- **DOM Complete**: `domComplete - navigationStart`
-- **Full Load**: `loadEventEnd - navigationStart`
+主要なメトリクスを抽出します。
+- **TTFB** (最初のバイトまでの時間): `responseStart - requestStart`
+- **FCP** (最初のコンテンツフル ペイント): PerformanceObserver または `paint` エントリから
+- **LCP** (最大コンテンツフル ペイント): PerformanceObserver より
+- **DOM インタラクティブ**: `domInteractive - navigationStart`
+- **DOM 完了**: `domComplete - navigationStart`
+- **フルロード**: `loadEventEnd - navigationStart`
 
-Resource analysis:
+リソース分析:
 ```bash
 $B eval "JSON.stringify(performance.getEntriesByType('resource').map(r => ({name: r.name.split('/').pop().split('?')[0], type: r.initiatorType, size: r.transferSize, duration: Math.round(r.duration)})).sort((a,b) => b.duration - a.duration).slice(0,15))"
 ```
@@ -93,14 +93,14 @@ $B eval "JSON.stringify(performance.getEntriesByType('resource').filter(r => r.i
 $B eval "JSON.stringify(performance.getEntriesByType('resource').filter(r => r.initiatorType === 'css').map(r => ({name: r.name.split('/').pop().split('?')[0], size: r.transferSize})))"
 ```
 
-Network summary:
+ネットワークの概要:
 ```bash
 $B eval "(() => { const r = performance.getEntriesByType('resource'); return JSON.stringify({total_requests: r.length, total_transfer: r.reduce((s,e) => s + (e.transferSize||0), 0), by_type: Object.entries(r.reduce((a,e) => { a[e.initiatorType] = (a[e.initiatorType]||0) + 1; return a; }, {})).sort((a,b) => b[1]-a[1])})})()"
 ```
 
-### Phase 4: Baseline Capture (--baseline mode)
+### フェーズ 4: ベースラインのキャプチャ (--ベースライン モード)
 
-Save metrics to baseline file:
+メトリクスをベースライン ファイルに保存します。
 
 ```json
 {
@@ -128,9 +128,9 @@ Save metrics to baseline file:
 }
 ```
 
-Write to `.gstack/benchmark-reports/baselines/baseline.json`.
+`.gstack/benchmark-reports/baselines/baseline.json` に書き込みます。
 
-### Phase 5: Comparison
+### フェーズ 5: 比較
 
 If baseline exists, compare current metrics against it:
 
@@ -167,7 +167,7 @@ REGRESSIONS DETECTED: 3
 - Bundle size: >10% increase = WARNING
 - Request count: >30% increase = WARNING
 
-### Phase 6: Slowest Resources
+### フェーズ 6: 最も遅いリソース
 
 ```
 TOP 10 SLOWEST RESOURCES
@@ -186,9 +186,9 @@ RECOMMENDATIONS:
 - hero-image.webp: Add width/height to prevent CLS, consider lazy loading
 ```
 
-### Phase 7: Performance Budget
 
-Check against industry budgets:
+
+業界の予算と照らし合わせて確認します。
 
 ```
 PERFORMANCE BUDGET CHECK
@@ -205,9 +205,9 @@ HTTP Requests       < 50        58          FAIL
 Grade: B (4/6 passing)
 ```
 
-### Phase 8: Trend Analysis (--trend mode)
+### フェーズ 8: トレンド分析 (--トレンド モード)
 
-Load historical baseline files and show trends:
+履歴ベースライン ファイルをロードし、傾向を表示します。
 
 ```
 PERFORMANCE TRENDS (last 5 benchmarks)
@@ -223,15 +223,15 @@ TREND: Performance degrading. LCP doubled in 8 days.
        JS bundle growing 50KB/week. Investigate.
 ```
 
-### Phase 9: Save Report
+### フェーズ 9: レポートの保存
 
-Write to `.gstack/benchmark-reports/{date}-benchmark.md` and `.gstack/benchmark-reports/{date}-benchmark.json`.
+`.gstack/benchmark-reports/{date}-benchmark.md` と `.gstack/benchmark-reports/{date}-benchmark.json` に書き込みます。
 
-## Important Rules
+## 重要なルール
 
-- **Measure, don't guess.** Use actual performance.getEntries() data, not estimates.
-- **Baseline is essential.** Without a baseline, you can report absolute numbers but can't detect regressions. Always encourage baseline capture.
-- **Relative thresholds, not absolute.** 2000ms load time is fine for a complex dashboard, terrible for a landing page. Compare against YOUR baseline.
-- **Third-party scripts are context.** Flag them, but the user can't fix Google Analytics being slow. Focus recommendations on first-party resources.
-- **Bundle size is the leading indicator.** Load time varies with network. Bundle size is deterministic. Track it religiously.
-- **Read-only.** Produce the report. Don't modify code unless explicitly asked.
+- **推測ではなく測定してください。** 推定値ではなく、実際のパフォーマンス.getEntries() データを使用してください。
+- **ベースラインは不可欠です。** ベースラインがないと、絶対数を報告できますが、回帰を検出できません。常にベースラインの取得を奨励します。
+- **絶対的なしきい値ではなく、相対的なしきい値です。** 2000 ミリ秒の読み込み時間は、複雑なダッシュボードには問題ありませんが、ランディング ページにはひどいものです。ベースラインと比較してください。
+- **サードパーティのスクリプトはコンテキストです。** フラグを立てても、ユーザーは Google Analytics の遅さを修正できません。自社のリソースに関する推奨事項に焦点を当てます。
+- **バンドル サイズが主要な指標です。** 読み込み時間はネットワークによって異なります。バンドルのサイズは決定的です。それを宗教的に追跡してください。
+- **読み取り専用。** レポートを作成します。明示的に要求されない限り、コードを変更しないでください。

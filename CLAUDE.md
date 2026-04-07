@@ -1,6 +1,6 @@
-# gstack development
+# gstack開発
 
-## Commands
+## コマンド
 
 ```bash
 bun install          # install dependencies
@@ -22,38 +22,38 @@ bun run eval:compare # compare two eval runs (auto-picks most recent)
 bun run eval:summary # aggregate stats across all eval runs
 ```
 
-`test:evals` requires `ANTHROPIC_API_KEY`. Codex E2E tests (`test/codex-e2e.test.ts`)
-use Codex's own auth from `~/.codex/` config — no `OPENAI_API_KEY` env var needed.
-E2E tests stream progress in real-time (tool-by-tool via `--output-format stream-json
---verbose`). Results are persisted to `~/.gstack-dev/evals/` with auto-comparison
-against the previous run.
+`test:evals` には `ANTHROPIC_API_KEY` が必要です。 Codex E2E テスト (`test/codex-e2e.test.ts`)
+`~/.codex/` 設定から Codex 独自の認証を使用します。`OPENAI_API_KEY` 環境変数は必要ありません。
+E2E は、ストリームの進行状況をリアルタイムでテストします (「--output-format stream-json 経由でツールごと)」
+--verbose`). Results are persisted to `~/.gstack-dev/evals/` 自動比較あり
+前走に対して。
 
-**Diff-based test selection:** `test:evals` and `test:e2e` auto-select tests based
-on `git diff` against the base branch. Each test declares its file dependencies in
-`test/helpers/touchfiles.ts`. Changes to global touchfiles (session-runner, eval-store,
-touchfiles.ts itself) trigger all tests. Use `EVALS_ALL=1` or the `:all` script
-variants to force all tests. Run `eval:select` to preview which tests would run.
+**差分ベースのテスト選択:** `test:evals` および `test:e2e` 自動選択テストベース
+`git diff` でベース ブランチに対して。各テストはファイルの依存関係を次のように宣言します。
+`test/helpers/touchfiles.ts`。グローバル touchfile への変更 (session-runner、eval-store、
+touchfiles.ts 自体）すべてのテストをトリガーします。 `EVALS_ALL=1` または `:all` スクリプトを使用します
+すべてのテストを強制するバリアント。 `eval:select` を実行して、実行されるテストをプレビューします。
 
-**Two-tier system:** Tests are classified as `gate` or `periodic` in `E2E_TIERS`
-(in `test/helpers/touchfiles.ts`). CI runs only gate tests (`EVALS_TIER=gate`);
-periodic tests run weekly via cron or manually. Use `EVALS_TIER=gate` or
-`EVALS_TIER=periodic` to filter. When adding new E2E tests, classify them:
-1. Safety guardrail or deterministic functional test? -> `gate`
-2. Quality benchmark, Opus model test, or non-deterministic? -> `periodic`
-3. Requires external service (Codex, Gemini)? -> `periodic`
+**2 層システム:** テストは、`E2E_TIERS` の `gate` または `periodic` として分類されます。
+(`test/helpers/touchfiles.ts`内)。 CI はゲート テスト (`EVALS_TIER=gate`) のみを実行します。
+定期テストは cron 経由または手動で毎週実行されます。 `EVALS_TIER=gate` を使用するか、
+`EVALS_TIER=periodic` をフィルタリングします。新しい E2E テストを追加する場合は、次のように分類します。
+1. 安全ガードレールまたは確定的な機能テスト? -> `gate`
+2. 品質ベンチマーク、Opus モデル テスト、それとも非決定的? -> `periodic`
+3. 外部サービス (Codex、Gemini) が必要ですか? -> `periodic`
 
-## Testing
+## テスト
 
 ```bash
 bun test             # run before every commit — free, <2s
 bun run test:evals   # run before shipping — paid, diff-based (~$4/run max)
 ```
 
-`bun test` runs skill validation, gen-skill-docs quality checks, and browse
-integration tests. `bun run test:evals` runs LLM-judge quality evals and E2E
-tests via `claude -p`. Both must pass before creating a PR.
+`bun test` はスキルの検証、gen-skill-docs の品質チェック、および参照を実行します。
+統合テスト。 `bun run test:evals` は LLM 判定品質評価と E2E を実行します
+`claude -p` 経由でテストします。 PR を作成する前に両方に合格する必要があります。
 
-## Project structure
+## プロジェクトの構造
 
 ```
 gstack/
@@ -114,257 +114,257 @@ gstack/
 └── package.json     # Build scripts for browse
 ```
 
-## SKILL.md workflow
+## SKILL.md ワークフロー
 
-SKILL.md files are **generated** from `.tmpl` templates. To update docs:
+SKILL.md ファイルは、`.tmpl` テンプレートから**生成**されます。ドキュメントを更新するには:
 
-1. Edit the `.tmpl` file (e.g. `SKILL.md.tmpl` or `browse/SKILL.md.tmpl`)
-2. Run `bun run gen:skill-docs` (or `bun run build` which does it automatically)
-3. Commit both the `.tmpl` and generated `.md` files
+1. `.tmpl` ファイルを編集します (例: `SKILL.md.tmpl` または `browse/SKILL.md.tmpl`)
+2. `bun run gen:skill-docs` (または自動的に実行する `bun run build`) を実行します。
+3. `.tmpl` ファイルと生成された `.md` ファイルの両方をコミットします
 
-To add a new browse command: add it to `browse/src/commands.ts` and rebuild.
-To add a snapshot flag: add it to `SNAPSHOT_FLAGS` in `browse/src/snapshot.ts` and rebuild.
+新しい参照コマンドを追加するには: `browse/src/commands.ts` に追加して再構築します。
+スナップショットフラグを追加するには、`browse/src/snapshot.ts`の`SNAPSHOT_FLAGS`に追加してリビルドします。
 
-**Merge conflicts on SKILL.md files:** NEVER resolve conflicts on generated SKILL.md
-files by accepting either side. Instead: (1) resolve conflicts on the `.tmpl` templates
-and `scripts/gen-skill-docs.ts` (the sources of truth), (2) run `bun run gen:skill-docs`
-to regenerate all SKILL.md files, (3) stage the regenerated files. Accepting one side's
-generated output silently drops the other side's template changes.
+**SKILL.md ファイルの競合をマージします:** 生成された SKILL.md の競合を決して解決しないでください。
+どちらかの側を受け入れてファイルを作成します。代わりに: (1) `.tmpl` テンプレートの競合を解決します。
+および `scripts/gen-skill-docs.ts` (真実の情報源)、(2) `bun run gen:skill-docs` を実行します
+すべての SKILL.md ファイルを再生成するには、(3) 再生成されたファイルをステージングします。一方の側の意見を受け入れる
+生成された出力は、相手側のテンプレートの変更をサイレントに削除します。
 
-## Platform-agnostic design
+## プラットフォームに依存しない設計
 
-Skills must NEVER hardcode framework-specific commands, file patterns, or directory
-structures. Instead:
+スキルはフレームワーク固有のコマンド、ファイル パターン、またはディレクトリを決してハードコーディングしてはなりません
+構造物。その代わり：
 
-1. **Read CLAUDE.md** for project-specific config (test commands, eval commands, etc.)
-2. **If missing, AskUserQuestion** — let the user tell you or let gstack search the repo
-3. **Persist the answer to CLAUDE.md** so we never have to ask again
+1. **CLAUDE.md** を読み、プロジェクト固有の設定 (テスト コマンド、評価コマンドなど) を確認します。
+2. **見つからない場合は、AskUserQuestion** — ユーザーに教えてもらうか、gstack にリポジトリを検索させます
+3. **CLAUDE.md への回答を永続化**して、再度質問する必要がないようにします
 
-This applies to test commands, eval commands, deploy commands, and any other
-project-specific behavior. The project owns its config; gstack reads it.
+これは、test コマンド、eval コマンド、deploy コマンド、およびその他のコマンドに適用されます。
+プロジェクト固有の動作。プロジェクトはその構成を所有します。 gstack がそれを読み取ります。
 
-## Writing SKILL templates
+## SKILL テンプレートの作成
 
-SKILL.md.tmpl files are **prompt templates read by Claude**, not bash scripts.
-Each bash code block runs in a separate shell — variables do not persist between blocks.
+SKILL.md.tmpl ファイルは **クロードによって読み取られるプロンプト テンプレート**であり、bash スクリプトではありません。
+各 bash コード ブロックは個別のシェルで実行されます。変数はブロック間で保持されません。
 
-Rules:
-- **Use natural language for logic and state.** Don't use shell variables to pass
-  state between code blocks. Instead, tell Claude what to remember and reference
-  it in prose (e.g., "the base branch detected in Step 0").
-- **Don't hardcode branch names.** Detect `main`/`master`/etc dynamically via
-  `gh pr view` or `gh repo view`. Use `{{BASE_BRANCH_DETECT}}` for PR-targeting
-  skills. Use "the base branch" in prose, `<base>` in code block placeholders.
-- **Keep bash blocks self-contained.** Each code block should work independently.
-  If a block needs context from a previous step, restate it in the prose above.
-- **Express conditionals as English.** Instead of nested `if/elif/else` in bash,
-  write numbered decision steps: "1. If X, do Y. 2. Otherwise, do Z."
+ルール:
+- **ロジックと状態には自然言語を使用します。** 渡すためにシェル変数を使用しないでください。
+  コードブロック間の状態。代わりに、クロードに覚えておくべきことと参考にするべきことを教えてください
+  散文で表現します (例: 「ステップ 0 で検出されたベース ブランチ」)。
+- **ブランチ名をハードコーディングしないでください。** `main`/`master`/etc を動的に検出します。
+  `gh pr view` または `gh repo view`。 PR ターゲティングには `{{BASE_BRANCH_DETECT}}` を使用します
+  スキル。散文では「ベース ブランチ」を使用し、コード ブロックのプレースホルダーでは `<base>` を使用します。
+- **bash ブロックを自己完結型に保ちます。** 各コード ブロックは独立して動作する必要があります。
+  ブロックに前のステップのコンテキストが必要な場合は、それを上記の散文で再説明します。
+- **条件文を英語として表現します。** bash でネストされた `if/elif/else` の代わりに、
+  番号付きの決定ステップを書きます: 「1. X の場合は Y を実行します。2. それ以外の場合は Z を実行します。」
 
-## Browser interaction
+## ブラウザーの操作
 
-When you need to interact with a browser (QA, dogfooding, cookie setup), use the
-`/browse` skill or run the browse binary directly via `$B <command>`. NEVER use
-`mcp__claude-in-chrome__*` tools — they are slow, unreliable, and not what this
-project uses.
+ブラウザと対話する必要がある場合 (QA、ドッグフーディング、Cookie のセットアップ)、
+`/browse` スキルを使用するか、`$B <command>` 経由で参照バイナリを直接実行します。絶対に使用しないでください
+`mcp__claude-in-chrome__*` ツール — 速度が遅く、信頼性が低く、このようなものではありません
+プロジェクトが使用します。
 
-## Vendored symlink awareness
+## ベンダーのシンボリックリンク認識
 
-When developing gstack, `.claude/skills/gstack` may be a symlink back to this
-working directory (gitignored). This means skill changes are **live immediately** —
-great for rapid iteration, risky during big refactors where half-written skills
-could break other Claude Code sessions using gstack concurrently.
+gstack を開発する場合、`.claude/skills/gstack` はこれへのシンボリックリンクである可能性があります
+作業ディレクトリ (gitignored)。これは、スキルの変更が**すぐに反映される**ことを意味します —
+迅速な反復には最適ですが、スキルが中途半端に書かれている大規模なリファクタリング中は危険です
+gstack を同時に使用している他のクロード コード セッションが中断される可能性があります。
 
-**Check once per session:** Run `ls -la .claude/skills/gstack` to see if it's a
-symlink or a real copy. If it's a symlink to your working directory, be aware that:
-- Template changes + `bun run gen:skill-docs` immediately affect all gstack invocations
-- Breaking changes to SKILL.md.tmpl files can break concurrent gstack sessions
-- During large refactors, remove the symlink (`rm .claude/skills/gstack`) so the
-  global install at `~/.claude/skills/gstack/` is used instead
+**セッションごとに 1 回確認します:** `ls -la .claude/skills/gstack` を実行して、
+シンボリックリンクまたは実際のコピー。作業ディレクトリへのシンボリックリンクの場合は、次の点に注意してください。
+- テンプレートの変更 + `bun run gen:skill-docs` は、すべての gstack 呼び出しに直ちに影響します
+- SKILL.md.tmpl ファイルへの重大な変更により、同時実行の gstack セッションが中断される可能性があります
+- 大規模なリファクタリング中は、シンボリックリンク (`rm .claude/skills/gstack`) を削除します。
+  代わりに、`~/.claude/skills/gstack/` のグローバル インストールが使用されます
 
-**Prefix setting:** Setup creates real directories (not symlinks) at the top level
-with a SKILL.md symlink inside (e.g., `qa/SKILL.md -> gstack/qa/SKILL.md`). This
-ensures Claude discovers them as top-level skills, not nested under `gstack/`.
-Names are either short (`qa`) or namespaced (`gstack-qa`), controlled by
-`skill_prefix` in `~/.gstack/config.yaml`. When vendoring into a project, run
-`./setup` after symlinking to create the per-skill directories. Pass `--no-prefix`
-or `--prefix` to skip the interactive prompt.
+**プレフィックス設定:** セットアップは最上位に実際のディレクトリ (シンボリックリンクではない) を作成します
+内部に SKILL.md シンボリックリンクが含まれています (例: `qa/SKILL.md -> gstack/qa/SKILL.md`)。これ
+これにより、クロードはそれらを `gstack/` の下にネストされず、トップレベルのスキルとして検出できるようになります。
+名前は短い (`qa`) か名前空間付き (`gstack-qa`) のいずれかで、次によって制御されます。
+`~/.gstack/config.yaml` の `skill_prefix`。プロジェクトにベンダーとして参加する場合は、次を実行します。
+シンボリックリンクを作成してスキルごとのディレクトリを作成した後、`./setup`。 `--no-prefix` を通過
+または `--prefix` を使用して対話型プロンプトをスキップします。
 
-**For plan reviews:** When reviewing plans that modify skill templates or the
-gen-skill-docs pipeline, consider whether the changes should be tested in isolation
-before going live (especially if the user is actively using gstack in other windows).
+**プランのレビューについて:** スキル テンプレートまたは
+gen-skill-docs パイプライン、変更を個別にテストする必要があるかどうかを検討する
+ライブになる前に (特にユーザーが他のウィンドウで gstack を積極的に使用している場合)。
 
-**Upgrade migrations:** When a change modifies on-disk state (directory structure,
-config format, stale files) in ways that could break existing user installs, add a
-migration script to `gstack-upgrade/migrations/`. Read CONTRIBUTING.md's "Upgrade
-migrations" section for the format and testing requirements. The upgrade skill runs
-these automatically after `./setup` during `/gstack-upgrade`.
+**アップグレード移行:** 変更によりディスク上の状態 (ディレクトリ構造、
+構成フォーマット、古いファイルなど）既存のユーザーのインストールを破壊する可能性がある方法で、
+移行スクリプトを `gstack-upgrade/migrations/` に追加します。 COTRIBUTING.md の「アップグレード」を読んでください。
+形式とテスト要件については、「移行」セクションを参照してください。アップグレードスキルが発動する
+これらは、`./setup` 以降、`/gstack-upgrade` の間に自動的に行われます。
 
-## Compiled binaries — NEVER commit browse/dist/ or design/dist/
+## コンパイルされたバイナリ — 決してbrowse/dist/またはdesign/dist/をコミットしないでください
 
-The `browse/dist/` and `design/dist/` directories contain compiled Bun binaries
-(`browse`, `find-browse`, `design`, ~58MB each). These are Mach-O arm64 only — they
-do NOT work on Linux, Windows, or Intel Macs. The `./setup` script already builds
-from source for every platform, so the checked-in binaries are redundant. They are
-tracked by git due to a historical mistake and should eventually be removed with
-`git rm --cached`.
+`browse/dist/` および `design/dist/` ディレクトリには、コンパイルされた Bun バイナリが含まれています
+(`browse`、`find-browse`、`design`、それぞれ最大 58MB)。これらは Mach-O arm64 のみです -
+Linux、Windows、または Intel Mac では動作しません。 `./setup` スクリプトはすでにビルドされています
+すべてのプラットフォームのソースから取得されるため、チェックインされたバイナリは冗長です。彼らは
+歴史的な間違いにより git によって追跡されており、最終的には次のコマンドで削除する必要があります。
+`git rm --cached`。
 
-**NEVER stage or commit these files.** They show up as modified in `git status`
-because they're tracked despite `.gitignore` — ignore them. When staging files,
-always use specific filenames (`git add file1 file2`) — never `git add .` or
-`git add -A`, which will accidentally include the binaries.
+**これらのファイルは決してステージングまたはコミットしないでください。** これらは `git status` で変更されたものとして表示されます
+`.gitignore` にもかかわらず追跡されているため、無視してください。ファイルをステージングするとき、
+常に特定のファイル名 (`git add file1 file2`) を使用します。`git add .` や
+`git add -A`、これには誤ってバイナリが含まれます。
 
-## Commit style
+## コミットスタイル
 
-**Always bisect commits.** Every commit should be a single logical change. When
-you've made multiple changes (e.g., a rename + a rewrite + new tests), split them
-into separate commits before pushing. Each commit should be independently
-understandable and revertable.
+**コミットは常に 2 等分します。** すべてのコミットは単一の論理変更である必要があります。いつ
+複数の変更を行った場合 (例: 名前変更 + 書き換え + 新しいテスト)、それらを分割します。
+プッシュする前に個別のコミットに分割します。各コミットは独立している必要があります
+理解可能で元に戻せる。
 
-Examples of good bisection:
-- Rename/move separate from behavior changes
-- Test infrastructure (touchfiles, helpers) separate from test implementations
-- Template changes separate from generated file regeneration
-- Mechanical refactors separate from new features
+適切な二等分例:
+- 動作の変更とは別に名前を変更/移動する
+- テスト実装から分離されたテスト インフラストラクチャ (タッチファイル、ヘルパー)
+- 生成されたファイルの再生成とは別にテンプレートを変更します
+- 新しい機能から分離された機械的なリファクタリング
 
-When the user says "bisect commit" or "bisect and push," split staged/unstaged
-changes into logical commits and push.
+ユーザーが「コミットを二分する」または「二分してプッシュする」と言った場合、ステージング済み/ステージングされていないものを分割します。
+論理コミットとプッシュに変更されます。
 
-## Community PR guardrails
+## コミュニティ PR ガードレール
 
-When reviewing or merging community PRs, **always AskUserQuestion** before accepting
-any commit that:
+コミュニティ PR を確認または統合する場合は、受け入れる前に **必ず AskUserQuestion** を行ってください。
+次のようなコミット:
 
-1. **Touches ETHOS.md** — this file is Garry's personal builder philosophy. No edits
-   from external contributors or AI agents, period.
-2. **Removes or softens promotional material** — YC references, founder perspective,
-   and product voice are intentional. PRs that frame these as "unnecessary" or
-   "too promotional" must be rejected.
-3. **Changes Garry's voice** — the tone, humor, directness, and perspective in skill
-   templates, CHANGELOG, and docs are not generic. PRs that rewrite voice to be
-   more "neutral" or "professional" must be rejected.
+1. **ETHOS.md に触れる** — このファイルは、Garry の個人的なビルダーの哲学です。編集なし
+   外部の貢献者や AI エージェントからのものです。
+2. **宣伝資料を削除または和らげます** — YC への言及、創設者の視点、
+   と製品の音声は意図的です。 PRs that frame these as "unnecessary" or
+   「あまりにも宣伝的なもの」は拒否されなければなりません。
+3. **ギャリーの声を変える** — スキルにおける口調、ユーモア、率直さ、視点
+   templates, CHANGELOG, and docs are not generic.声を書き換えるPR
+   より「中立的」または「プロフェッショナル」なものは拒否されなければなりません。
 
-Even if the agent strongly believes a change improves the project, these three
-categories require explicit user approval via AskUserQuestion. No exceptions.
-No auto-merging. No "I'll just clean this up."
+たとえエージェントが変更によってプロジェクトが改善されると強く信じていたとしても、これら 3 つは
+カテゴリには、AskUserQuestion による明示的なユーザーの承認が必要です。例外はありません。
+自動マージはありません。いいえ、「これをきれいにします。」
 
-## CHANGELOG + VERSION style
+## 変更履歴 + バージョンのスタイル
 
-**VERSION and CHANGELOG are branch-scoped.** Every feature branch that ships gets its
-own version bump and CHANGELOG entry. The entry describes what THIS branch adds —
-not what was already on main.
+**VERSION と CHANGELOG はブランチ スコープです。** 出荷されるすべての機能ブランチは、
+独自のバージョン バンプと CHANGELOG エントリ。このエントリでは、このブランチが追加する内容について説明します。
+すでにメインにあったものではありません。
 
-**When to write the CHANGELOG entry:**
-- At `/ship` time (Step 5), not during development or mid-branch.
-- The entry covers ALL commits on this branch vs the base branch.
-- Never fold new work into an existing CHANGELOG entry from a prior version that
-  already landed on main. If main has v0.10.0.0 and your branch adds features,
-  bump to v0.10.1.0 with a new entry — don't edit the v0.10.0.0 entry.
+**CHANGELOG エントリを書き込むタイミング:**
+- 開発中またはブランチ途中ではなく、`/ship` 時 (ステップ 5)。
+- このエントリは、このブランチとベース ブランチ上のすべてのコミットをカバーします。
+- 新しい作業を、以前のバージョンの既存の CHANGELOG エントリに組み込まないでください。
+  すでにメインに着陸しました。メインに v0.10.0.0 があり、ブランチに機能が追加されている場合、
+  新しいエントリで v0.10.1.0 に移行します。v0.10.0.0 エントリは編集しないでください。
 
-**Key questions before writing:**
-1. What branch am I on? What did THIS branch change?
-2. Is the base branch version already released? (If yes, bump and create new entry.)
-3. Does an existing entry on this branch already cover earlier work? (If yes, replace
-   it with one unified entry for the final version.)
+**書く前の重要な質問:**
+1. 私はどのブランチにいるのですか?このブランチは何を変更しましたか?
+2. 基本ブランチのバージョンはすでにリリースされていますか? (はいの場合は、バンプして新しいエントリを作成します。)
+3. このブランチの既存のエントリは、以前の作業をすでにカバーしていますか? (「はい」の場合は交換します
+   最終バージョンでは 1 つの統合エントリが含まれます)。
 
-**Merging main does NOT mean adopting main's version.** When you merge origin/main into
-a feature branch, main may bring new CHANGELOG entries and a higher VERSION. Your branch
-still needs its OWN version bump on top. If main is at v0.13.8.0 and your branch adds
-features, bump to v0.13.9.0 with a new entry. Never jam your changes into an entry that
-already landed on main. Your entry goes on top because your branch lands next.
+**メインをマージすることは、メインのバージョンを採用することを意味するものではありません。** オリジン/メインをマージする場合
+機能ブランチ、main は新しい CHANGELOG エントリとより高いバージョンをもたらす可能性があります。あなたの支店
+独自のバージョンのバンプがまだ必要です。メインが v0.13.8.0 で、ブランチが追加した場合
+機能を追加すると、新しいエントリで v0.13.9.0 に移行します。変更をエントリに詰め込まないでください。
+すでにメインに着陸しました。次にブランチが配置されるため、エントリが一番上に表示されます。
 
-**After merging main, always check:**
-- Does CHANGELOG have your branch's own entry separate from main's entries?
-- Is VERSION higher than main's VERSION?
-- Is your entry the topmost entry in CHANGELOG (above main's latest)?
-If any answer is no, fix it before continuing.
+**メインをマージした後は、必ず次の点を確認してください。**
+- CHANGELOG には、メインのエントリとは別にブランチ独自のエントリがありますか?
+- VERSION はメインの VERSION よりも上位ですか?
+- あなたのエントリは CHANGELOG の最上位のエントリ (メインの最新のものより上) ですか?
+答えが「いいえ」の場合は、続行する前に修正してください。
 
-**After any CHANGELOG edit that moves, adds, or removes entries,** immediately run
-`grep "^## \[" CHANGELOG.md` and verify the full version sequence is contiguous
-with no gaps or duplicates before committing. If a version is missing, the edit
-broke something. Fix it before moving on.
+**エントリを移動、追加、または削除する CHANGELOG 編集後、** すぐに実行します。
+`grep "^## \[" CHANGELOG.md` を実行し、完全なバージョンのシーケンスが連続していることを確認します。
+コミットする前にギャップや重複がないようにしてください。バージョンが欠落している場合は、編集
+何かを壊した。次に進む前に修正してください。
 
-CHANGELOG.md is **for users**, not contributors. Write it like product release notes:
+CHANGELOG.md は **ユーザー向け** であり、寄稿者向けではありません。製品のリリースノートのように書きます。
 
-- Lead with what the user can now **do** that they couldn't before. Sell the feature.
-- Use plain language, not implementation details. "You can now..." not "Refactored the..."
-- **Never mention TODOS.md, internal tracking, eval infrastructure, or contributor-facing
-  details.** These are invisible to users and meaningless to them.
-- Put contributor/internal changes in a separate "For contributors" section at the bottom.
-- Every entry should make someone think "oh nice, I want to try that."
-- No jargon: say "every question now tells you which project and branch you're in" not
-  "AskUserQuestion format standardized across skill templates via preamble resolver."
+- ユーザーが以前はできなかったことが**できる**ようになりました。機能を販売します。
+- 実装の詳細ではなく、平易な言葉を使用します。 「…をリファクタリングしました」ではなく「…できるようになりました」
+- **TODOS.md、内部追跡、評価インフラストラクチャ、または寄稿者対応については決して言及しないでください
+  詳細。** これらはユーザーには表示されず、意味がありません。
+- 貢献者/内部の変更を下部の別の「貢献者向け」セクションに配置します。
+- どの作品も「いいな、やってみたい」と思ってもらえるものでなければなりません。
+- 専門用語は使用しません。「すべての質問で、自分がどのプロジェクトとブランチに属しているかがわかります」とは言いません。
+  「AskUserQuestion 形式は、プリアンブル リゾルバーを介してスキル テンプレート全体で標準化されました。」
 
-## AI effort compression
+## AI の労力の圧縮
 
-When estimating or discussing effort, always show both human-team and CC+gstack time:
+労力を見積もったり議論したりするときは、常に人間チームと CC+Gstack 時間の両方を表示してください。
 
-| Task type | Human team | CC+gstack | Compression |
-|-----------|-----------|-----------|-------------|
-| Boilerplate / scaffolding | 2 days | 15 min | ~100x |
-| Test writing | 1 day | 15 min | ~50x |
-| Feature implementation | 1 week | 30 min | ~30x |
-| Bug fix + regression test | 4 hours | 15 min | ~20x |
-| Architecture / design | 2 days | 4 hours | ~5x |
-| Research / exploration | 1 day | 3 hours | ~3x |
+|タスクの種類 |人間チーム | CC+Gスタック |圧縮 |
+|----------|-----------|---------------|-------------|
+|ボイラープレート/足場 | 2日間 | 15分 | ～100倍 |
+|テストライティング | 1日 | 15分 | ～50倍 |
+|機能の実装 | 1週間 | 30分 | ～30倍 |
+|バグ修正 + 回帰テスト | 4時間 | 15分 | ～20倍 |
+|建築・デザイン | 2日間 | 4時間 | ～5倍 |
+|研究・探査 | 1日 | 3時間 | ～3倍 |
 
-Completeness is cheap. Don't recommend shortcuts when the complete implementation
-is a "lake" (achievable) not an "ocean" (multi-quarter migration). See the
-Completeness Principle in the skill preamble for the full philosophy.
+完成度は安いです。完全な実装時にはショートカットを推奨しない
+は「湖」（到達可能）であり、「海」（複数四半期にわたる移住）ではありません。を参照してください。
+完全な哲学のスキルの前文にある完全性の原則。
 
-## Search before building
+## 構築する前に検索する
 
 Before designing any solution that involves concurrency, unfamiliar patterns,
-infrastructure, or anything where the runtime/framework might have a built-in:
+インフラストラクチャ、またはランタイム/フレームワークに以下が組み込まれている可能性のあるものすべて:
 
-1. Search for "{runtime} {thing} built-in"
-2. Search for "{thing} best practice {current year}"
-3. Check official runtime/framework docs
+1.「{ランタイム} {シング} ビルトイン」を検索します
+2.「{thing} のベスト プラクティス {今年}」を検索します
+3. 公式ランタイム/フレームワークのドキュメントを確認する
 
-Three layers of knowledge: tried-and-true (Layer 1), new-and-popular (Layer 2),
-first-principles (Layer 3). Prize Layer 3 above all. See ETHOS.md for the full
-builder philosophy.
+知識の 3 つの層: 実績のある知識 (層 1)、新しく人気のある知識 (層 2)、
+first-principles (Layer 3).何よりもレイヤー3を賞品にします。 See ETHOS.md for the full
+ビルダーの哲学。
 
-## Local plans
+## ローカルプラン
 
-Contributors can store long-range vision docs and design documents in `~/.gstack-dev/plans/`.
-These are local-only (not checked in). When reviewing TODOS.md, check `plans/` for candidates
-that may be ready to promote to TODOs or implement.
+寄稿者は、長距離ビジョン ドキュメントと設計ドキュメントを `~/.gstack-dev/plans/` に保存できます。
+これらはローカルのみです (チェックインされていません)。 TODOS.md を確認するときは、`plans/` で候補を確認してください
+TODO に昇格するか、実装する準備ができている可能性があります。
 
-## E2E eval failure blame protocol
+## E2E 評価失敗責任プロトコル
 
-When an E2E eval fails during `/ship` or any other workflow, **never claim "not
-related to our changes" without proving it.** These systems have invisible couplings —
-a preamble text change affects agent behavior, a new helper changes timing, a
-regenerated SKILL.md shifts prompt context.
+`/ship` またはその他のワークフロー中に E2E 評価が失敗した場合、**決して「そうではない」と主張しないでください。
+** これらのシステムには目に見えない結合があります —
+プリアンブル テキストの変更はエージェントの動作に影響し、新しいヘルパーはタイミングを変更します。
+再生成された SKILL.md はプロンプトのコンテキストを変更します。
 
-**Required before attributing a failure to "pre-existing":**
-1. Run the same eval on main (or base branch) and show it fails there too
-2. If it passes on main but fails on the branch — it IS your change. Trace the blame.
-3. If you can't run on main, say "unverified — may or may not be related" and flag it
-   as a risk in the PR body
+**障害の原因を「既存」とする前に必須:**
+1. メイン (またはベース ブランチ) で同じ評価を実行し、そこでも失敗することを示します。
+2. メインでは成功してもブランチでは失敗した場合、それはあなたの変更です。責任を追跡します。
+3. メインで実行できない場合は、「未検証 — 関連しているかもしれないし、関連していないかもしれない」と言ってフラグを立てます。
+   PR 機関のリスクとして
 
-"Pre-existing" without receipts is a lazy claim. Prove it or don't say it.
+レシートのない「既存」というのは怠惰な主張です。証明するか、言わないか。
 
-## Long-running tasks: don't give up
+## 長時間実行されるタスク: 諦めないでください
 
-When running evals, E2E tests, or any long-running background task, **poll until
-completion**. Use `sleep 180 && echo "ready"` + `TaskOutput` in a loop every 3
-minutes. Never switch to blocking mode and give up when the poll times out. Never
-say "I'll be notified when it completes" and stop checking — keep the loop going
-until the task finishes or the user tells you to stop.
+eval、E2E テスト、または長時間実行されるバックグラウンド タスクを実行する場合、**次の時点までポーリングします。
+完了**。 `sleep 180 && echo "ready"` + `TaskOutput` を 3 回ごとのループで使用します
+分。ブロッキング モードに切り替えたり、ポーリングがタイムアウトになったときに諦めたりしないでください。決してしない
+「完了したら通知されます」と言ってチェックをやめ、ループを続けます
+タスクが終了するか、ユーザーが停止するよう指示するまで。
 
-The full E2E suite can take 30-45 minutes. That's 10-15 polling cycles. Do all of
-them. Report progress at each check (which tests passed, which are running, any
-failures so far). The user wants to see the run complete, not a promise that
-you'll check later.
+完全な E2E スイートには 30 ～ 45 分かかる場合があります。これは 10 ～ 15 ポーリング サイクルに相当します。すべてを実行してください
+彼ら。各チェックで進行状況をレポートします (どのテストが合格したか、どのテストが実行中か、
+これまでの失敗）。ユーザーは、実行が完了することを約束するのではなく、実行が完了することを望んでいます。
+後で確認します。
 
-## E2E test fixtures: extract, don't copy
+## E2E テスト フィクスチャ: コピーせずに抽出します
 
-**NEVER copy a full SKILL.md file into an E2E test fixture.** SKILL.md files are
-1500-2000 lines. When `claude -p` reads a file that large, context bloat causes
-timeouts, flaky turn limits, and tests that take 5-10x longer than necessary.
+**SKILL.md ファイル全体を E2E テスト フィクスチャにコピーしないでください。** SKILL.md ファイルは
+1500～2000行。 `claude -p` が大きなファイルを読み取ると、コンテキストの肥大化が発生します。
+タイムアウト、不安定なターン制限、必要以上に 5 ～ 10 倍の時間がかかるテスト。
 
-Instead, extract only the section the test actually needs:
+代わりに、テストに実際に必要なセクションのみを抽出します。
 
 ```typescript
 // BAD — agent reads 1900 lines, burns tokens on irrelevant sections
@@ -377,19 +377,19 @@ const end = full.indexOf('\n---\n', start);
 fs.writeFileSync(path.join(dir, 'ship-SKILL.md'), full.slice(start, end > start ? end : undefined));
 ```
 
-Also when running targeted E2E tests to debug failures:
-- Run in **foreground** (`bun test ...`), not background with `&` and `tee`
-- Never `pkill` running eval processes and restart — you lose results and waste money
-- One clean run beats three killed-and-restarted runs
+また、障害をデバッグするために対象を絞った E2E テストを実行する場合:
+- `&` および `tee` ではバックグラウンドではなく、**フォアグラウンド** (`bun test ...`) で実行します
+- 決して `pkill` 評価プロセスを実行して再起動しないでください。結果が失われ、お金が無駄になります。
+- 1 回のクリーンな実行は、3 回の強制終了して再起動した実行よりも優れています
 
-## Deploying to the active skill
+## アクティブなスキルへのデプロイ
 
-The active skill lives at `~/.claude/skills/gstack/`. After making changes:
+The active skill lives at `~/.claude/skills/gstack/`.変更を加えた後:
 
-1. Push your branch
-2. Fetch and reset in the skill directory: `cd ~/.claude/skills/gstack && git fetch origin && git reset --hard origin/main`
-3. Rebuild: `cd ~/.claude/skills/gstack && bun run build`
+1. ブランチをプッシュします
+2. スキルディレクトリでフェッチしてリセットします: `cd ~/.claude/skills/gstack && git fetch origin && git reset --hard origin/main`
+3. リビルド: `cd ~/.claude/skills/gstack && bun run build`
 
-Or copy the binaries directly:
+または、バイナリを直接コピーします。
 - `cp browse/dist/browse ~/.claude/skills/gstack/browse/dist/browse`
 - `cp design/dist/design ~/.claude/skills/gstack/design/dist/design`

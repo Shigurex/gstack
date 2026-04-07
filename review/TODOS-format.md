@@ -1,10 +1,10 @@
-# TODOS.md Format Reference
+# TODOS.md フォーマットのリファレンス
 
-Shared reference for the canonical TODOS.md format. Referenced by `/ship` (Step 5.5) and `/plan-ceo-review` (TODOS.md updates section) to ensure consistent TODO item structure.
+正規の TODOS.md 形式の共有リファレンス。一貫した TODO 項目構造を確保するために、`/ship` (ステップ 5.5) および `/plan-ceo-review` (TODOS.md 更新セクション) によって参照されます。
 
 ---
 
-## File Structure
+## ファイル構造
 
 ```markdown
 # TODOS
@@ -16,13 +16,13 @@ Shared reference for the canonical TODOS.md format. Referenced by `/ship` (Step 
 <finished items with completion annotation>
 ```
 
-**Sections:** Organize by skill or component (`## Browse`, `## Ship`, `## Review`, `## QA`, `## Retro`, `## Infrastructure`). Within each section, sort items by priority (P0 at top).
+**セクション:** スキルまたはコンポーネントごとに整理します (`## Browse`、`## Ship`、`## Review`、`## QA`、`## Retro`、`## Infrastructure`)。各セクション内で、項目を優先順位 (P0 が先頭) に基づいて並べ替えます。
 
 ---
 
-## TODO Item Format
+## TODO項目のフォーマット
 
-Each item is an H3 under its section:
+各項目はそのセクションの H3 です。
 
 ```markdown
 ### <Title>
@@ -38,24 +38,24 @@ Each item is an H3 under its section:
 **Depends on:** <prerequisites, or "None">
 ```
 
-**Required fields:** What, Why, Context, Effort, Priority
-**Optional fields:** Depends on, Blocked by
+**必須フィールド:** 内容、理由、コンテキスト、労力、優先度
+**オプションのフィールド:** 依存、ブロック
 
 ---
 
-## Priority Definitions
+## 優先順位の定義
 
-- **P0** — Blocking: must be done before next release
-- **P1** — Critical: should be done this cycle
-- **P2** — Important: do when P0/P1 are clear
-- **P3** — Nice-to-have: revisit after adoption/usage data
-- **P4** — Someday: good idea, no urgency
+- **P0** — ブロッキング: 次のリリース前に実行する必要があります
+- **P1** — クリティカル: このサイクルで実行する必要があります
+- **P2** — 重要: P0/P1 がクリアされているときに実行してください。
+- **P3** — あれば便利: 導入/使用データの後に再確認
+- **P4** — いつか: 良いアイデアですが、緊急性はありません
 
 ---
 
-## Completed Item Format
+## 完成した項目フォーマット
 
-When an item is completed, move it to the `## Completed` section preserving its original content and appending:
+項目が完了したら、元のコンテンツを保存して以下を追加して、項目を `## Completed` セクションに移動します。
 
 ```markdown
 **Completed:** vX.Y.Z (YYYY-MM-DD)

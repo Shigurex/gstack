@@ -1,86 +1,86 @@
-# Design System — gstack
+# デザインシステム — gstack
 
-## Product Context
-- **What this is:** Community website for gstack — a CLI tool that turns Claude Code into a virtual engineering team
-- **Who it's for:** Developers discovering gstack, existing community members
-- **Space/industry:** Developer tools (peers: Linear, Raycast, Warp, Zed)
-- **Project type:** Community dashboard + marketing site
+## 製品コンテキスト
+- **これは何ですか:** gstack のコミュニティ Web サイト — クロード コードを仮想エンジニアリング チームに変える CLI ツール
+- **対象者:** gstack を発見している開発者、既存のコミュニティ メンバー
+- **宇宙/業界:** 開発者ツール (ピア: Linear、Raycast、Warp、Zed)
+- **プロジェクト タイプ:** コミュニティ ダッシュボード + マーケティング サイト
 
-## Aesthetic Direction
-- **Direction:** Industrial/Utilitarian — function-first, data-dense, monospace as personality font
-- **Decoration level:** Intentional — subtle noise/grain texture on surfaces for materiality
-- **Mood:** Serious tool built by someone who cares about craft. Warm, not cold. The CLI heritage IS the brand.
-- **Reference sites:** formulae.brew.sh (competitor, but ours is live and interactive), Linear (dark + restrained), Warp (warm accents)
+## 美的方向性
+- **方向性:** 工業的/実用的 — 機能第一、データ密度の高い、個性的なフォントとしての等幅
+- **装飾レベル:** 意図的 - 質感を高めるため、表面に微妙なノイズ/粒子テクスチャを施します。
+- **雰囲気:** クラフトにこだわる人によって作られた本格的なツール。寒くない、暖かい。 CLI の伝統はブランドです。
+- **参考サイト:** Formulae.brew.sh (競合他社ですが、当社のものはライブでインタラクティブです)、Linear (ダーク + 抑制)、Warp (温かみのあるアクセント)
 
-## Typography
-- **Display/Hero:** Satoshi (Black 900 / Bold 700) — geometric with warmth, distinctive letterforms (the lowercase 'a' and 'g'). Not Inter, not Geist. Loaded from Fontshare CDN.
-- **Body:** DM Sans (Regular 400 / Medium 500 / Semibold 600) — clean, readable, slightly friendlier than geometric display. Loaded from Google Fonts.
-- **UI/Labels:** DM Sans (same as body)
-- **Data/Tables:** JetBrains Mono (Regular 400 / Medium 500) — the personality font. Supports tabular-nums. Monospace should be prominent, not hidden in code blocks. Loaded from Google Fonts.
-- **Code:** JetBrains Mono
-- **Loading:** Google Fonts for DM Sans + JetBrains Mono, Fontshare for Satoshi. Use `display=swap`.
-- **Scale:**
-  - Hero: 72px / clamp(40px, 6vw, 72px)
-  - H1: 48px
-  - H2: 32px
+## タイポグラフィー
+- **ディスプレイ/ヒーロー:** サトシ (ブラック 900 / ボールド 700) - 温かみのある幾何学模様、独特の文字形 (小文字の「a」と「g」)。インテルでもガイストでもない。 Fontshare CDN からロードされます。
+- **本文:** DM Sans (レギュラー 400 / 中字 500 / セミボールド 600) - すっきりしていて読みやすく、幾何学的な表示よりも少しフレンドリーです。 Google Fontsから読み込まれます。
+- **UI/ラベル:** DM Sans (本文と同じ)
+- **データ/テーブル:** JetBrains Mono (レギュラー 400 / ミディアム 500) — 個性的なフォント。表形式の数値をサポートします。等幅はコード ブロックに隠れるのではなく、目立つようにする必要があります。 Google Fontsから読み込まれます。
+- **コード:** JetBrains Mono
+- **読み込み中:** DM Sans + JetBrains Mono 用の Google フォント、Satoshi 用の Fontshare。 `display=swap` を使用します。
+- **スケール:**
+  - ヒーロー: 72px / クランプ(40px、6vw、72px)
+  - H1: 48ピクセル
+  - H2: 32ピクセル
   - H3: 24px
-  - H4: 18px
-  - Body: 16px
-  - Small: 14px
-  - Caption: 13px
-  - Micro: 12px
-  - Nano: 11px (JetBrains Mono labels)
+  - H4: 18ピクセル
+  - 本体：16px
+  - 小: 14px
+  - キャプション: 13px
+  - マイクロ: 12ピクセル
+  - Nano: 11px (JetBrains Mono ラベル)
 
-## Color
-- **Approach:** Restrained — amber accent is rare and meaningful. Dashboard data gets the color; chrome stays neutral.
-- **Primary (dark mode):** amber-500 #F59E0B — warm, energetic, reads as "terminal cursor"
-- **Primary (light mode):** amber-600 #D97706 — darker for contrast against white backgrounds
-- **Primary text accent (dark mode):** amber-400 #FBBF24
-- **Primary text accent (light mode):** amber-700 #B45309
-- **Neutrals:** Cool zinc grays
-  - zinc-50: #FAFAFA (lightest)
-  - zinc-400: #A1A1AA
-  - zinc-600: #52525B
-  - zinc-800: #27272A
-  - Surface (dark): #141414
-  - Base (dark): #0C0C0C
-  - Surface (light): #FFFFFF
-  - Base (light): #FAFAF9
-- **Semantic:** success #22C55E, warning #F59E0B, error #EF4444, info #3B82F6
-- **Dark mode:** Default. Near-black base (#0C0C0C), surface cards at #141414, borders at #262626.
-- **Light mode:** Warm stone base (#FAFAF9), white surface cards, stone borders (#E7E5E4). Amber accent shifts to amber-600 for contrast.
+## 色
+- **アプローチ:** 抑制 — 琥珀色のアクセントはまれであり、意味があります。ダッシュボード データには色が付けられます。クロムはニュートラルのままです。
+- **プライマリ (ダーク モード):** amber-500 #F59E0B — 暖かく、元気があり、「ターミナル カーソル」として読み取られます。
+- **プライマリ (ライト モード):** アンバー-600 #D97706 — 白い背景に対するコントラストを高めるために暗め
+- **プライマリ テキスト アクセント (ダーク モード):** amber-400 #FBBF24
+- **プライマリ テキスト アクセント (ライト モード):** アンバー-700 #B45309
+- **ニュートラル:** クールなジンクグレー
+  - 亜鉛-50: #FAFAFA (最軽量)
+  - 亜鉛-400: #A1A1AA
+  - 亜鉛-600: #52525B
+  - 亜鉛-800: #27272A
+  - 表面(ダーク): #141414
+  - ベース(ダーク): #0C0C0C
+  - 表面(光): #FFFFFF
+  - ベース(ライト)：#FAFAF9
+- **セマンティック:** 成功 #22C55E、警告 #F59E0B、エラー #EF4444、情報 #3B82F6
+- **ダーク モード:** デフォルト。ほぼ黒のベース (#0C0C0C)、表面カードは #141414、ボーダーは #262626。
+- **ライト モード:** 温かみのあるストーン ベース (#FAFAF9)、白い表面カード、ストーン ボーダー (#E7E5E4)。アンバーのアクセントはコントラストのためにアンバー-600 に移行します。
 
-## Spacing
-- **Base unit:** 4px
-- **Density:** Comfortable — not cramped (not Bloomberg Terminal), not spacious (not a marketing site)
-- **Scale:** 2xs(2px) xs(4px) sm(8px) md(16px) lg(24px) xl(32px) 2xl(48px) 3xl(64px)
+## 間隔
+- **ベースユニット:** 4px
+- **密度:** 快適 — 窮屈ではない (ブルームバーグ ターミナルではない)、広くもない (マーケティング サイトではない)
+- **スケール:** 2xs(2px) xs(4px) sm(8px) md(16px) lg(24px) xl(32px) 2xl(48px) 3xl(64px)
 
-## Layout
-- **Approach:** Grid-disciplined for dashboard, editorial hero for landing page
-- **Grid:** 12 columns at lg+, 1 column at mobile
-- **Max content width:** 1200px (6xl)
-- **Border radius:** sm:4px, md:8px, lg:12px, full:9999px
-  - Cards/panels: lg (12px)
-  - Buttons/inputs: md (8px)
-  - Badges/pills: full (9999px)
-  - Skill bars: sm (4px)
+## レイアウト
+- **アプローチ:** ダッシュボードにはグリッドを規律し、ランディング ページには編集上のヒーローを配置する
+- **グリッド:** lg+ では 12 列、モバイルでは 1 列
+- **コンテンツの最大幅:** 1200px (6xl)
+- **境界線の半径:** sm:4px、md:8px、lg:12px、full:9999px
+  - カード/パネル: lg (12px)
+  - ボタン/入力: md (8px)
+  - バッジ/錠剤: フル (9999px)
+  - スキルバー：sm（4px）
 
-## Motion
-- **Approach:** Minimal-functional — only transitions that aid comprehension. The dashboard's live feed IS the motion.
-- **Easing:** enter(ease-out / cubic-bezier(0.16,1,0.3,1)) exit(ease-in) move(ease-in-out)
-- **Duration:** micro(50-100ms) short(150ms) medium(250ms) long(400ms)
-- **Animated elements:** live feed dot pulse (2s infinite), skill bar fill (600ms ease-out), hover states (150ms)
+## モーション
+- **アプローチ:** 最小限の機能 — 理解を助けるトランジションのみ。ダッシュボードのライブ フィードはモーションです。
+- **イージング:** enter(ease-out / cubic-bezier(0.16,1,0.3,1)) exit(ease-in) move(ease-in-out)
+- **期間:** マイクロ (50-100 ミリ秒) ショート (150 ミリ秒) 中 (250 ミリ秒) ロング (400 ミリ秒)
+- **アニメーション要素:** ライブ フィード ドット パルス (2 秒無限)、スキル バーの塗りつぶし (600 ミリ秒のイーズアウト)、ホバー状態 (150 ミリ秒)
 
-## Grain Texture
-Apply a subtle noise overlay to the entire page for materiality:
-- Dark mode: opacity 0.03
-- Light mode: opacity 0.02
-- Use SVG feTurbulence filter as a CSS background-image on body::after
-- pointer-events: none, position: fixed, z-index: 9999
+## 粒子テクスチャ
+重要性を高めるために、ページ全体に微妙なノイズ オーバーレイを適用します。
+- ダークモード: 不透明度 0.03
+- ライトモード: 不透明度 0.02
+- body::after の CSS 背景画像として SVG feTurbulence フィルターを使用します
+- ポインターイベント: なし、位置: 固定、Z インデックス: 9999
 
-## Decisions Log
-| Date | Decision | Rationale |
-|------|----------|-----------|
-| 2026-03-21 | Initial design system | Created by /design-consultation. Industrial aesthetic, warm amber accent, Satoshi + DM Sans + JetBrains Mono. |
-| 2026-03-21 | Light mode amber-600 | amber-500 too bright/washed against white; amber-700 too brown/umber. amber-600 is the sweet spot. |
-| 2026-03-21 | Grain texture | Adds materiality to flat dark surfaces. Prevents the "generic SaaS template" sameness. |
+## 意思決定ログ
+|日付 |決定 |理論的根拠 |
+|------|----------|----------|
+| 2026-03-21 |初期設計システム | /design-consultation によって作成されました。インダストリアルな美学、温かみのある琥珀色のアクセント、Satoshi + DM Sans + JetBrains Mono。 |
+| 2026-03-21 |ライトモードアンバー-600 |琥珀-500 明るすぎる/白に染まります。 amber-700 ブラウン/アンバーすぎる。 amber-600 がスイートスポットです。 |
+| 2026-03-21 |木目テクスチャ | 写真 粒子テクスチャ平らで暗い表面に物質性を追加します。 「汎用 SaaS テンプレート」の同一性を防ぎます。 |

@@ -1,45 +1,45 @@
-# Testing Specialist Review Checklist
+# テストスペシャリストレビューチェックリスト
 
-Scope: Always-on (every review)
-Output: JSON objects, one finding per line. Schema:
-{"severity":"CRITICAL|INFORMATIONAL","confidence":N,"path":"file","line":N,"category":"testing","summary":"...","fix":"...","fingerprint":"path:line:testing","specialist":"testing"}
-If no findings: output `NO FINDINGS` and nothing else.
+範囲: 常時オン (すべてのレビュー)
+出力: JSON オブジェクト、1 行に 1 つの結果。スキーマ:
+{"重大度":"クリティカル|情報","信頼性":N,"パス":"ファイル","行":N,"カテゴリ":"テスト中","概要":"...","修正":"...","フィンガープリント":"パス:ライン:テスト中","スペシャリスト":"テスト中"}
+検出結果がない場合: `NO FINDINGS` を出力し、それ以外は何も出力しません。
 
 ---
 
-## Categories
+## カテゴリ
 
-### Missing Negative-Path Tests
-- New code paths that handle errors, rejections, or invalid input with NO corresponding test
-- Guard clauses and early returns that are untested
-- Error branches in try/catch, rescue, or error boundaries with no failure-path test
-- Permission/auth checks that are asserted in code but never tested for the "denied" case
+### ネガティブパステストの欠落
+- エラー、拒否、または対応するテストが存在しない無効な入力を処理する新しいコード パス
+- テストされていないガード条項と早期返品
+- 失敗パス テストのない、try/catch、レスキュー、またはエラー境界でのエラー分岐
+- コード内でアサートされているが、「拒否」の場合についてはテストされていない権限/認証チェック
 
-### Missing Edge-Case Coverage
-- Boundary values: zero, negative, max-int, empty string, empty array, nil/null/undefined
-- Single-element collections (off-by-one on loops)
-- Unicode and special characters in user-facing inputs
-- Concurrent access patterns with no race-condition test
+### エッジケースのカバレッジが不足している
+- 境界値: ゼロ、負、最大整数、空の文字列、空の配列、nil/null/未定義
+- 単一要素のコレクション (off-by-one on ループ)
+- ユーザー向け入力における Unicode と特殊文字
+- 競合状態テストを行わない同時アクセス パターン
 
-### Test Isolation Violations
-- Tests sharing mutable state (class variables, global singletons, DB records not cleaned up)
-- Order-dependent tests (pass in sequence, fail when randomized)
-- Tests that depend on system clock, timezone, or locale
-- Tests that make real network calls instead of using stubs/mocks
+### テスト分離違反
+- 可変状態を共有するテスト (クラス変数、グローバル シングルトン、クリーンアップされていない DB レコード)
+- 順序依存のテスト (順番に合格し、ランダム化されると失敗)
+- システムクロック、タイムゾーン、またはロケールに依存するテスト
+- スタブ/モックを使用する代わりに実際のネットワーク呼び出しを行うテスト
 
-### Flaky Test Patterns
-- Timing-dependent assertions (sleep, setTimeout, waitFor with tight timeouts)
-- Assertions on ordering of unordered results (hash keys, Set iteration, async resolution order)
-- Tests that depend on external services (APIs, databases) without fallback
-- Randomized test data without seed control
+### 不安定なテストパターン
+- タイミング依存のアサーション (タイムアウトが厳しいスリープ、setTimeout、waitFor)
+- 順序付けされていない結果の順序付けに関するアサーション (ハッシュ キー、反復設定、非同期解決順序)
+- フォールバックなしの外部サービス (API、データベース) に依存するテスト
+- シードコントロールを使用しないランダム化されたテストデータ
 
-### Security Enforcement Tests Missing
-- Auth/authz checks in controllers with no test for the "unauthorized" case
-- Rate limiting logic with no test proving it actually blocks
-- Input sanitization with no test for malicious input
-- CSRF/CORS configuration with no integration test
+### セキュリティ強制テストがありません
+- 「未承認」の場合のテストを行わないコントローラーの認証/認証チェック
+- 実際にブロックすることを証明するテストが行われていないレート制限ロジック
+- 悪意のある入力のテストを行わない入力サニタイズ
+- 統合テストを行わない CSRF/CORS 構成
 
-### Coverage Gaps
-- New public methods/functions with zero test coverage
-- Changed methods where existing tests only cover the old behavior, not the new branch
-- Utility functions called from multiple places but tested only indirectly
+### 適用範囲のギャップ
+- テストカバレッジがゼロの新しいパブリックメソッド/関数
+- 既存のテストが新しいブランチではなく古い動作のみをカバーするように変更されたメソッド
+- ユーティリティ関数は複数の場所から呼び出されますが、間接的にのみテストされます

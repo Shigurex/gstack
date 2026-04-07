@@ -1,39 +1,39 @@
-# Session Intelligence Layer
+# セッションインテリジェンスレイヤー
 
-## The Problem
+＃＃ 問題
 
-Claude Code's context window is ephemeral. Every session starts fresh. When
-auto-compaction fires at ~167K tokens, it preserves a generic summary but
-destroys file reads, reasoning chains, and intermediate decisions.
+Claude Code のコンテキスト ウィンドウは一時的なものです。すべてのセッションは新鮮に始まります。いつ
+自動圧縮は ~167K トークンで起動され、一般的な概要は保持されますが、
+ファイルの読み取り、推論チェーン、中間の決定を破壊します。
 
-gstack already produces valuable artifacts that survive on disk: CEO plans,
-eng reviews, design reviews, QA reports, learnings. These files contain
-decisions, constraints, and context that shaped the current work. But Claude
-doesn't know they exist. After compaction, the plans and reviews that
-informed every decision silently vanish from context.
+gstack はすでにディスク上に残る貴重な成果物を生成しています: CEO の計画、
+工学レビュー、設計レビュー、QA レポート、学習。これらのファイルには以下が含まれます
+現在の作品を形作った決定、制約、コンテキスト。でもクロード
+彼らの存在を知りません。圧縮後の計画とレビューは、
+すべての決定が通知され、文脈から静かに消えます。
 
-The ecosystem is working on this. claude-mem (9K+ stars) captures tool usage
-and injects context into future sessions. Claude HUD shows real-time agent
-status. Anthropic's own `claude-progress.txt` pattern uses a progress file
-that agents read at the start of each session.
+エコシステムはこれに取り組んでいます。 claude-mem (9,000 つ星以上) がツールの使用状況をキャプチャします
+そして、将来のセッションにコンテキストを挿入します。クロード HUD はリアルタイム エージェントを表示します
+ステータス。 Anthropic 独自の `claude-progress.txt` パターンは進行状況ファイルを使用します
+エージェントが各セッションの開始時に読みます。
 
-Nobody is solving the specific problem of making **skill-produced artifacts**
-survive compaction. Because nobody else has gstack's artifact architecture.
+**スキルで生成されたアーティファクト**を作成するという具体的な問題を解決している人は誰もいません
+圧縮に耐えます。なぜなら、他に gstack のアーティファクト アーキテクチャを持っている人がいないからです。
 
-## The Insight
+## 洞察力
 
-gstack already writes structured artifacts to `~/.gstack/projects/$SLUG/`:
-- CEO plans: `ceo-plans/`
-- Design reviews: `design-reviews/`
-- Eng reviews: `eng-reviews/`
-- Learnings: `learnings.jsonl`
-- Skill usage: `../analytics/skill-usage.jsonl`
+gstack はすでに構造化アーティファクトを `~/.gstack/projects/$SLUG/` に書き込んでいます。
+- CEO の計画: `ceo-plans/`
+- デザインレビュー: `design-reviews/`
+- 英語レビュー: `eng-reviews/`
+- 学習: `learnings.jsonl`
+- スキル使用量: `../analytics/skill-usage.jsonl`
 
-The missing piece is not storage. It's awareness. The preamble needs to tell
-the agent: "These files exist. They contain decisions you've already made.
+The missing piece is not storage.それは認識です。 The preamble needs to tell
+エージェント: 「これらのファイルは存在します。これらのファイルには、あなたがすでに行った決定が含まれています。
 After compaction, re-read them."
 
-## The Architecture
+## アーキテクチャ
 
 ```
                    ┌─────────────────────────────────────┐
@@ -67,69 +67,69 @@ After compaction, re-read them."
                    └─────────────────────────────────────┘
 ```
 
-## The Features
+## 特徴
 
-### Layer 1: Context Recovery (preamble, all skills)
-~10 lines of prose in the preamble. After compaction or context degradation,
-the agent checks `~/.gstack/projects/$SLUG/` for recent plans, reviews, and
-checkpoints. Lists the directory, reads the most recent file.
+### レイヤ 1: コンテキストの回復 (前文、すべてのスキル)
+前文に約 10 行の散文。圧縮またはコンテキストの劣化後、
+エージェントは `~/.gstack/projects/$SLUG/` で最近の計画、レビュー、
+チェックポイント。ディレクトリを一覧表示し、最新のファイルを読み取ります。
 
-Cost: near-zero. Benefit: every skill's plans/reviews survive compaction.
+コスト: ほぼゼロ。利点: すべてのスキルの計画/レビューは圧縮後も存続します。
 
-### Layer 2: Session Timeline (preamble, all skills)
-Every skill appends a one-line JSONL entry to `timeline.jsonl`: timestamp,
-skill name, branch, key outcome. `/retro` renders it.
+### レイヤ 2: セッション タイムライン (前文、すべてのスキル)
+すべてのスキルは 1 行の JSONL エントリを `timeline.jsonl`: タイムスタンプに追加します。
+スキル名、ブランチ、主要な結果。 `/retro` がレンダリングします。
 
-Makes the project's AI-assisted work history visible. "This week: 3 /review,
-2 /ship, 1 /investigate across branches feature-auth and fix-billing."
+プロジェクトの AI 支援による作業履歴を可視化します。 「今週: 3 /レビュー、
+2 /出荷、1 /ブランチ全体の機能認証と修正請求を調査します。」
 
-### Layer 3: Cross-Session Injection (preamble, all skills)
-When a new session starts on a branch with recent artifacts, the preamble
-prints a one-liner: "Last session: implemented JWT auth, 3/5 tasks done.
-Plan: ~/.gstack/projects/$SLUG/checkpoints/latest.md"
+### レイヤ 3: クロスセッション インジェクション (前文、すべてのスキル)
+最近のアーティファクトを含むブランチで新しいセッションが開始されると、プリアンブル
+「最後のセッション: JWT 認証が実装され、3/5 のタスクが完了しました。
+計画: ~/.gstack/projects/$SLUG/checkpoints/latest.md"
 
-The agent knows where you left off before reading any files.
+エージェントは、ファイルを読み取る前にどこから中断したかを認識します。
 
 ### Layer 4: /checkpoint (opt-in skill)
-Manual snapshot of working state: what's being done, files being edited,
+作業状態の手動スナップショット: 何が行われているか、編集中のファイル、
 decisions made, what's remaining. Useful before stepping away, before
-complex operations, for workspace handoffs, or coming back after days.
+複雑な操作、ワークスペースの引き継ぎ、または数日後の復帰など。
 
-### Layer 5: /health (opt-in skill)
-Code quality dashboard: type-check, lint, test suite, dead code scan.
-Composite 0-10 score. Tracks over time. `/retro` shows trends. `/ship`
-gates on configurable threshold.
+### レイヤ 5: /health (オプトイン スキル)
+コード品質ダッシュボード: 型チェック、lint、テスト スイート、デッド コード スキャン。
+総合0-10スコア。時間の経過を追跡します。 `/retro` はトレンドを示します。 `/ship`
+設定可能なしきい値でのゲート。
 
-## The Compounding Effect
+## 複合効果
 
-Each feature is independently useful. Together, they create something
-that compounds:
+各機能は独立して役立ちます。一緒に何かを創り出す
+それは次のことを複合させます：
 
-Session 1: /plan-ceo-review produces a plan. Saved to disk.
-Session 2: Agent reads the plan after preamble. Doesn't re-ask decisions.
-Session 3: /checkpoint saves progress. Timeline shows 2 /review, 1 /ship.
-Session 4: Compaction fires mid-refactor. Agent re-reads the checkpoint.
-           Recovers key decisions, types, remaining work. Continues.
-Session 5: /retro rolls up the week. Health trend: 6/10 → 8/10.
-           Timeline shows 12 skill invocations across 3 branches.
+セッション 1: /plan-ceo-review は計画を作成します。ディスクに保存されました。
+セッション 2: エージェントはプリアンブルの後に計画を読みます。決定を再度尋ねません。
+セッション 3: /checkpoint は進行状況を保存します。タイムラインには 2 /review、1 /ship が表示されます。
+セッション 4: リファクタリング中に圧縮が開始されます。エージェントはチェックポイントを再読み取りします。
+           重要な決定、タイプ、残りの作業を回復します。続けます。
+セッション 5: /retro は週をロールアップします。健康傾向: 6/10 → 8/10。
+           タイムラインには、3 つのブランチにわたる 12 のスキル呼び出しが表示されます。
 
-The project's AI history is no longer ephemeral. It persists, compounds,
-and makes every future session smarter. That's the session intelligence
-layer.
+このプロジェクトの AI の歴史はもはや一時的なものではありません。それは持続し、複合化し、
+今後のすべてのセッションがよりスマートになります。それがセッションインテリジェンスです
+層。
 
-## What This Is Not
+## これは何ではありませんか
 
-- Not a replacement for Claude's built-in compaction (that handles session
-  state; we handle gstack artifacts)
-- Not a full memory system like claude-mem (that handles cross-session
-  memory via SQLite; we handle structured skill artifacts)
-- Not a database or service (just markdown files on disk)
+- Claude の組み込み圧縮 (セッションを処理する) の代替ではありません。
+  状態。 gstack アーティファクトを処理します)
+- claude-mem のような完全なメモリ システムではありません (クロスセッションを処理します)
+  SQLite経由のメモリ。私たちは構造化されたスキルアーティファクトを扱います）
+- データベースやサービスではありません (ディスク上の単なるマークダウン ファイル)
 
-## Research Sources
+## 研究ソース
 
-- [Anthropic: Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
-- [Anthropic: Effective context engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
-- [claude-mem](https://github.com/thedotmack/claude-mem)
-- [Claude HUD](https://github.com/jarrodwatts/claude-hud)
-- [CodeScene: Agentic AI coding best practices](https://codescene.com/blog/agentic-ai-coding-best-practice-patterns-for-speed-with-quality)
-- [Post-compaction recovery via git-persisted state (Beads)](https://dev.to/jeremy_longshore/building-post-compaction-recovery-for-ai-agent-workflows-with-beads-207l)
+- [Anthropic: 長期稼働エージェント向けの効果的なハーネス](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
+- [人間性: 効果的なコンテキスト エンジニアリング](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+- [クロード・メム](https://github.com/thedotmack/claude-mem)
+- [クロードHUD](https://github.com/jarrodwatts/claude-hud)
+- [CodeScene: エージェントティック AI コーディングのベスト プラクティス](https://codescene.com/blog/agentic-ai-coding-best-practice-patterns-for-speed-with-quality)
+- [git-persisted state (Beads) による圧縮後のリカバリ](https://dev.to/jeremy_longshore/building-post-compaction-recovery-for-ai-agent-workflows-with-beads-207l)

@@ -1,63 +1,63 @@
 ---
-name: document-release
-preamble-tier: 2
-version: 1.0.0
-description: |
-  Post-ship documentation update. Reads all project docs, cross-references the
-  diff, updates README/ARCHITECTURE/CONTRIBUTING/CLAUDE.md to match what shipped,
-  polishes CHANGELOG voice, cleans up TODOS, and optionally bumps VERSION. Use when
-  asked to "update the docs", "sync documentation", or "post-ship docs".
-  Proactively suggest after a PR is merged or code is shipped. (gstack)
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Edit
-  - Grep
-  - Glob
-  - AskUserQuestion
+名前: ドキュメントリリース
+プリアンブル層: 2
+バージョン: 1.0.0
+説明: |
+  出荷後のドキュメントの更新。すべてのプロジェクト ドキュメントを読み、相互参照します。
+  diff、出荷されたものと一致するように README/ARCHITECTURE/CONTRIBUTING/CLAUDE.md を更新します。
+  CHANGELOG の音声を磨き、TODOS をクリーンアップし、オプションで VERSION をバンプします。いつ使用しますか
+  「ドキュメントの更新」、「ドキュメントの同期」、または「出荷後のドキュメント」を要求されます。
+  PR がマージされるか、コードが出荷された後、積極的に提案します。 (Gスタック)
+許可されたツール:
+  - バッシュ
+  - 読む
+  - 書く
+  - 編集
+  - グレップ
+  - グロブ
+  - ユーザーに質問する
 ---
 
-{{PREAMBLE}}
+{{前文}}
 
 {{BASE_BRANCH_DETECT}}
 
-# Document Release: Post-Ship Documentation Update
+# ドキュメントリリース: 出荷後のドキュメント更新
 
-You are running the `/document-release` workflow. This runs **after `/ship`** (code committed, PR
-exists or about to exist) but **before the PR merges**. Your job: ensure every documentation file
-in the project is accurate, up to date, and written in a friendly, user-forward voice.
+`/document-release` ワークフローを実行しています。これは **`/ship`** 後に実行されます (コードはコミットされました、PR
+存在する、または存在しようとしている）ただし、**PR がマージされる前**。あなたの仕事: すべてのドキュメント ファイルを保証する
+プロジェクトの内容は正確かつ最新であり、フレンドリーでユーザーの立場に立った声で書かれています。
 
-You are mostly automated. Make obvious factual updates directly. Stop and ask only for risky or
-subjective decisions.
+あなたはほとんど自動化されています。明らかな事実更新を直接行います。立ち止まって、危険なことだけを求めてください。
+主観的な決定。
 
-**Only stop for:**
-- Risky/questionable doc changes (narrative, philosophy, security, removals, large rewrites)
-- VERSION bump decision (if not already bumped)
-- New TODOS items to add
-- Cross-doc contradictions that are narrative (not factual)
+**次の目的でのみ停車します**
+- リスクのある/疑わしいドキュメントの変更 (物語、哲学、セキュリティ、削除、大規模な書き換え)
+- バージョンのバンプ決定 (まだバンプされていない場合)
+- 新しい TODOS アイテムを追加します
+- 物語的な（事実ではない）クロスドキュメントの矛盾
 
-**Never stop for:**
+**決して立ち止まらないでください:**
 - Factual corrections clearly from the diff
 - Adding items to tables/lists
 - Updating paths, counts, version numbers
 - Fixing stale cross-references
 - CHANGELOG voice polish (minor wording adjustments)
-- Marking TODOS complete
+- TODOS を完了としてマークする
 - Cross-doc factual inconsistencies (e.g., version number mismatch)
 
-**NEVER do:**
-- Overwrite, replace, or regenerate CHANGELOG entries — polish wording only, preserve all content
-- Bump VERSION without asking — always use AskUserQuestion for version changes
-- Use `Write` tool on CHANGELOG.md — always use `Edit` with exact `old_string` matches
+**決してしないでください:**
+- CHANGELOG エントリを上書き、置換、または再生成します — 文言のみを磨き、すべてのコンテンツを保持します
+- 質問せずにバージョンをバンプします - バージョンの変更には常に AskUserQuestion を使用します
+- CHANGELOG.md で `Write` ツールを使用します — 常に `old_string` と完全に一致する `Edit` を使用します
 
 ---
 
-## Step 1: Pre-flight & Diff Analysis
+## ステップ 1: プリフライトおよび差分の分析
 
-1. Check the current branch. If on the base branch, **abort**: "You're on the base branch. Run from a feature branch."
+1. 現在のブランチを確認します。 Base ブランチ上の場合、**abort**: 「ベース ブランチ上にいます。機能ブランチから実行します。」
 
-2. Gather context about what changed:
+
 
 ```bash
 git diff <base>...HEAD --stat
@@ -71,210 +71,210 @@ git log <base>..HEAD --oneline
 git diff <base>...HEAD --name-only
 ```
 
-3. Discover all documentation files in the repo:
+3. リポジトリ内のすべてのドキュメント ファイルを検出します。
 
 ```bash
 find . -maxdepth 2 -name "*.md" -not -path "./.git/*" -not -path "./node_modules/*" -not -path "./.gstack/*" -not -path "./.context/*" | sort
 ```
 
-4. Classify the changes into categories relevant to documentation:
-   - **New features** — new files, new commands, new skills, new capabilities
-   - **Changed behavior** — modified services, updated APIs, config changes
-   - **Removed functionality** — deleted files, removed commands
-   - **Infrastructure** — build system, test infrastructure, CI
+4. 変更をドキュメントに関連するカテゴリに分類します。
+   - **新機能** — 新しいファイル、新しいコマンド、新しいスキル、新しい機能
+   - **変更された動作** - 変更されたサービス、更新された API、構成の変更
+   - **削除された機能** — 削除されたファイル、削除されたコマンド
+   - **インフラストラクチャ** — システムの構築、インフラストラクチャのテスト、CI
 
-5. Output a brief summary: "Analyzing N files changed across M commits. Found K documentation files to review."
+5. 簡単な概要を出力します。「M 回のコミットにわたって変更された N ファイルを分析しています。確認する K 個のドキュメント ファイルが見つかりました。」
 
 ---
 
-## Step 2: Per-File Documentation Audit
+## ステップ 2: ファイルごとのドキュメントの監査
 
-Read each documentation file and cross-reference it against the diff. Use these generic heuristics
-(adapt to whatever project you're in — these are not gstack-specific):
+各ドキュメント ファイルを読み、差分と相互参照します。 Use these generic heuristics
+(参加しているプロジェクトに適応します。これらは gstack 固有のものではありません):
 
 **README.md:**
-- Does it describe all features and capabilities visible in the diff?
-- Are install/setup instructions consistent with the changes?
-- Are examples, demos, and usage descriptions still valid?
-- Are troubleshooting steps still accurate?
+- 差分に表示されるすべての機能と機能について説明していますか?
+- インストール/セットアップ手順は変更と一致していますか?
+- 例、デモ、使用法の説明はまだ有効ですか?
+- トラブルシューティングの手順は依然として正確ですか?
 
-**ARCHITECTURE.md:**
-- Do ASCII diagrams and component descriptions match the current code?
-- Are design decisions and "why" explanations still accurate?
-- Be conservative — only update things clearly contradicted by the diff. Architecture docs
-  describe things unlikely to change frequently.
+**アーキテクチャ.md:**
+- ASCII 図とコンポーネントの説明は現在のコードと一致していますか?
+- 設計上の決定と「理由」の説明は依然として正確ですか?
+- 保守的であること — diff と明らかに矛盾するもののみを更新してください。アーキテクチャに関するドキュメント
+  頻繁に変更される可能性が低いものについて説明します。
 
-**CONTRIBUTING.md — New contributor smoke test:**
-- Walk through the setup instructions as if you are a brand new contributor.
-- Are the listed commands accurate? Would each step succeed?
-- Do test tier descriptions match the current test infrastructure?
-- Are workflow descriptions (dev setup, operational learnings, etc.) current?
-- Flag anything that would fail or confuse a first-time contributor.
+**CONTRIBUTING.md — 新しいコントリビューターの煙テスト:**
+- 新しい貢献者であるかのように、セットアップ手順を実行してください。
+- リストされているコマンドは正確ですか?それぞれのステップは成功するでしょうか?
+- テスト層の説明は現在のテスト インフラストラクチャと一致していますか?
+- ワークフローの説明 (開発セットアップ、運用学習など) は最新のものですか?
+- 失敗したり、初めての投稿者を混乱させたりする可能性があるものにはフラグを立ててください。
 
 **CLAUDE.md / project instructions:**
-- Does the project structure section match the actual file tree?
+- プロジェクト構造セクションは実際のファイル ツリーと一致していますか?
 - Are listed commands and scripts accurate?
-- Do build/test instructions match what's in package.json (or equivalent)?
+- ビルド/テスト手順は package.json (または同等のもの) の内容と一致していますか?
 
-**Any other .md files:**
-- Read the file, determine its purpose and audience.
-- Cross-reference against the diff to check if it contradicts anything the file says.
+**その他の .md ファイル:**
+- ファイルを読み、その目的と対象者を決定します。
+- diff に対する相互参照を行い、ファイルの内容と矛盾していないかどうかを確認します。
 
-For each file, classify needed updates as:
+ファイルごとに、必要なアップデートを次のように分類します。
 
-- **Auto-update** — Factual corrections clearly warranted by the diff: adding an item to a
-  table, updating a file path, fixing a count, updating a project structure tree.
-- **Ask user** — Narrative changes, section removal, security model changes, large rewrites
-  (more than ~10 lines in one section), ambiguous relevance, adding entirely new sections.
-
----
-
-## Step 3: Apply Auto-Updates
-
-Make all clear, factual updates directly using the Edit tool.
-
-For each file modified, output a one-line summary describing **what specifically changed** — not
-just "Updated README.md" but "README.md: added /new-skill to skills table, updated skill count
-from 9 to 10."
-
-**Never auto-update:**
-- README introduction or project positioning
-- ARCHITECTURE philosophy or design rationale
-- Security model descriptions
-- Do not remove entire sections from any document
+- **自動更新** — 事実の修正は差分によって明らかに保証されます: アイテムを
+  テーブル、ファイル パスの更新、カウントの修正、プロジェクト構造ツリーの更新。
+- **ユーザーに質問** — 説明の変更、セクションの削除、セキュリティ モデルの変更、大規模な書き換え
+  (1 つのセクションに約 10 行以上)、関連性が曖昧で、まったく新しいセクションが追加されています。
 
 ---
 
-## Step 4: Ask About Risky/Questionable Changes
+## ステップ 3: 自動更新を適用する
 
-For each risky or questionable update identified in Step 2, use AskUserQuestion with:
-- Context: project name, branch, which doc file, what we're reviewing
+編集ツールを直接使用して、明確で事実に基づく更新をすべて行ってください。
+
+変更されたファイルごとに、**具体的に何が変更されたのか** を説明する 1 行の概要を出力します。
+「README.md を更新しました」だけですが、「README.md: /new-skill をスキル テーブルに追加し、スキル数を更新しました」
+9時から10時まで。」
+
+**決して自動更新しないでください:**
+- README の紹介またはプロジェクトの位置付け
+- アーキテクチャの哲学または設計理論的根拠
+- セキュリティモデルの説明
+- ドキュメントからセクション全体を削除しないでください。
+
+---
+
+## ステップ 4: リスクのある/疑わしい変更について尋ねる
+
+ステップ 2 で特定された危険な更新または疑わしい更新ごとに、次のように AskUserQuestion を使用します。
+- コンテキスト: プロジェクト名、ブランチ、どのドキュメント ファイル、レビューしている内容
 - The specific documentation decision
 - `RECOMMENDATION: Choose [X] because [one-line reason]`
 - Options including C) Skip — leave as-is
 
-Apply approved changes immediately after each answer.
+各回答の直後に、承認された変更を適用します。
 
 ---
 
-## Step 5: CHANGELOG Voice Polish
+## ステップ 5: CHANGELOG 音声磨き
 
-**CRITICAL — NEVER CLOBBER CHANGELOG ENTRIES.**
+**重要 — 決して変更ログエントリを上書きしないでください。**
 
-This step polishes voice. It does NOT rewrite, replace, or regenerate CHANGELOG content.
+このステップで声が磨かれます。 CHANGELOG コンテンツを書き換え、置換、または再生成することはありません。
 
-A real incident occurred where an agent replaced existing CHANGELOG entries when it should have
-preserved them. This skill must NEVER do that.
+実際に、エージェントが既存の CHANGELOG エントリを置き換えるべきときに置き換えるというインシデントが発生しました。
+それらを保存しました。このスキルでは決してそんなことをしてはいけません。
 
-**Rules:**
-1. Read the entire CHANGELOG.md first. Understand what is already there.
-2. Only modify wording within existing entries. Never delete, reorder, or replace entries.
-3. Never regenerate a CHANGELOG entry from scratch. The entry was written by `/ship` from the
-   actual diff and commit history. It is the source of truth. You are polishing prose, not
-   rewriting history.
-4. If an entry looks wrong or incomplete, use AskUserQuestion — do NOT silently fix it.
-5. Use Edit tool with exact `old_string` matches — never use Write to overwrite CHANGELOG.md.
+**ルール:**
+1. まず CHANGELOG.md 全体を読みます。すでにそこにあるものを理解します。
+2. 既存のエントリ内の文言のみを変更します。エントリを削除、並べ替え、または置換しないでください。
+3. CHANGELOG エントリを最初から再生成しないでください。このエントリーは、`/ship` によって書かれました。
+   実際の差分とコミット履歴。それは真実の源です。あなたは散文を磨いているのではなく、
+   歴史を書き換える。
+4. エントリが間違っているか不完全であると思われる場合は、AskUserQuestion を使用します。黙って修正しないでください。
+5. `old_string` と完全に一致する編集ツールを使用します。CHANGELOG.md を上書きするために書き込みを使用しないでください。
 
-**If CHANGELOG was not modified in this branch:** skip this step.
+**このブランチで CHANGELOG が変更されていない場合:** このステップをスキップしてください。
 
-**If CHANGELOG was modified in this branch**, review the entry for voice:
+**このブランチで CHANGELOG が変更された場合**、音声のエントリを確認してください。
 
-- **Sell test:** Would a user reading each bullet think "oh nice, I want to try that"? If not,
-  rewrite the wording (not the content).
-- Lead with what the user can now **do** — not implementation details.
-- "You can now..." not "Refactored the..."
-- Flag and rewrite any entry that reads like a commit message.
-- Internal/contributor changes belong in a separate "### For contributors" subsection.
-- Auto-fix minor voice adjustments. Use AskUserQuestion if a rewrite would alter meaning.
-
----
-
-## Step 6: Cross-Doc Consistency & Discoverability Check
-
-After auditing each file individually, do a cross-doc consistency pass:
-
-1. Does the README's feature/capability list match what CLAUDE.md (or project instructions) describes?
-2. Does ARCHITECTURE's component list match CONTRIBUTING's project structure description?
-3. Does CHANGELOG's latest version match the VERSION file?
-4. **Discoverability:** Is every documentation file reachable from README.md or CLAUDE.md? If
-   ARCHITECTURE.md exists but neither README nor CLAUDE.md links to it, flag it. Every doc
-   should be discoverable from one of the two entry-point files.
-5. Flag any contradictions between documents. Auto-fix clear factual inconsistencies (e.g., a
-   version mismatch). Use AskUserQuestion for narrative contradictions.
+- **販売テスト:** 各箇条書きを読んだユーザーは、「ああ、いいな、試してみたい」と思うでしょうか?そうでない場合は、
+  （内容ではなく）文言を書き換えます。
+- 実装の詳細ではなく、ユーザーが現在**できること**を中心に説明します。
+- 「...をリファクタリングしました」ではなく、「...できるようになりました」
+- コミット メッセージのように見えるエントリにフラグを立てて書き換えます。
+- 内部/寄稿者による変更は、別の「### 寄稿者向け」サブセクションに属します。
+- 音声の細かい調整を自動修正します。書き換えによって意味が変わってしまう場合は、AskUserQuestion を使用してください。
 
 ---
 
-## Step 7: TODOS.md Cleanup
+## ステップ 6: ドキュメント間の一貫性と発見可能性のチェック
 
-This is a second pass that complements `/ship`'s Step 5.5. Read `review/TODOS-format.md` (if
-available) for the canonical TODO item format.
+各ファイルを個別に監査した後、クロスドキュメント整合性パスを実行します。
 
-If TODOS.md does not exist, skip this step.
-
-1. **Completed items not yet marked:** Cross-reference the diff against open TODO items. If a
-   TODO is clearly completed by the changes in this branch, move it to the Completed section
-   with `**Completed:** vX.Y.Z.W (YYYY-MM-DD)`. Be conservative — only mark items with clear
-   evidence in the diff.
-
-2. **Items needing description updates:** If a TODO references files or components that were
-   significantly changed, its description may be stale. Use AskUserQuestion to confirm whether
-   the TODO should be updated, completed, or left as-is.
-
-3. **New deferred work:** Check the diff for `TODO`, `FIXME`, `HACK`, and `XXX` comments. For
-   each one that represents meaningful deferred work (not a trivial inline note), use
-   AskUserQuestion to ask whether it should be captured in TODOS.md.
+1. README の機能/機能リストは CLAUDE.md (またはプロジェクト手順) の説明と一致していますか?
+2. ARCHITECTURE のコンポーネント リストは CONTRIBUTING のプロジェクト構造の説明と一致しますか?
+3. CHANGELOG の最新バージョンは VERSION ファイルと一致しますか?
+4. **発見可能性:** すべてのドキュメント ファイルは README.md または CLAUDE.md からアクセス可能ですか?もし
+   ARCHITECTURE.md は存在しますが、README も CLAUDE.md もリンクしていないため、フラグを立ててください。すべてのドキュメント
+   2 つのエントリポイント ファイルのいずれかから検出できる必要があります。
+5. 文書間の矛盾にフラグを立てます。明らかな事実上の矛盾を自動修正します (例:
+   バージョンが一致しません）。物語の矛盾については、AskUserQuestion を使用してください。
 
 ---
 
-## Step 8: VERSION Bump Question
+## ステップ 7: TODOS.md のクリーンアップ
 
-**CRITICAL — NEVER BUMP VERSION WITHOUT ASKING.**
+これは、`/ship` のステップ 5.5 を補完する 2 番目のパスです。 `review/TODOS-format.md` を読んでください (場合
+利用可能) 正規の TODO 項目形式用。
 
-1. **If VERSION does not exist:** Skip silently.
+TODOS.md が存在しない場合は、この手順をスキップしてください。
 
-2. Check if VERSION was already modified on this branch:
+1. **完了済みアイテムはまだマークされていません:** 開いている TODO アイテムとの差分を相互参照します。もし
+   TODO はこのブランチの変更によって明らかに完了しているので、「完了」セクションに移動します。
+   `**Completed:** vX.Y.Z.W (YYYY-MM-DD)` と。控えめに - アイテムにのみクリアマークを付けてください
+   証拠は差分にあります。
+
+2. **説明の更新が必要な項目:** TODO が、以前のファイルまたはコンポーネントを参照している場合。
+   大幅に変更されているため、説明が古くなっている可能性があります。 AskUserQuestion を使用して、
+   TODO は更新するか、完了するか、そのままにしておく必要があります。
+
+3. **新しい保留作業:** `TODO`、`FIXME`、`HACK`、`XXX` コメントの差分を確認します。のために
+   それぞれが意味のある遅延作業 (些細なインライン メモではない) を表す場合は、次を使用します。
+   AskUserQuestion を使用して、TODOS.md にキャプチャするかどうかを尋ねます。
+
+---
+
+## ステップ 8: バージョン バンプの質問
+
+**重要 — 無断でバージョンをバンプしないでください。**
+
+1. **VERSION が存在しない場合:** サイレントにスキップします。
+
+2. このブランチで VERSION がすでに変更されているかどうかを確認します。
 
 ```bash
 git diff <base>...HEAD -- VERSION
 ```
 
-3. **If VERSION was NOT bumped:** Use AskUserQuestion:
-   - RECOMMENDATION: Choose C (Skip) because docs-only changes rarely warrant a version bump
-   - A) Bump PATCH (X.Y.Z+1) — if doc changes ship alongside code changes
-   - B) Bump MINOR (X.Y+1.0) — if this is a significant standalone release
-   - C) Skip — no version bump needed
+3. **バージョンが変更されなかった場合:** AskUserQuestion を使用します:
+   - 推奨: ドキュメントのみの変更でバージョンアップが必要になることはほとんどないため、C (スキップ) を選択します。
+   - A) バンプ PATCH (X.Y.Z+1) — ドキュメントの変更がコードの変更とともに出荷される場合
+   - B) バンプ MINOR (X.Y+1.0) — これが重要なスタンドアロン リリースの場合
+   - C) スキップ — バージョンアップは必要ありません
 
-4. **If VERSION was already bumped:** Do NOT skip silently. Instead, check whether the bump
-   still covers the full scope of changes on this branch:
+4. **VERSION がすでに変更されている場合:** 黙ってスキップしないでください。代わりに、バンプがないかどうかを確認してください。
+   このブランチの変更の全範囲をカバーしています。
 
-   a. Read the CHANGELOG entry for the current VERSION. What features does it describe?
-   b. Read the full diff (`git diff <base>...HEAD --stat` and `git diff <base>...HEAD --name-only`).
-      Are there significant changes (new features, new skills, new commands, major refactors)
-      that are NOT mentioned in the CHANGELOG entry for the current version?
-   c. **If the CHANGELOG entry covers everything:** Skip — output "VERSION: Already bumped to
-      vX.Y.Z, covers all changes."
-   d. **If there are significant uncovered changes:** Use AskUserQuestion explaining what the
-      current version covers vs what's new, and ask:
-      - RECOMMENDATION: Choose A because the new changes warrant their own version
-      - A) Bump to next patch (X.Y.Z+1) — give the new changes their own version
-      - B) Keep current version — add new changes to the existing CHANGELOG entry
-      - C) Skip — leave version as-is, handle later
+ａ．現在のバージョンの CHANGELOG エントリを読み取ります。どのような機能が説明されていますか?
+   b.完全な差分 (`git diff <base>...HEAD --stat` および `git diff <base>...HEAD --name-only`) を読んでください。
+      重大な変更はありますか (新機能、新しいスキル、新しいコマンド、主要なリファクタリング)
+      現在のバージョンの CHANGELOG エントリに記載されていないものは何ですか?
+   c. **CHANGELOG エントリがすべてをカバーしている場合:** スキップ — 出力「VERSION: Already budd to」
+      vX.Y.Z はすべての変更をカバーします。」
+   d. **明らかになっていない重要な変更がある場合:** AskUserQuestion を使用して、変更内容を説明します。
+      現在のバージョンのカバーと新機能を比較して、次のように尋ねます。
+      - 推奨: 新しい変更には独自のバージョンが保証されるため、A を選択します。
+      - A) 次のパッチ (X.Y.Z+1) にバンプ — 新しい変更に独自のバージョンを与える
+      - B) 現在のバージョンを維持する — 既存の CHANGELOG エントリに新しい変更を追加します
+      - C) スキップ — バージョンをそのままにし、後で処理します
 
-   The key insight: a VERSION bump set for "feature A" should not silently absorb "feature B"
-   if feature B is substantial enough to deserve its own version entry.
+重要な洞察: 「機能 A」に設定されたバージョン バンプは、「機能 B」を黙って吸収すべきではありません
+   機能 B が独自のバージョン エントリに値するほど十分に充実している場合。
 
 ---
 
-## Step 9: Commit & Output
+## ステップ 9: コミットと出力
 
-**Empty check first:** Run `git status` (never use `-uall`). If no documentation files were
-modified by any previous step, output "All documentation is up to date." and exit without
-committing.
+**最初にチェックを空にしてください:** `git status` を実行します (`-uall` は決して使用しないでください)。ドキュメント ファイルが存在しない場合
+前の手順で変更した場合、「すべてのドキュメントは最新です。」と出力されます。そして何もせずに終了します
+コミットしている。
 
-**Commit:**
+**専念：**
 
-1. Stage modified documentation files by name (never `git add -A` or `git add .`).
-2. Create a single commit:
+1. 変更されたドキュメント ファイルを名前でステージングします (「`git add -A`」や「`git add .`」は使用しないでください)。
+2. 単一のコミットを作成します。
 
 ```bash
 git commit -m "$(cat <<'EOF'
@@ -285,42 +285,42 @@ EOF
 )"
 ```
 
-3. Push to the current branch:
+3. 現在のブランチにプッシュします。
 
 ```bash
 git push
 ```
 
-**PR/MR body update (idempotent, race-safe):**
 
-1. Read the existing PR/MR body into a PID-unique tempfile (use the platform detected in Step 0):
 
-**If GitHub:**
+1. 既存の PR/MR ボディを PID 固有の一時ファイルに読み取ります (ステップ 0 で検出されたプラットフォームを使用します)。
+
+**GitHub の場合:**
 ```bash
 gh pr view --json body -q .body > /tmp/gstack-pr-body-$$.md
 ```
 
-**If GitLab:**
+**GitLab の場合:**
 ```bash
 glab mr view -F json 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin).get('description',''))" > /tmp/gstack-pr-body-$$.md
 ```
 
-2. If the tempfile already contains a `## Documentation` section, replace that section with the
-   updated content. If it does not contain one, append a `## Documentation` section at the end.
+2. 一時ファイルにすでに `## Documentation` セクションが含まれている場合は、そのセクションを
+   更新されたコンテンツ。含まれていない場合は、最後に `## Documentation` セクションを追加します。
 
-3. The Documentation section should include a **doc diff preview** — for each file modified,
-   describe what specifically changed (e.g., "README.md: added /document-release to skills
-   table, updated skill count from 9 to 10").
+3. ドキュメント セクションには、変更されたファイルごとに **ドキュメントの差分プレビュー** が含まれている必要があります。
+   具体的に何が変更されたかを説明します (例: 「README.md: /document-release をスキルに追加しました)」
+   表、スキル数を 9 から 10 に更新)。
 
-4. Write the updated body back:
+4. 更新された本文を書き戻します。
 
-**If GitHub:**
+**GitHub の場合:**
 ```bash
 gh pr edit --body-file /tmp/gstack-pr-body-$$.md
 ```
 
-**If GitLab:**
-Read the contents of `/tmp/gstack-pr-body-$$.md` using the Read tool, then pass it to `glab mr update` using a heredoc to avoid shell metacharacter issues:
+**GitLab の場合:**
+読み取りツールを使用して `/tmp/gstack-pr-body-$$.md` の内容を読み取り、ヒアドキュメントを使用してそれを `glab mr update` に渡し、シェルのメタキャラクターの問題を回避します。
 ```bash
 glab mr update -d "$(cat <<'MRBODY'
 <paste the file contents here>
@@ -328,19 +328,19 @@ MRBODY
 )"
 ```
 
-5. Clean up the tempfile:
+5. 一時ファイルをクリーンアップします。
 
 ```bash
 rm -f /tmp/gstack-pr-body-$$.md
 ```
 
-6. If `gh pr view` / `glab mr view` fails (no PR/MR exists): skip with message "No PR/MR found — skipping body update."
-7. If `gh pr edit` / `glab mr update` fails: warn "Could not update PR/MR body — documentation changes are in the
-   commit." and continue.
+6. `gh pr view` / `glab mr view` が失敗した場合 (PR/MR が存在しない): 「PR/MR が見つかりません — ボディの更新をスキップしています。」というメッセージが表示されてスキップします。
+7. `gh pr edit` / `glab mr update` が失敗した場合: 警告「PR/MR 本文を更新できませんでした — ドキュメントの変更は
+   コミットしてください。」そして続けます。
 
-**Structured doc health summary (final output):**
+**構造化されたドキュメントの健全性の概要 (最終出力):**
 
-Output a scannable summary showing every documentation file's status:
+すべてのドキュメント ファイルのステータスを示すスキャン可能な概要を出力します。
 
 ```
 Documentation health:
@@ -352,23 +352,23 @@ Documentation health:
   VERSION         [status] ([details])
 ```
 
-Where status is one of:
-- Updated — with description of what changed
-- Current — no changes needed
-- Voice polished — wording adjusted
-- Not bumped — user chose to skip
-- Already bumped — version was set by /ship
-- Skipped — file does not exist
+ここで、status は次のいずれかです。
+- 更新 — 変更内容の説明付き
+- 現在 — 変更は必要ありません
+- 声を磨き、言葉遣いを調整
+- バンプされません - ユーザーがスキップすることを選択しました
+- すでにバンプされています — バージョンは /ship によって設定されました
+- スキップ — ファイルが存在しません
 
 ---
 
-## Important Rules
+## 重要なルール
 
-- **Read before editing.** Always read the full content of a file before modifying it.
-- **Never clobber CHANGELOG.** Polish wording only. Never delete, replace, or regenerate entries.
-- **Never bump VERSION silently.** Always ask. Even if already bumped, check whether it covers the full scope of changes.
-- **Be explicit about what changed.** Every edit gets a one-line summary.
-- **Generic heuristics, not project-specific.** The audit checks work on any repo.
-- **Discoverability matters.** Every doc file should be reachable from README or CLAUDE.md.
-- **Voice: friendly, user-forward, not obscure.** Write like you're explaining to a smart person
-  who hasn't seen the code.
+- **編集する前に読んでください。** ファイルを変更する前に、必ずファイルの内容全体を読んでください。
+- **CHANGELOG を決して破壊しないでください。** ポーランド語のみ。エントリを削除、置換、または再生成しないでください。
+- **黙って VERSION を変更しないでください。** 常に尋ねてください。すでに変更されている場合でも、変更の範囲をすべてカバーしているかどうかを確認してください。
+- **何が変更されたのかを明確にしてください。** すべての編集には 1 行の概要が表示されます。
+- **プロジェクト固有ではなく、一般的なヒューリスティックです。** 監査チェックはどのリポジトリでも機能します。
+- **発見しやすさが重要です。** すべての doc ファイルは README または CLAUDE.md からアクセスできる必要があります。
+- **音声: フレンドリーで、ユーザーのことを考え、曖昧ではありません。** 賢い人に説明しているように書きます。
+  コードを見たことがない人。

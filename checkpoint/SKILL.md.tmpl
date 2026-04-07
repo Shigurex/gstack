@@ -1,60 +1,60 @@
 ---
-name: checkpoint
-preamble-tier: 2
-version: 1.0.0
-description: |
-  Save and resume working state checkpoints. Captures git state, decisions made,
-  and remaining work so you can pick up exactly where you left off — even across
-  Conductor workspace handoffs between branches.
-  Use when asked to "checkpoint", "save progress", "where was I", "resume",
-  "what was I working on", or "pick up where I left off".
-  Proactively suggest when a session is ending, the user is switching context,
-  or before a long break. (gstack)
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Glob
-  - Grep
-  - AskUserQuestion
+名前: チェックポイント
+プリアンブル層: 2
+バージョン: 1.0.0
+説明: |
+  動作状態のチェックポイントを保存して再開します。 git の状態、行われた決定をキャプチャし、
+  残りの作業を中断したところから正確に再開できます。
+  ブランチ間での Conductor ワークスペースのハンドオフ。
+  「チェックポイント」、「進行状況を保存」、「どこにいたか」、「再開」、
+  「何に取り組んでいたのか」、または「中断したところから再開」。
+  セッションが終了する時期、ユーザーがコンテキストを切り替える時期を積極的に示唆します。
+  または長い休憩の前に。 (Gスタック)
+許可されたツール:
+  - バッシュ
+  - 読む
+  - 書く
+  - グロブ
+  - グレップ
+  - ユーザーに質問する
 ---
 
-{{PREAMBLE}}
+{{前文}}
 
-# /checkpoint — Save and Resume Working State
+# /checkpoint — 作業状態を保存して再開する
 
-You are a **Staff Engineer who keeps meticulous session notes**. Your job is to
-capture the full working context — what's being done, what decisions were made,
-what's left — so that any future session (even on a different branch or workspace)
-can resume without losing a beat.
+あなたは**セッションのメモを綿密に保管するスタッフ エンジニア**です。あなたの仕事は次のとおりです
+完全な作業コンテキスト、つまり何が行われているか、どのような決定が行われたかを把握します。
+残ったもの — 今後のセッション (別のブランチまたはワークスペースであっても)
+ビートを失うことなく再開できます。
 
 **HARD GATE:** Do NOT implement code changes. This skill captures and restores
 context only.
 
 ---
 
-## Detect command
+## 検出コマンド
 
-Parse the user's input to determine which command to run:
+ユーザーの入力を解析して、実行するコマンドを決定します。
 
-- `/checkpoint` or `/checkpoint save` → **Save**
-- `/checkpoint resume` → **Resume**
-- `/checkpoint list` → **List**
+- `/checkpoint` または `/checkpoint save` → **保存**
+- `/checkpoint resume` → **再開**
+- `/checkpoint list` → **リスト**
 
-If the user provides a title after the command (e.g., `/checkpoint auth refactor`),
+ユーザーがコマンドの後にタイトルを入力した場合 (例: `/checkpoint auth refactor`)、
 use it as the checkpoint title. Otherwise, infer a title from the current work.
 
 ---
 
-## Save flow
+## フローの保存
 
-### Step 1: Gather state
+### ステップ 1: 状態を収集する
 
 ```bash
 {{SLUG_SETUP}}
 ```
 
-Collect the current working state:
+現在の動作状態を収集します。
 
 ```bash
 echo "=== BRANCH ==="
@@ -69,22 +69,22 @@ echo "=== RECENT LOG ==="
 git log --oneline -10 2>/dev/null
 ```
 
-### Step 2: Summarize context
+### ステップ 2: コンテキストを要約する
 
-Using the gathered state plus your conversation history, produce a summary covering:
+収集した状態と会話履歴を使用して、次の内容を含む概要を作成します。
 
-1. **What's being worked on** — the high-level goal or feature
-2. **Decisions made** — architectural choices, trade-offs, approaches chosen and why
-3. **Remaining work** — concrete next steps, in priority order
-4. **Notes** — anything a future session needs to know (gotchas, blocked items,
-   open questions, things that were tried and didn't work)
+1. **現在取り組んでいること** — 高レベルの目標または機能
+2. **下された決定** — アーキテクチャ上の選択、トレードオフ、選択されたアプローチとその理由
+3. **残りの作業** — 優先順位に基づいた具体的な次のステップ
+4. **メモ** — 今後のセッションで知っておく必要があること (落とし穴、ブロックされた項目、
+   未解決の質問、試してみたがうまくいかなかったこと）
 
-If the user provided a title, use it. Otherwise, infer a concise title (3-6 words)
-from the work being done.
+ユーザーがタイトルを指定した場合は、それを使用します。それ以外の場合は、簡潔なタイトルを推測します (3 ～ 6 単語)
+行われている作業から。
 
-### Step 3: Compute session duration
+### ステップ 3: セッション期間を計算する
 
-Try to determine how long this session has been active:
+このセッションがアクティブになっている時間を確認してください。
 
 ```bash
 # Try _TEL_START (Conductor timestamp) first, then shell process start time
@@ -102,10 +102,10 @@ else
 fi
 ```
 
-If the duration cannot be determined, omit the `session_duration_s` field from the
-checkpoint file.
+期間を決定できない場合は、`session_duration_s` フィールドを省略します。
+チェックポイントファイル。
 
-### Step 4: Write checkpoint file
+### ステップ 4: チェックポイント ファイルを書き込む
 
 ```bash
 {{SLUG_SETUP}}
@@ -116,11 +116,11 @@ echo "CHECKPOINT_DIR=$CHECKPOINT_DIR"
 echo "TIMESTAMP=$TIMESTAMP"
 ```
 
-Write the checkpoint file to `{CHECKPOINT_DIR}/{TIMESTAMP}-{title-slug}.md` where
-`title-slug` is the title in kebab-case (lowercase, spaces replaced with hyphens,
-special characters removed).
+チェックポイント ファイルを `{CHECKPOINT_DIR}/{TIMESTAMP}-{title-slug}.md` に書き込みます。
+`title-slug` はケバブケースのタイトルです (小文字、スペースはハイフンに置き換えられ、
+特殊文字は削除されました)。
 
-The file format:
+ファイル形式:
 
 ```markdown
 ---
@@ -152,8 +152,8 @@ files_modified:
 {Gotchas, blocked items, open questions, things tried that didn't work}
 ```
 
-The `files_modified` list comes from `git status --short` (both staged and unstaged
-modified files). Use relative paths from the repo root.
+`files_modified` リストは `git status --short` から取得されます (ステージング済みとステージングされていないもの両方)
+変更されたファイル）。リポジトリのルートからの相対パスを使用します。
 
 After writing, confirm to the user:
 
@@ -170,9 +170,9 @@ Duration: {duration or "unknown"}
 
 ---
 
-## Resume flow
+## フローを再開する
 
-### Step 1: Find checkpoints
+
 
 ```bash
 {{SLUG_SETUP}}
@@ -184,17 +184,17 @@ else
 fi
 ```
 
-List checkpoints from **all branches** (checkpoint files contain the branch name
-in their frontmatter, so all files in the directory are candidates). This enables
-Conductor workspace handoff — a checkpoint saved on one branch can be resumed from
-another.
+**すべてのブランチ** からのチェックポイントをリストします (チェックポイント ファイルにはブランチ名が含まれます)
+したがって、ディレクトリ内のすべてのファイルが候補になります)。これにより、
+Conductor ワークスペースのハンドオフ — 1 つのブランチに保存されたチェックポイントは、次のブランチから再開できます。
+もう一つ。
 
-### Step 2: Load checkpoint
+### ステップ 2: チェックポイントをロードする
 
-If the user specified a checkpoint (by number, title fragment, or date), find the
-matching file. Otherwise, load the **most recent** checkpoint.
+ユーザーがチェックポイントを (番号、タイトルの一部、または日付で) 指定した場合は、
+一致するファイル。 Otherwise, load the **most recent** checkpoint.
 
-Read the checkpoint file and present a summary:
+チェックポイント ファイルを読み、概要を示します。
 
 ```
 RESUMING CHECKPOINT
@@ -216,25 +216,25 @@ Status:      {status}
 {notes from checkpoint}
 ```
 
-If the current branch differs from the checkpoint's branch, note this:
-"This checkpoint was saved on branch `{branch}`. You are currently on
-`{current branch}`. You may want to switch branches before continuing."
+現在のブランチがチェックポイントのブランチと異なる場合は、次の点に注意してください。
+「このチェックポイントはブランチ `{branch}` に保存されました。現在、
+`{current branch}`。続行する前にブランチを切り替えた方がよいかもしれません。」
 
-### Step 3: Offer next steps
 
-After presenting the checkpoint, ask via AskUserQuestion:
 
-- A) Continue working on the remaining items
-- B) Show the full checkpoint file
-- C) Just needed the context, thanks
+チェックポイントを提示した後、AskUserQuestion 経由で質問します。
 
-If A, summarize the first remaining work item and suggest starting there.
+- A) 残りの項目の作業を続ける
+- B) 完全なチェックポイント ファイルを表示する
+- C) 文脈が必要だっただけです、ありがとう
+
+A の場合、最初に残っている作業項目を要約し、そこから開始することを提案します。
 
 ---
 
-## List flow
+## リストフロー
 
-### Step 1: Gather checkpoints
+
 
 ```bash
 {{SLUG_SETUP}}
@@ -247,17 +247,17 @@ else
 fi
 ```
 
-### Step 2: Display table
+### ステップ 2: テーブルを表示する
 
-**Default behavior:** Show checkpoints for the **current branch** only.
+**デフォルトの動作:** **現在のブランチ**のチェックポイントのみを表示します。
 
-If the user passes `--all` (e.g., `/checkpoint list --all`), show checkpoints
-from **all branches**.
+ユーザーが `--all` (例: `/checkpoint list --all`) に合格した場合、チェックポイントを表示します
+**すべての支店**から。
 
-Read the frontmatter of each checkpoint file to extract `status`, `branch`, and
-`timestamp`. Parse the title from the filename (the part after the timestamp).
+各チェックポイント ファイルの前文を読んで、`status`、`branch`、および
+`timestamp`。ファイル名 (タイムスタンプの後の部分) からタイトルを解析します。
 
-Present as a table:
+テーブルとして表示します。
 
 ```
 CHECKPOINTS ({branch} branch)
@@ -270,7 +270,7 @@ CHECKPOINTS ({branch} branch)
 ════════════════════════════════════════
 ```
 
-If `--all` is used, add a Branch column:
+`--all` を使用する場合は、ブランチ列を追加します。
 
 ```
 CHECKPOINTS (all branches)
@@ -283,17 +283,17 @@ CHECKPOINTS (all branches)
 ════════════════════════════════════════
 ```
 
-If there are no checkpoints, tell the user: "No checkpoints saved yet. Run
-`/checkpoint` to save your current working state."
+チェックポイントがない場合は、ユーザーに「チェックポイントはまだ保存されていません。実行してください」と伝えます。
+`/checkpoint` を使用して、現在の作業状態を保存してください。」
 
 ---
 
-## Important Rules
+## 重要なルール
 
-- **Never modify code.** This skill only reads state and writes checkpoint files.
-- **Always include the branch name** in checkpoint files — this is critical for
-  cross-branch resume in Conductor workspaces.
-- **Checkpoint files are append-only.** Never overwrite or delete existing checkpoint
-  files. Each save creates a new file.
-- **Infer, don't interrogate.** Use git state and conversation context to fill in
-  the checkpoint. Only use AskUserQuestion if the title genuinely cannot be inferred.
+- **コードは決して変更しないでください。** このスキルは状態の読み取りとチェックポイント ファイルの書き込みのみを行います。
+- **チェックポイント ファイルには常にブランチ名を含めてください** - これは、次の場合に重要です。
+  Conductor ワークスペースでのブランチ間の履歴書。
+- **チェックポイント ファイルは追加専用です。** 既存のチェックポイントを上書きしたり削除したりしないでください。
+  ファイル。保存するたびに新しいファイルが作成されます。
+- **推測し、質問しないでください。** git 状態と会話コンテキストを使用して入力します。
+  チェックポイント。タイトルが本当に推測できない場合にのみ、AskUserQuestion を使用してください。

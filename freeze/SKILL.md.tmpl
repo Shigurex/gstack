@@ -1,57 +1,57 @@
 ---
-name: freeze
-version: 0.1.0
-description: |
-  Restrict file edits to a specific directory for the session. Blocks Edit and
+名前：フリーズ
+バージョン: 0.1.0
+説明: |
+  セッション中のファイル編集を特定のディレクトリに制限します。ブロック編集と
   Write outside the allowed path. Use when debugging to prevent accidentally
-  "fixing" unrelated code, or when you want to scope changes to one module.
-  Use when asked to "freeze", "restrict edits", "only edit this folder",
-  or "lock down edits". (gstack)
-allowed-tools:
-  - Bash
-  - Read
-  - AskUserQuestion
-hooks:
-  PreToolUse:
-    - matcher: "Edit"
-      hooks:
-        - type: command
-          command: "bash ${CLAUDE_SKILL_DIR}/bin/check-freeze.sh"
-          statusMessage: "Checking freeze boundary..."
-    - matcher: "Write"
-      hooks:
-        - type: command
-          command: "bash ${CLAUDE_SKILL_DIR}/bin/check-freeze.sh"
-          statusMessage: "Checking freeze boundary..."
-sensitive: true
+  無関係なコードを「修正」する場合、または変更の範囲を 1 つのモジュールに限定したい場合。
+  「凍結」、「編集を制限」、「このフォルダのみを編集」を要求された場合に使用します。
+  または「編集をロックダウン」します。 (Gスタック)
+許可されたツール:
+  - バッシュ
+  - 読む
+  - ユーザーに質問する
+フック:
+  プレツールの使用:
+    - マッチャー: "編集"
+      フック:
+        - タイプ: コマンド
+          コマンド: 「bash ${CLAUDE_SKILL_DIR}/bin/check-freeze.sh」
+          statusMessage: "フリーズ境界をチェックしています..."
+    - マッチャー: "書き込み"
+      フック:
+        - タイプ: コマンド
+          コマンド: 「bash ${CLAUDE_SKILL_DIR}/bin/check-freeze.sh」
+          statusMessage: "フリーズ境界をチェックしています..."
+センシティブ: true
 ---
 
-# /freeze — Restrict Edits to a Directory
+# /freeze — 編集をディレクトリに制限する
 
-Lock file edits to a specific directory. Any Edit or Write operation targeting
-a file outside the allowed path will be **blocked** (not just warned).
+ファイル編集を特定のディレクトリにロックします。任意の編集または書き込み操作を対象とする
+許可されたパスの外にあるファイルは**ブロック**されます(警告されるだけではありません)。
 
 ```bash
 mkdir -p ~/.gstack/analytics
 echo '{"skill":"freeze","ts":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'","repo":"'$(basename "$(git rev-parse --show-toplevel 2>/dev/null)" 2>/dev/null || echo "unknown")'"}'  >> ~/.gstack/analytics/skill-usage.jsonl 2>/dev/null || true
 ```
 
-## Setup
+＃＃ 設定
 
-Ask the user which directory to restrict edits to. Use AskUserQuestion:
+どのディレクトリに編集を制限するかをユーザーに尋ねます。 AskUserQuestion を使用します。
 
-- Question: "Which directory should I restrict edits to? Files outside this path will be blocked from editing."
-- Text input (not multiple choice) — the user types a path.
+- 質問: 「編集をどのディレクトリに制限すればよいですか? このパスの外にあるファイルは編集がブロックされます。」
+- テキスト入力 (複数選択ではない) - ユーザーがパスを入力します。
 
-Once the user provides a directory path:
+ユーザーがディレクトリ パスを指定したら、次のようにします。
 
-1. Resolve it to an absolute path:
+1. 絶対パスに解決します。
 ```bash
 FREEZE_DIR=$(cd "<user-provided-path>" 2>/dev/null && pwd)
 echo "$FREEZE_DIR"
 ```
 
-2. Ensure trailing slash and save to the freeze state file:
+2. 末尾のスラッシュを確認し、フリーズ状態ファイルに保存します。
 ```bash
 FREEZE_DIR="${FREEZE_DIR%/}/"
 STATE_DIR="${CLAUDE_PLUGIN_DATA:-$HOME/.gstack}"
@@ -60,22 +60,22 @@ echo "$FREEZE_DIR" > "$STATE_DIR/freeze-dir.txt"
 echo "Freeze boundary set: $FREEZE_DIR"
 ```
 
-Tell the user: "Edits are now restricted to `<path>/`. Any Edit or Write
-outside this directory will be blocked. To change the boundary, run `/freeze`
-again. To remove it, run `/unfreeze` or end the session."
+ユーザーに次のように伝えます。「現在、編集は `<path>/` に制限されています。任意の編集または書き込み
+このディレクトリの外ではブロックされます。境界を変更するには、`/freeze` を実行します。
+またまた。これを削除するには、`/unfreeze` を実行するか、セッションを終了してください。」
 
-## How it works
+## 仕組み
 
-The hook reads `file_path` from the Edit/Write tool input JSON, then checks
-whether the path starts with the freeze directory. If not, it returns
-`permissionDecision: "deny"` to block the operation.
+フックは、編集/書き込みツールの入力 JSON から `file_path` を読み取り、チェックします
+パスがフリーズ ディレクトリで始まるかどうか。そうでない場合は戻ります
+`permissionDecision: "deny"` を使用して操作をブロックします。
 
-The freeze boundary persists for the session via the state file. The hook
-script reads it on every Edit/Write invocation.
+フリーズ境界は、状態ファイルを介してセッションの間持続します。フック
+スクリプトは編集/書き込みの呼び出しごとにそれを読み取ります。
 
-## Notes
+## 注意事項
 
-- The trailing `/` on the freeze directory prevents `/src` from matching `/src-old`
-- Freeze applies to Edit and Write tools only — Read, Bash, Glob, Grep are unaffected
-- This prevents accidental edits, not a security boundary — Bash commands like `sed` can still modify files outside the boundary
-- To deactivate, run `/unfreeze` or end the conversation
+- フリーズ ディレクトリの末尾 `/` により、`/src` が `/src-old` と一致しなくなります
+- フリーズは編集ツールと書き込みツールにのみ適用されます。読み取り、Bash、Glob、Grep は影響を受けません。
+- これにより、セキュリティ境界ではなく、誤った編集が防止されます — `sed` などの Bash コマンドは、境界外のファイルを変更する可能性があります
+- 無効にするには、`/unfreeze` を実行するか、会話を終了します

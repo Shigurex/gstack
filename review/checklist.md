@@ -1,18 +1,18 @@
-# Pre-Landing Review Checklist
+# 着陸前レビューチェックリスト
 
-## Instructions
+＃＃ 説明書
 
-Review the `git diff origin/main` output for the issues listed below. Be specific — cite `file:line` and suggest fixes. Skip anything that's fine. Only flag real problems.
+以下にリストされている問題については、`git diff origin/main` 出力を確認してください。具体的にしてください — `file:line` を引用し、修正を提案してください。 Skip anything that's fine.実際の問題にのみフラグを立ててください。
 
-**Two-pass review:**
-- **Pass 1 (CRITICAL):** Run SQL & Data Safety, Race Conditions, LLM Output Trust Boundary, Shell Injection, and Enum Completeness first. Highest severity.
-- **Pass 2 (INFORMATIONAL):** Run remaining categories below. Lower severity but still actioned.
-- **Specialist categories (handled by parallel subagents, NOT this checklist):** Test Gaps, Dead Code, Magic Numbers, Conditional Side Effects, Performance & Bundle Impact, Crypto & Entropy. See `review/specialists/` for these.
+**2 パス レビュー:**
+- **パス 1 (クリティカル):** SQL とデータ セーフティ、競合状態、LLM 出力信頼境界、シェル インジェクション、列挙完全性を最初に実行します。 Highest severity.
+- **パス 2 (情報):** 以下の残りのカテゴリを実行します。 Lower severity but still actioned.
+- **専門カテゴリ (このチェックリストではなく、並行サブエージェントによって処理されます):** テスト ギャップ、デッド コード、マジック ナンバー、条件付き副作用、パフォーマンスとバンドルの影響、暗号とエントロピー。 See `review/specialists/` for these.
 
-All findings get action via Fix-First Review: obvious mechanical fixes are applied automatically,
-genuinely ambiguous issues are batched into a single user question.
+すべての発見事項は、Fix-First Review を通じてアクションを取得します。明らかな機械的な修正は自動的に適用されます。
+本当にあいまいな問題は 1 つのユーザーの質問にまとめられます。
 
-**Output format:**
+**出力形式:**
 
 ```
 Pre-Landing Review: N issues (X critical, Y informational)
@@ -25,101 +25,101 @@ Pre-Landing Review: N issues (X critical, Y informational)
   Recommended fix: suggested fix
 ```
 
-If no issues found: `Pre-Landing Review: No issues found.`
 
-Be terse. For each issue: one line describing the problem, one line with the fix. No preamble, no summaries, no "looks good overall."
+
+簡潔に。問題ごとに、1 行で問題を説明し、1 行で修正を説明します。前置きも要約も、「全体的には良く見える」もありません。
 
 ---
 
-## Review Categories
+## レビュー カテゴリ
 
-### Pass 1 — CRITICAL
+### パス 1 — クリティカル
 
-#### SQL & Data Safety
-- String interpolation in SQL (even if values are `.to_i`/`.to_f` — use parameterized queries (Rails: sanitize_sql_array/Arel; Node: prepared statements; Python: parameterized queries))
-- TOCTOU races: check-then-set patterns that should be atomic `WHERE` + `update_all`
-- Bypassing model validations for direct DB writes (Rails: update_column; Django: QuerySet.update(); Prisma: raw queries)
-- N+1 queries: Missing eager loading (Rails: .includes(); SQLAlchemy: joinedload(); Prisma: include) for associations used in loops/views
+#### SQL とデータの安全性
+- SQL での文字列補間 (値が `.to_i`/`.to_f` であっても — パラメーター化されたクエリを使用します (Rails: sanitize_sql_array/Arel、Node: 準備されたステートメント、Python: パラメーター化されたクエリ))
+- TOCTOU レース: アトミックである必要があるパターンをチェックしてから設定します `WHERE` + `update_all`
+- DB への直接書き込みのモデル検証をバイパスします (Rails: update_column; Django: QuerySet.update(); Prisma: raw クエリ)
+- N+1 クエリ: ループ/ビューで使用される関連付けの積極的な読み込み (Rails: .includes(); SQLAlchemy:joinload(); Prisma: include) が欠落しています
 
-#### Race Conditions & Concurrency
-- Read-check-write without uniqueness constraint or catch duplicate key error and retry (e.g., `where(hash:).first` then `save!` without handling concurrent insert)
-- find-or-create without unique DB index — concurrent calls can create duplicates
-- Status transitions that don't use atomic `WHERE old_status = ? UPDATE SET new_status` — concurrent updates can skip or double-apply transitions
-- Unsafe HTML rendering (Rails: .html_safe/raw(); React: dangerouslySetInnerHTML; Vue: v-html; Django: |safe/mark_safe) on user-controlled data (XSS)
+#### 競合状態と同時実行性
+- 一意性制約なしの読み取り-チェック-書き込み、または重複キーエラーをキャッチして再試行 (例: 同時挿入を処理せずに `where(hash:).first` の次に `save!` )
+- 一意の DB インデックスを使用しない検索または作成 - 同時呼び出しにより重複が作成される可能性があります
+- アトミック `WHERE old_status = ? UPDATE SET new_status` を使用しないステータス遷移 — 同時更新により遷移をスキップまたは二重適用できる
+- ユーザー制御データ (XSS) 上の安全でない HTML レンダリング (Rails: .html_safe/raw(); React: darklySetInnerHTML; Vue: v-html; Django: |safe/mark_safe)
 
-#### LLM Output Trust Boundary
-- LLM-generated values (emails, URLs, names) written to DB or passed to mailers without format validation. Add lightweight guards (`EMAIL_REGEXP`, `URI.parse`, `.strip`) before persisting.
-- Structured tool output (arrays, hashes) accepted without type/shape checks before database writes.
-- LLM-generated URLs fetched without allowlist — SSRF risk if URL points to internal network (Python: `urllib.parse.urlparse` → check hostname against blocklist before `requests.get`/`httpx.get`)
-- LLM output stored in knowledge bases or vector DBs without sanitization — stored prompt injection risk
+#### LLM 出力の信頼境界
+- LLM によって生成された値 (電子メール、URL、名前) が DB に書き込まれるか、形式検証なしでメーラーに渡されます。永続化する前に、軽量ガード (`EMAIL_REGEXP`、`URI.parse`、`.strip`) を追加します。
+- 構造化ツール出力 (配列、ハッシュ) は、データベース書き込み前の型/形状チェックなしで受け入れられます。
+- ホワイトリストなしで取得された LLM 生成の URL — URL が内部ネットワークを指している場合、SSRF リスクが発生します (Python: `urllib.parse.urlparse` → `requests.get`/`httpx.get` の前にホスト名をブロックリストと照合してください)
+- LLM 出力はサニタイズなしでナレッジ ベースまたはベクター DB に保存されます - 保存されたプロンプト インジェクションのリスク
 
-#### Shell Injection (Python-specific)
-- `subprocess.run()` / `subprocess.call()` / `subprocess.Popen()` with `shell=True` AND f-string/`.format()` interpolation in the command string — use argument arrays instead
-- `os.system()` with variable interpolation — replace with `subprocess.run()` using argument arrays
-- `eval()` / `exec()` on LLM-generated code without sandboxing
+#### シェル インジェクション (Python 固有)
+- コマンド文字列内の `subprocess.run()` / `subprocess.call()` / `subprocess.Popen()` と `shell=True` および f-string/`.format()` 補間 — 代わりに引数配列を使用します
+- 変数補間を使用した `os.system()` — 引数配列を使用して `subprocess.run()` に置き換えます
+- サンドボックスなしの LLM 生成コードの `eval()` / `exec()`
 
-#### Enum & Value Completeness
-When the diff introduces a new enum value, status string, tier name, or type constant:
-- **Trace it through every consumer.** Read (don't just grep — READ) each file that switches on, filters by, or displays that value. If any consumer doesn't handle the new value, flag it. Common miss: adding a value to the frontend dropdown but the backend model/compute method doesn't persist it.
-- **Check allowlists/filter arrays.** Search for arrays or `%w[]` lists containing sibling values (e.g., if adding "revise" to tiers, find every `%w[quick lfg mega]` and verify "revise" is included where needed).
-- **Check `case`/`if-elsif` chains.** If existing code branches on the enum, does the new value fall through to a wrong default?
-To do this: use Grep to find all references to the sibling values (e.g., grep for "lfg" or "mega" to find all tier consumers). Read each match. This step requires reading code OUTSIDE the diff.
+#### 列挙型と値の完全性
+diff に新しい列挙値、ステータス文字列、層名、または型定数が導入される場合:
+- **すべてのコンシューマを通じてトレースします。** スイッチをオンにする、フィルタリングする、または値を表示する各ファイルを読み取ります (単に grep するだけではなく、読み取ります)。新しい値を処理しないコンシューマがある場合は、フラグを立てます。よくあるミス: フロントエンドのドロップダウンに値を追加しても、バックエンドのモデル/計算メソッドがその値を保持しない。
+- **許可リスト/フィルター配列を確認します。** 兄弟値を含む配列または `%w[]` リストを検索します (たとえば、階層に「revise」を追加する場合、すべての `%w[quick lfg mega]` を見つけて、必要に応じて「revise」が含まれていることを確認します)。
+- **`case`/`if-elsif` チェーンを確認してください。** 既存のコードが列挙型で分岐する場合、新しい値は間違ったデフォルトに落ちますか?
+これを行うには、Grep を使用して、兄弟値へのすべての参照を検索します (たとえば、すべての階層コンシューマーを検索するには、「lfg」または「mega」を grep します)。各試合を読んでください。この手順では、diff の外側にあるコードを読み取る必要があります。
 
-### Pass 2 — INFORMATIONAL
 
-#### Async/Sync Mixing (Python-specific)
-- Synchronous `subprocess.run()`, `open()`, `requests.get()` inside `async def` endpoints — blocks the event loop. Use `asyncio.to_thread()`, `aiofiles`, or `httpx.AsyncClient` instead.
-- `time.sleep()` inside async functions — use `asyncio.sleep()`
-- Sync DB calls in async context without `run_in_executor()` wrapping
 
-#### Column/Field Name Safety
-- Verify column names in ORM queries (`.select()`, `.eq()`, `.gte()`, `.order()`) against actual DB schema — wrong column names silently return empty results or throw swallowed errors
-- Check `.get()` calls on query results use the column name that was actually selected
-- Cross-reference with schema documentation when available
+#### 非同期/同期ミキシング (Python 固有)
+- `async def` エンドポイント内の同期 `subprocess.run()`、`open()`、`requests.get()` — イベント ループをブロックします。代わりに、`asyncio.to_thread()`、`aiofiles`、または `httpx.AsyncClient` を使用してください。
+- 非同期関数内で `time.sleep()` — `asyncio.sleep()` を使用します
+- `run_in_executor()` ラップなしの非同期コンテキストでの同期 DB 呼び出し
 
-#### Dead Code & Consistency (version/changelog only — other items handled by maintainability specialist)
-- Version mismatch between PR title and VERSION/CHANGELOG files
-- CHANGELOG entries that describe changes inaccurately (e.g., "changed from X to Y" when X never existed)
+#### 列/フィールド名の安全性
+- ORM クエリの列名 (`.select()`、`.eq()`、`.gte()`、`.order()`) を実際の DB スキーマと照合して検証します。間違った列名は、黙って空の結果を返すか、飲み込まれたエラーをスローします。
+- クエリ結果に対する `.get()` 呼び出しが実際に選択された列名を使用していることを確認します
+- 利用可能な場合はスキーマ ドキュメントとの相互参照
 
-#### LLM Prompt Issues
-- 0-indexed lists in prompts (LLMs reliably return 1-indexed)
-- Prompt text listing available tools/capabilities that don't match what's actually wired up in the `tool_classes`/`tools` array
-- Word/token limits stated in multiple places that could drift
+#### デッドコードと一貫性 (バージョン/変更ログのみ - その他の項目は保守性スペシャリストが処理します)
+- PR タイトルと VERSION/CHANGELOG ファイル間のバージョンの不一致
+- 変更を不正確に説明する CHANGELOG エントリ (例: X が存在しなかったのに「X から Y に変更された」)
 
-#### Completeness Gaps
-- Shortcut implementations where the complete version would cost <30 minutes CC time (e.g., partial enum handling, incomplete error paths, missing edge cases that are straightforward to add)
-- Options presented with only human-team effort estimates — should show both human and CC+gstack time
-- Test coverage gaps where adding the missing tests is a "lake" not an "ocean" (e.g., missing negative-path tests, missing edge case tests that mirror happy-path structure)
-- Features implemented at 80-90% when 100% is achievable with modest additional code
+#### LLM プロンプトの問題
+- プロンプト内の 0 から始まるインデックスのリスト (LLM は確実に 1 から始まるインデックスを返します)
+- `tool_classes`/`tools` 配列に実際に接続されているものと一致しない利用可能なツール/機能をリストするプロンプト テキスト
+- 単語/トークンの制限が複数の場所で記載されているため、変動する可能性があります
 
-#### Time Window Safety
-- Date-key lookups that assume "today" covers 24h — report at 8am PT only sees midnight→8am under today's key
-- Mismatched time windows between related features — one uses hourly buckets, another uses daily keys for the same data
+#### 完全性のギャップ
+- 完全バージョンの CC 時間が 30 分未満となるショートカット実装 (例: 部分的な列挙処理、不完全なエラー パス、簡単に追加できる欠落しているエッジ ケース)
+- 人間チームの作業量の見積もりのみで提示されるオプション — 人間時間と CC+Gstack 時間の両方を表示する必要があります
+- 不足しているテストを追加すると「海」ではなく「湖」となるテスト カバレッジ ギャップ (例: ネガティブ パス テストの不足、ハッピー パス構造を反映するエッジ ケース テストの不足)
+- 控えめな追加コードで 100% が達成可能な場合でも、80 ～ 90% で機能が実装されます
+
+#### タイムウィンドウの安全性
+- 「今日」が 24 時間をカバーすると仮定した日付キーの検索 - 太平洋時間午前 8 時のレポートでは、今日のキーでは午前 0 時→午前 8 時のみが表示されます
+- 関連する機能間の時間枠の不一致 — 1 つは時間ごとのバケットを使用し、もう 1 つは同じデータに対して日次のキーを使用します
 
 #### Type Coercion at Boundaries
-- Values crossing Ruby→JSON→JS boundaries where type could change (numeric vs string) — hash/digest inputs must normalize types
-- Hash/digest inputs that don't call `.to_s` or equivalent before serialization — `{ cores: 8 }` vs `{ cores: "8" }` produce different hashes
+- 型が変更される可能性がある Ruby→JSON→JS の境界を越える値 (数値と文字列) — ハッシュ/ダイジェスト入力は型を正規化する必要があります
+- シリアル化前に `.to_s` または同等のものを呼び出さないハッシュ/ダイジェスト入力 — `{ cores: 8 }` と `{ cores: "8" }` では異なるハッシュが生成されます
 
-#### View/Frontend
-- Inline `<style>` blocks in partials (re-parsed every render)
-- O(n*m) lookups in views (`Array#find` in a loop instead of `index_by` hash)
-- Ruby-side `.select{}` filtering on DB results that could be a `WHERE` clause (unless intentionally avoiding leading-wildcard `LIKE`)
+#### ビュー/フロントエンド
+- パーシャル内のインライン `<style>` ブロック (レンダリングごとに再解析)
+- ビュー内の O(n*m) ルックアップ (`index_by` ハッシュではなくループ内の `Array#find`)
+- Ruby 側の `.select{}` `WHERE` 句となる DB 結果のフィルタリング (先頭のワイルドカード `LIKE` を意図的に回避しない限り)
 
-#### Distribution & CI/CD Pipeline
-- CI/CD workflow changes (`.github/workflows/`): verify build tool versions match project requirements, artifact names/paths are correct, secrets use `${{ secrets.X }}` not hardcoded values
-- New artifact types (CLI binary, library, package): verify a publish/release workflow exists and targets correct platforms
-- Cross-platform builds: verify CI matrix covers all target OS/arch combinations, or documents which are untested
-- Version tag format consistency: `v1.2.3` vs `1.2.3` — must match across VERSION file, git tags, and publish scripts
-- Publish step idempotency: re-running the publish workflow should not fail (e.g., `gh release delete` before `gh release create`)
+#### ディストリビューションおよび CI/CD パイプライン
+- CI/CD ワークフローの変更 (`.github/workflows/`): ビルド ツールのバージョンがプロジェクト要件と一致していること、アーティファクト名/パスが正しいこと、シークレットがハードコードされた値ではなく `${{ secrets.X }}` を使用していることを確認します。
+- 新しいアーティファクト タイプ (CLI バイナリ、ライブラリ、パッケージ): パブリッシュ/リリース ワークフローが存在し、正しいプラットフォームをターゲットにしていることを確認します。
+- クロスプラットフォーム ビルド: CI マトリックスがすべてのターゲット OS/アーキテクチャの組み合わせ、またはテストされていないドキュメントをカバーしていることを確認します。
+- バージョンタグ形式の一貫性: `v1.2.3` 対 `1.2.3` — VERSION ファイル、git タグ、および公開スクリプト間で一致する必要があります
+- パブリッシュステップの冪等性: パブリッシュワークフローの再実行は失敗しません (例: `gh release create` の前に `gh release delete`)
 
-**DO NOT flag:**
-- Web services with existing auto-deploy pipelines (Docker build + K8s deploy)
-- Internal tools not distributed outside the team
-- Test-only CI changes (adding test steps, not publish steps)
+**フラグを立てないでください:**
+- 既存の自動デプロイ パイプラインを使用した Web サービス (Docker ビルド + K8s デプロイ)
+- 社内ツールはチーム外に配布されない
+- テストのみの CI の変更 (公開ステップではなくテストステップを追加)
 
 ---
 
-## Severity Classification
+## 重大度分類
 
 ```
 CRITICAL (highest severity):      INFORMATIONAL (main agent):      SPECIALIST (parallel subagents):
@@ -141,10 +141,10 @@ lean toward AUTO-FIX (they're more mechanical).
 
 ---
 
-## Fix-First Heuristic
+## 修正優先ヒューリスティック
 
-This heuristic is referenced by both `/review` and `/ship`. It determines whether
-the agent auto-fixes a finding or asks the user.
+このヒューリスティックは、`/review` と `/ship` の両方によって参照されます。かどうかを決定します。
+エージェントは検出結果を自動修正するか、ユーザーに質問します。
 
 ```
 AUTO-FIX (agent fixes without asking):     ASK (needs human judgment):
@@ -158,23 +158,23 @@ AUTO-FIX (agent fixes without asking):     ASK (needs human judgment):
 └─ Inline styles, O(n*m) view lookups        behavior
 ```
 
-**Rule of thumb:** If the fix is mechanical and a senior engineer would apply it
-without discussion, it's AUTO-FIX. If reasonable engineers could disagree about
-the fix, it's ASK.
+**経験則:** 修正が機械的なものであり、上級エンジニアが適用する場合
+議論するまでもなく、それは AUTO-FIX です。理性的なエンジニアが同意できない可能性がある場合は、
+解決策は ASK です。
 
-**Critical findings default toward ASK** (they're inherently riskier).
-**Informational findings default toward AUTO-FIX** (they're more mechanical).
+**重要な結果はデフォルトで ASK に向けられます** (本質的にリスクが高くなります)。
+**情報的な結果はデフォルトで AUTO-FIX** になります (より機械的です)。
 
 ---
 
-## Suppressions — DO NOT flag these
+## 抑制 — これらにフラグを立てないでください
 
-- "X is redundant with Y" when the redundancy is harmless and aids readability (e.g., `present?` redundant with `length > 20`)
-- "Add a comment explaining why this threshold/constant was chosen" — thresholds change during tuning, comments rot
-- "This assertion could be tighter" when the assertion already covers the behavior
-- Suggesting consistency-only changes (wrapping a value in a conditional to match how another constant is guarded)
-- "Regex doesn't handle edge case X" when the input is constrained and X never occurs in practice
-- "Test exercises multiple guards simultaneously" — that's fine, tests don't need to isolate every guard
-- Eval threshold changes (max_actionable, min scores) — these are tuned empirically and change constantly
-- Harmless no-ops (e.g., `.reject` on an element that's never in the array)
-- ANYTHING already addressed in the diff you're reviewing — read the FULL diff before commenting
+- 冗長性が無害で読みやすさに役立つ場合、「X は Y と冗長です」 (例: `present?` `length > 20` と冗長)
+- 「このしきい値/定数が選択された理由を説明するコメントを追加します」 - しきい値はチューニング中に変更され、コメントは腐ります
+- アサーションがすでに動作をカバーしている場合、「このアサーションはさらに厳密になる可能性があります」
+- 一貫性のみを考慮した変更の提案 (別の定数の保護方法に一致するように条件で値をラップする)
+- 入力が制約されており、実際には X が発生しない場合、「正規表現はエッジ ケース X を処理しません」
+- 「テストでは複数のガードを同時に実行します」 - それは問題ありません。テストではすべてのガードを隔離する必要はありません
+- 評価しきい値の変更 (max_actionable、min スコア) - これらは経験的に調整され、常に変化します
+- 無害な no-ops (例: 配列内に存在しない要素に対する `.reject`)
+- レビューしている差分ですでに対処されているもの - コメントする前に完全な差分を読んでください

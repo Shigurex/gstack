@@ -1,39 +1,39 @@
 ---
-name: design-html
-preamble-tier: 2
-version: 1.0.0
-description: |
-  Design finalization: generates production-quality Pretext-native HTML/CSS.
-  Works with approved mockups from /design-shotgun, CEO plans from /plan-ceo-review,
-  design review context from /plan-design-review, or from scratch with a user
-  description. Text actually reflows, heights are computed, layouts are dynamic.
-  30KB overhead, zero deps. Smart API routing: picks the right Pretext patterns
-  for each design type. Use when: "finalize this design", "turn this into HTML",
-  "build me a page", "implement this design", or after any planning skill.
-  Proactively suggest when user has approved a design or has a plan ready. (gstack)
-voice-triggers:
-  - "build the design"
-  - "code the mockup"
-  - "make it real"
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - Agent
-  - AskUserQuestion
+名前: デザイン-html
+プリアンブル層: 2
+バージョン: 1.0.0
+説明: |
+  デザインの最終化: 本番品質のプレテキストネイティブ HTML/CSS を生成します。
+  /design-shotgun からの承認済みモックアップ、/plan-ceo-review からの CEO 計画と連携します。
+  /plan-design-review からの設計レビュー コンテキスト、またはユーザーによる最初からの設計レビュー コンテキスト
+  説明。テキストは実際にリフローされ、高さが計算され、レイアウトは動的になります。
+  30KBのオーバーヘッド、ゼロデプス。スマート API ルーティング: 適切なプレテキスト パターンを選択します
+  デザインタイプごとに。 「このデザインを完成させる」、「これを HTML に変換する」、
+  「ページを作成してください」、「このデザインを実装してください」、または何らかの計画スキルの後に。
+  ユーザーがデザインを承認したとき、または計画の準備ができたときに、積極的に提案します。 (Gスタック)
+音声トリガー:
+  - 「デザインを構築する」
+  - 「モックアップをコーディングする」
+  - 「それを現実にする」
+許可されたツール:
+  - バッシュ
+  - 読む
+  - 書く
+  - 編集
+  - グロブ
+  - グレップ
+  - エージェント
+  - ユーザーに質問する
 ---
 
-{{PREAMBLE}}
+{{前文}}
 
-# /design-html: Pretext-Native HTML Engine
+# /design-html: プレテキストネイティブ HTML エンジン
 
-You generate production-quality HTML where text actually works correctly. Not CSS
-approximations. Computed layout via Pretext. Text reflows on resize, heights adjust
-to content, cards size themselves, chat bubbles shrinkwrap, editorial spreads flow
-around obstacles.
+テキストが実際に正しく機能する、本番品質の HTML を生成します。 CSSではありません
+近似。 Pretext を介して計算されたレイアウト。サイズ変更時のテキストのリフロー、高さの調整
+コンテンツへのリンク、カード自体のサイズ、チャットバブルのシュリンクラップ、エディトリアルスプレッドフロー
+障害物の周り。
 
 {{DESIGN_SETUP}}
 
@@ -41,13 +41,13 @@ around obstacles.
 
 ---
 
-## Step 0: Input Detection
+## ステップ 0: 入力検出
 
 ```bash
 eval "$(~/.claude/skills/gstack/bin/gstack-slug 2>/dev/null)"
 ```
 
-Detect what design context exists for this project. Run all four checks:
+このプロジェクトにどのような設計コンテキストが存在するかを検出します。 4 つのチェックをすべて実行します。
 
 ```bash
 setopt +o nomatch 2>/dev/null || true
@@ -74,149 +74,149 @@ _FINALIZED=$(ls -t ~/.gstack/projects/$SLUG/designs/*/finalized.html 2>/dev/null
 [ -f DESIGN.md ] && echo "DESIGN_MD: exists" || echo "NO_DESIGN_MD"
 ```
 
-Now route based on what was found. Check these cases in order:
 
-### Case A: approved.json exists (design-shotgun ran)
 
-If `APPROVED` was found, read it. Extract: approved variant PNG path, user feedback,
-screen name. Also read the CEO plan if one exists (it adds strategic context).
+### ケース A: 承認済み.json が存在します (デザインショットガンの実行)
 
-Read `DESIGN.md` if it exists in the repo root. These tokens take priority for
-system-level values (fonts, brand colors, spacing scale).
+If `APPROVED` was found, read it.抽出: 承認されたバリアント PNG パス、ユーザーのフィードバック、
+screen name. CEO 計画が存在する場合は、それも読んでください (戦略的コンテキストが追加されます)。
 
-Then check for prior finalized.html. If `FINALIZED` was also found, use AskUserQuestion:
-> Found a prior finalized HTML from a previous session. Want to evolve it
-> (apply new changes on top, preserving your custom edits) or start fresh?
-> A) Evolve — iterate on the existing HTML
-> B) Start fresh — regenerate from the approved mockup
+`DESIGN.md` がリポジトリのルートに存在する場合は、それを読み取ります。これらのトークンは次の場合に優先されます。
+システムレベルの値 (フォント、ブランドカラー、間隔スケール)。
 
-If evolve: read the existing HTML. Apply changes on top during Step 3.
-If fresh or no finalized.html: proceed to Step 1 with the approved PNG as the
-visual reference.
+次に、以前のfinalized.htmlを確認します。 `FINALIZED` も見つかった場合は、AskUserQuestion を使用します。
+> 以前のセッションで完成した HTML が見つかりました。進化させたい
+> (カスタム編集を保持して、新しい変更を上に適用します) それとも最初からやり直しますか?
+> A) 進化 — 既存の HTML を反復処理する
+> B) 新たに開始 — 承認されたモックアップから再生成します
 
-### Case B: CEO plan and/or design variants exist, but no approved.json
+進化する場合: 既存の HTML を読み取ります。ステップ 3 で変更を一番上に適用します。
+新しい場合、または Finalized.html がない場合: 承認された PNG をファイルとして使用してステップ 1 に進みます。
+視覚的な参照。
 
-If `CEO_PLAN` or `VARIANTS` was found but no `APPROVED`:
+### ケース B: CEO プランやデザインのバリエーションは存在するが、承認された.json が存在しない
 
-Read whichever context exists:
-- If CEO plan found: read it and summarize the product vision and design requirements.
-- If variant PNGs found: show them inline using the Read tool.
-- If DESIGN.md found: read it for design tokens and constraints.
+`CEO_PLAN` または `VARIANTS` は見つかったが、`APPROVED` が見つからなかった場合:
 
-Use AskUserQuestion:
-> Found [CEO plan from /plan-ceo-review | design review variants from /plan-design-review | both]
-> but no approved design mockup.
-> A) Run /design-shotgun — explore design variants based on the existing plan context
-> B) Skip mockups — I'll design the HTML directly from the plan context
-> C) I have a PNG — let me provide the path
+存在するコンテキストを読み取ります。
+- CEO プランが見つかった場合: それを読み、製品のビジョンと設計要件を要約します。
+- バリアント PNG が見つかった場合: 読み取りツールを使用してインラインで表示します。
+- DESIGN.md が見つかった場合: デザイン トークンと制約について読み取ってください。
 
-If A: tell the user to run /design-shotgun, then come back to /design-html.
-If B: proceed to Step 1 in "plan-driven mode." There is no approved PNG, the plan is
-the source of truth. Ask the user for a screen name to use for the output directory
-(e.g., "landing-page", "dashboard", "pricing").
-If C: accept a PNG file path from the user and proceed with that as the reference.
+AskUserQuestion を使用します。
+> [CEO プランを /plan-ceo-review から見つけました | /plan-design-review からの設計レビューのバリアント |両方]
+> しかし、承認されたデザインのモックアップはありません。
+> A) /design-shotgun を実行 — 既存の計画コンテキストに基づいて設計バリアントを探索します
+> B) モックアップをスキップ — 計画コンテキストから直接 HTML をデザインします
+> C) 私は PNG を持っています - パスを提供させてください
 
-### Case C: Nothing found (clean slate)
+A: /design-shotgun を実行するようにユーザーに指示し、/design-html に戻ります。
+B の場合: 「プラン主導モード」のステップ 1 に進みます。承認された PNG はありません。計画は次のとおりです。
+真実の源。出力ディレクトリに使用するスクリーン名をユーザーに尋ねます。
+(例: 「ランディング ページ」、「ダッシュボード」、「価格設定」)。
+C の場合: ユーザーから PNG ファイル パスを受け入れ、それを参照として続行します。
 
-If none of the above produced any context:
+### ケース C: 何も見つかりませんでした (白紙の状態)
 
-Use AskUserQuestion:
-> No design context found for this project. How do you want to start?
-> A) Run /plan-ceo-review first — think through the product strategy before designing
-> B) Run /plan-design-review first — design review with visual mockups
-> C) Run /design-shotgun — jump straight to visual design exploration
-> D) Just describe it — tell me what you want and I'll design the HTML live
+上記のいずれもコンテキストを生成しなかった場合:
 
-If A, B, or C: tell the user to run that skill, then come back to /design-html.
-If D: proceed to Step 1 in "freeform mode." Ask the user for a screen name.
+AskUserQuestion を使用します。
+> このプロジェクトのデザイン コンテキストが見つかりません。どのように始めたいですか?
+> A) 最初に /plan-ceo-review を実行します — 設計する前に製品戦略をよく考えてください
+> B) 最初に /plan-design-review を実行します — ビジュアル モックアップを使用した設計レビュー
+> C) /design-shotgun を実行 — ビジュアル デザインの探索に直接ジャンプします
+> D) 説明するだけです - ご要望を教えてください。HTML をライブでデザインします
 
-### Context summary
+A、B、または C: ユーザーにそのスキルを実行するように指示した場合は、/design-html に戻ります。
+Dの場合：「フリーフォームモード」のステップ1に進みます。ユーザーにスクリーン名を尋ねます。
 
-After routing, output a brief context summary:
-- **Mode:** approved-mockup | plan-driven | freeform | evolve
-- **Visual reference:** path to approved PNG, or "none (plan-driven)" or "none (freeform)"
-- **CEO plan:** path or "none"
-- **Design tokens:** "DESIGN.md" or "none"
-- **Screen name:** from approved.json, user-provided, or inferred from CEO plan
+### コンテキストの概要
+
+ルーティング後、簡単なコンテキストの概要を出力します。
+- **モード:** 承認済みモックアップ |計画主導 |フリーフォーム |進化する
+- **ビジュアルリファレンス:** 承認された PNG へのパス、または「なし (計画主導)」または「なし (フリーフォーム)」
+- **CEO プラン:** パスまたは「なし」
+- **デザイントークン:** "DESIGN.md" または "none"
+- **スクリーン名:**、approved.json、ユーザー指定、または CEO プランから推測
 
 ---
 
-## Step 1: Design Analysis
+## ステップ 1: 設計分析
 
-1. If `$D` is available (`DESIGN_READY`), extract a structured implementation spec:
+1. `$D` が利用可能な場合 (`DESIGN_READY`)、構造化された実装仕様を抽出します。
 ```bash
 $D prompt --image <approved-variant.png> --output json
 ```
-This returns colors, typography, layout structure, and component inventory via GPT-4o vision.
+これにより、GPT-4o ビジョンを介して色、タイポグラフィ、レイアウト構造、コンポーネント インベントリが返されます。
 
-2. If `$D` is not available, read the approved PNG inline using the Read tool.
-   Describe the visual layout, colors, typography, and component structure yourself.
+2. `$D` が利用できない場合は、読み取りツールを使用して、承認された PNG をインラインで読み取ります。
+   視覚的なレイアウト、色、タイポグラフィー、コンポーネントの構造を自分で説明します。
 
-3. If in plan-driven or freeform mode (no approved PNG), design from context:
-   - **Plan-driven:** read the CEO plan and/or design review notes. Extract the described
-     UI requirements, user flows, target audience, visual feel (dark/light, dense/spacious),
-     content structure (hero, features, pricing, etc.), and design constraints. Build an
-     implementation spec from the plan's prose rather than a visual reference.
-   - **Freeform:** use AskUserQuestion to gather what the user wants to build. Ask about:
-     purpose/audience, visual feel (dark/light, playful/serious, dense/spacious),
-     content structure (hero, features, pricing, etc.), and any reference sites they like.
-   In both cases, describe the intended visual layout, colors, typography, and
-   component structure as your implementation spec. Generate realistic content based
-   on the plan or user description (never lorem ipsum).
+3. プラン駆動モードまたはフリーフォーム モード (承認された PNG なし) の場合は、コンテキストからデザインします。
+   - **計画主導:** CEO の計画や設計レビュー ノートを読みます。記載されている内容を抜粋します
+     UI要件、ユーザーフロー、ターゲットユーザー、視覚的な感触（暗い/明るい、密な/広い）、
+     コンテンツ構造 (ヒーロー、機能、価格設定など)、およびデザイン上の制約。を構築する
+     視覚的な参照ではなく、計画の散文からの実装仕様。
+   - **フリーフォーム:** AskUserQuestion を使用して、ユーザーが構築したいものを収集します。以下について質問してください:
+     目的/聴衆、視覚的な雰囲気 (暗い/明るい、遊び心/真剣、密集/広々)、
+     コンテンツ構造 (ヒーロー、機能、価格設定など)、および好みの参照サイト。
+   どちらの場合も、意図した視覚的なレイアウト、色、タイポグラフィー、および
+   コンポーネント構造を実装仕様として指定します。現実的なコンテンツをベースに生成
+   プランやユーザーの説明に記載してください (決して lorem ipsum しないでください)。
 
-4. Read `DESIGN.md` tokens. These override any extracted values for system-level
-   properties (brand colors, font family, spacing scale).
+4. `DESIGN.md` トークンを読み取ります。これらは、システムレベルで抽出された値をオーバーライドします。
+   プロパティ (ブランドカラー、フォントファミリー、間隔スケール)。
 
-5. Output an "Implementation spec" summary: colors (hex), fonts (family + weights),
-   spacing scale, component list, layout type.
-
----
-
-## Step 2: Smart Pretext API Routing
-
-Analyze the approved design and classify it into a Pretext tier. Each tier uses
-different Pretext APIs for optimal results:
-
-| Design type | Pretext APIs | Use case |
-|-------------|-------------|----------|
-| Simple layout (landing, marketing) | `prepare()` + `layout()` | Resize-aware heights |
-| Card/grid (dashboard, listing) | `prepare()` + `layout()` | Self-sizing cards |
-| Chat/messaging UI | `prepareWithSegments()` + `walkLineRanges()` | Tight-fit bubbles, min-width |
-| Content-heavy (editorial, blog) | `prepareWithSegments()` + `layoutNextLine()` | Text around obstacles |
-| Complex editorial | Full engine + `layoutWithLines()` | Manual line rendering |
-
-State the chosen tier and why. Reference the specific Pretext APIs that will be used.
+5. 「実装仕様」の概要を出力します: 色 (16 進数)、フォント (ファミリー + ウェイト)、
+   間隔スケール、コンポーネントリスト、レイアウトタイプ。
 
 ---
 
-## Step 2.5: Framework Detection
+## ステップ 2: スマート プレテキスト API ルーティング
 
-Check if the user's project uses a frontend framework:
+承認された設計を分析し、Pretext 層に分類します。各層が使用するのは、
+最適な結果を得るためのさまざまな Pretext API:
+
+|デザインタイプ |プレテキスト API |使用例 |
+|---------------|---------------|----------|
+|シンプルなレイアウト（着陸、マーケティング） | `prepare()` + `layout()` |サイズ変更を考慮した高さ |
+|カード/グリッド (ダッシュボード、リスト) | `prepare()` + `layout()` |セルフサイジングカード |
+|チャット/メッセージング UI | `prepareWithSegments()` + `walkLineRanges()` |タイトフィットバブル、最小幅 |
+|コンテンツが多い (エディトリアル、ブログ) | `prepareWithSegments()` + `layoutNextLine()` |障害物の周囲のテキスト |
+|複雑な社説 |フルエンジン + `layoutWithLines()` |手動ラインレンダリング |
+
+選択した層とその理由を述べます。使用される特定の Pretext API を参照します。
+
+---
+
+## ステップ 2.5: フレームワークの検出
+
+ユーザーのプロジェクトがフロントエンド フレームワークを使用しているかどうかを確認します。
 
 ```bash
 [ -f package.json ] && cat package.json | grep -o '"react"\|"svelte"\|"vue"\|"@angular/core"\|"solid-js"\|"preact"' | head -1 || echo "NONE"
 ```
 
-If a framework is detected, use AskUserQuestion:
-> Detected [React/Svelte/Vue] in your project. What format should the output be?
-> A) Vanilla HTML — self-contained preview file (recommended for first pass)
-> B) [React/Svelte/Vue] component — framework-native with Pretext hooks
+フレームワークが検出された場合は、AskUserQuestion を使用します。
+> プロジェクト内で [React/Svelte/Vue] が検出されました。出力はどのような形式にすべきでしょうか?
+> A) Vanilla HTML — 自己完結型のプレビュー ファイル (最初のパスに推奨)
+> B) [React/Svelte/Vue] コンポーネント — Pretext フックを備えたフレームワークネイティブ
 
-If the user chooses framework output, ask one follow-up:
+ユーザーがフレームワーク出力を選択した場合は、フォローアップを 1 つ尋ねます。
 > A) TypeScript
 > B) JavaScript
 
-For vanilla HTML: proceed to Step 3 with vanilla output.
-For framework output: proceed to Step 3 with framework-specific patterns.
-If no framework detected: default to vanilla HTML, no question needed.
+バニラ HTML の場合: バニラ出力でステップ 3 に進みます。
+フレームワーク出力の場合: フレームワーク固有のパターンを使用してステップ 3 に進みます。
+フレームワークが検出されなかった場合: デフォルトは標準の HTML であり、質問は必要ありません。
 
 ---
 
-## Step 3: Generate Pretext-Native HTML
+## ステップ 3: プレテキストネイティブ HTML を生成する
 
-### Pretext Source Embedding
+### プレテキストソースの埋め込み
 
-For **vanilla HTML output**, check for the vendored Pretext bundle:
+**バニラの HTML 出力**については、ベンダーの Pretext バンドルを確認してください。
 ```bash
 _PRETEXT_VENDOR=""
 _ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
@@ -225,13 +225,13 @@ _ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 [ -n "$_PRETEXT_VENDOR" ] && echo "VENDOR: $_PRETEXT_VENDOR" || echo "VENDOR_MISSING"
 ```
 
-- If `VENDOR` found: read the file and inline it in a `<script>` tag. The HTML file
-  is fully self-contained with zero network dependencies.
-- If `VENDOR_MISSING`: use CDN import as fallback:
+- `VENDOR` が見つかった場合: ファイルを読み取り、それを `<script>` タグにインライン化します。 HTMLファイル
+  完全に自己完結型であり、ネットワーク依存性はありません。
+- `VENDOR_MISSING` の場合: CDN インポートをフォールバックとして使用します:
   `<script type="module">import { prepare, layout, prepareWithSegments, walkLineRanges, layoutNextLine, layoutWithLines } from 'https://esm.sh/@chenglou/pretext'</script>`
   Add a comment: `<!-- FALLBACK: vendor/pretext.js missing, using CDN -->`
 
-For **framework output**, add to the project's dependencies instead:
+**フレームワーク出力**の場合は、代わりにプロジェクトの依存関係に追加します。
 ```bash
 # Detect package manager
 [ -f bun.lockb ] && echo "bun add @chenglou/pretext" || \
@@ -241,46 +241,46 @@ echo "npm install @chenglou/pretext"
 ```
 Run the detected install command. Then use standard imports in the component.
 
-### HTML Generation
+### HTMLの生成
 
-Write a single file using the Write tool. Save to:
+書き込みツールを使用して単一のファイルを書き込みます。保存先:
 `~/.gstack/projects/$SLUG/designs/<screen-name>-YYYYMMDD/finalized.html`
 
-For framework output, save to:
+フレームワークの出力の場合は、次の場所に保存します。
 `~/.gstack/projects/$SLUG/designs/<screen-name>-YYYYMMDD/finalized.[tsx|svelte|vue]`
 
-**Always include in vanilla HTML:**
-- Pretext source (inlined or CDN, see above)
-- CSS custom properties for design tokens from DESIGN.md / Step 1 extraction
-- Google Fonts via `<link>` tags + `document.fonts.ready` gate before first `prepare()`
-- Semantic HTML5 (`<header>`, `<nav>`, `<main>`, `<section>`, `<footer>`)
-- Responsive behavior via Pretext relayout (not just media queries)
-- Breakpoint-specific adjustments at 375px, 768px, 1024px, 1440px
-- ARIA attributes, heading hierarchy, focus-visible states
-- `contenteditable` on text elements + MutationObserver to re-prepare + re-layout on edit
-- ResizeObserver on containers to re-layout on resize
-- `prefers-color-scheme` media query for dark mode
-- `prefers-reduced-motion` for animation respect
-- Real content extracted from the mockup (never lorem ipsum)
+**バニラ HTML には常に含めます:**
+- プレテキスト ソース (インラインまたは CDN、上記を参照)
+- DESIGN.md からのデザイン トークンの CSS カスタム プロパティ / ステップ 1 の抽出
+- 最初の `prepare()` の前に `<link>` タグ + `document.fonts.ready` ゲート経由の Google フォント
+- セマンティック HTML5 (`<header>`、`<nav>`、`<main>`、`<section>`、`<footer>`)
+- プレテキスト再レイアウトによる応答動作 (メディア クエリだけでなく)
+- 375px、768px、1024px、1440px でのブレークポイント固有の調整
+- ARIA 属性、見出し階層、フォーカス表示状態
+- テキスト要素の `contenteditable` + MutationObserver で再準備 + 編集時に再レイアウト
+- サイズ変更時に再レイアウトするコンテナの ResizeObserver
+- `prefers-color-scheme` ダークモード用メディアクエリ
+- `prefers-reduced-motion` アニメーションへの敬意を込めて
+- モックアップから抽出された実際のコンテンツ (決して lorem ipsum)
 
-**Never include (AI slop blacklist):**
-- Purple/blue gradients as default
-- Generic 3-column feature grids
-- Center-everything layouts with no visual hierarchy
-- Decorative blobs, waves, or geometric patterns not in the mockup
-- Stock photo placeholder divs
-- "Get Started" / "Learn More" generic CTAs not from the mockup
-- Rounded-corner cards with drop shadows as the default component
-- Emoji as visual elements
-- Generic testimonial sections
-- Cookie-cutter hero sections with left-text right-image
+**(AI スロップ ブラックリスト):** を含めないでください。
+- デフォルトとして紫/青のグラデーション
+- 一般的な 3 列のフィーチャ グリッド
+- 視覚的な階層を持たないすべてを中央に配置したレイアウト
+- モックアップにはない装飾的な塊、波、または幾何学模様
+- ストックフォトのプレースホルダー div
+- モックアップからのものではない「はじめに」/「詳細」の一般的な CTA
+- デフォルトのコンポーネントとしてドロップシャドウを備えた角の丸いカード
+- 視覚要素としての絵文字
+- 一般的な感想セクション
+- 左テキスト右画像のクッキーカッターのヒーローセクション
 
-### Pretext Wiring Patterns
+### プレテキスト配線パターン
 
-Use these patterns based on the tier selected in Step 2. These are the correct
-Pretext API usage patterns. Follow them exactly.
+ステップ 2 で選択した層に基づいてこれらのパターンを使用します。これらは正しいです。
+Pretext API の使用パターン。それらに正確に従ってください。
 
-**Pattern 1: Basic height computation (Simple layout, Card/grid)**
+**パターン 1: 基本的な高さ計算 (単純なレイアウト、カード/グリッド)**
 ```js
 import { prepare, layout } from './pretext-inline.js'
 // Or if inlined: const { prepare, layout } = window.Pretext
@@ -320,7 +320,7 @@ for (const el of elements) {
 }
 ```
 
-**Pattern 2: Shrinkwrap / tight-fit containers (Chat bubbles)**
+**パターン 2: シュリンクラップ/タイトフィット容器 (チャットバブル)**
 ```js
 import { prepareWithSegments, walkLineRanges } from './pretext-inline.js'
 
@@ -346,7 +346,7 @@ function shrinkwrap(text, font, maxWidth, lineHeight) {
 }
 ```
 
-**Pattern 3: Text around obstacles (Editorial layout)**
+**パターン 3: 障害物の周囲に文字を配置する (エディトリアル レイアウト)**
 ```js
 import { prepareWithSegments, layoutNextLine } from './pretext-inline.js'
 
@@ -377,7 +377,7 @@ function layoutAroundObstacles(text, font, containerWidth, lineHeight, obstacles
 }
 ```
 
-**Pattern 4: Full line-by-line rendering (Complex editorial)**
+**パターン 4: 完全な行ごとのレンダリング (複雑な編集)**
 ```js
 import { prepareWithSegments, layoutWithLines } from './pretext-inline.js'
 
@@ -396,7 +396,7 @@ for (const line of lines) {
 }
 ```
 
-### Pretext API Reference
+### プレテキスト API リファレンス
 
 ```
 PRETEXT API CHEATSHEET:
@@ -431,9 +431,9 @@ setLocale(locale?) → void
 
 ---
 
-## Step 3.5: Live Reload Server
 
-After writing the HTML file, start a simple HTTP server for live preview:
+
+HTML ファイルを作成した後、ライブ プレビュー用の単純な HTTP サーバーを起動します。
 
 ```bash
 # Start a simple HTTP server in the output directory
@@ -446,26 +446,26 @@ echo "SERVER: http://localhost:$_PORT/finalized.html"
 echo "PID: $_SERVER_PID"
 ```
 
-If python3 is not available, fall back to:
+Python3 が利用できない場合は、次のようにフォールバックします。
 ```bash
 open <path-to-finalized.html>
 ```
 
-Tell the user: "Live preview running at http://localhost:$_PORT/finalized.html.
-After each edit, just refresh the browser (Cmd+R) to see changes."
+ユーザーに次のように伝えます: 「ライブ プレビューは http://localhost:$_PORT/finalized.html. で実行中です」
+各編集後、ブラウザを更新するだけで (Cmd+R)、変更が表示されます。」
 
-When the refinement loop ends (Step 4 exits), kill the server:
+改良ループが終了したら (ステップ 4 が終了すると)、サーバーを強制終了します。
 ```bash
 kill $_SERVER_PID 2>/dev/null || true
 ```
 
 ---
 
-## Step 4: Preview + Refinement Loop
+## ステップ 4: プレビューと絞り込みのループ
 
-### Verification Screenshots
+### 検証スクリーンショット
 
-If `$B` is available (browse binary), take verification screenshots at 3 viewports:
+`$B` が利用可能な場合 (バイナリを参照)、3 つのビューポートで確認スクリーンショットを撮ります。
 
 ```bash
 $B goto "file://<path-to-finalized.html>"
@@ -474,17 +474,17 @@ $B screenshot /tmp/gstack-verify-tablet.png --width 768
 $B screenshot /tmp/gstack-verify-desktop.png --width 1440
 ```
 
-Show all three screenshots inline using the Read tool. Check for:
-- Text overflow (text cut off or extending beyond containers)
-- Layout collapse (elements overlapping or missing)
-- Responsive breakage (content not adapting to viewport)
+読み取りツールを使用して、3 つのスクリーンショットをすべてインラインで表示します。以下を確認してください:
+- テキストのオーバーフロー (テキストが切り取られたり、コンテナからはみ出したりする)
+- レイアウトの崩れ（要素が重なったり欠けたりする）
+- 応答性の破損 (コンテンツがビューポートに適応しない)
 
-If issues are found, note them and fix before presenting to the user.
+問題が見つかった場合は、ユーザーに提示する前にメモし、修正してください。
 
-If `$B` is not available, skip verification and note:
-"Browse binary not available. Skipping automated viewport verification."
+`$B` が利用できない場合は、検証をスキップし、次の点に注意してください。
+「ブラウズバイナリは利用できません。自動ビューポート検証をスキップします。」
 
-### Refinement Loop
+### 改良ループ
 
 ```
 LOOP:
@@ -515,37 +515,37 @@ LOOP:
   8. Go to LOOP
 ```
 
-Maximum 10 iterations. If the user hasn't said "done" after 10, use AskUserQuestion:
-"We've done 10 rounds of refinement. Want to continue iterating or call it done?"
+最大 10 回の反復。ユーザーが 10 時を過ぎても「完了」と言わない場合は、AskUserQuestion を使用します。
+「10 回の改良を行いました。繰り返しを続けますか、それとも完了したと判断しますか?」
 
 ---
 
-## Step 5: Save & Next Steps
+## ステップ 5: 保存して次のステップ
 
-### Design Token Extraction
+### デザイントークンの抽出
 
-If no `DESIGN.md` exists in the repo root, offer to create one from the generated HTML:
+リポジトリ ルートに `DESIGN.md` が存在しない場合は、生成された HTML から作成することを提案します。
 
-Extract from the HTML:
-- CSS custom properties (colors, spacing, font sizes)
-- Font families and weights used
-- Color palette (primary, secondary, accent, neutral)
-- Spacing scale
-- Border radius values
-- Shadow values
+HTML からの抜粋:
+- CSS カスタム プロパティ (色、間隔、フォント サイズ)
+- 使用されるフォントファミリーとウェイト
+- カラーパレット (プライマリ、セカンダリ、アクセント、ニュートラル)
+- 間隔スケール
+- 境界線の半径の値
+- シャドウ値
 
-Use AskUserQuestion:
-> No DESIGN.md found. I can extract the design tokens from the HTML we just built
-> and create a DESIGN.md for your project. This means future /design-shotgun and
-> /design-html runs will be style-consistent automatically.
-> A) Create DESIGN.md from these tokens
-> B) Skip — I'll handle the design system later
+AskUserQuestion を使用します。
+> DESIGN.md が見つかりません。構築したばかりの HTML からデザイン トークンを抽出できます
+> プロジェクトの DESIGN.md を作成します。これは、将来の /design-shotgun を意味します。
+> /design-html の実行ではスタイルの一貫性が自動的に保たれます。
+> A) これらのトークンから DESIGN.md を作成します
+> B) スキップ — デザイン システムについては後で扱います
 
-If A: write `DESIGN.md` to the repo root with the extracted tokens.
+A の場合: 抽出したトークンを使用して、リポジトリのルートに `DESIGN.md` を書き込みます。
 
-### Save Metadata
+### メタデータの保存
 
-Write `finalized.json` alongside the HTML:
+HTML の横に `finalized.json` を記述します。
 ```json
 {
   "source_mockup": "<approved variant PNG path or null>",
@@ -561,34 +561,34 @@ Write `finalized.json` alongside the HTML:
 }
 ```
 
-### Next Steps
+### 次のステップ
 
-Use AskUserQuestion:
-> Design finalized with Pretext-native layout. What's next?
-> A) Copy to project — copy the HTML/component into your codebase
-> B) Iterate more — keep refining
-> C) Done — I'll use this as a reference
+AskUserQuestion を使用します。
+> デザインはプレテキストネイティブのレイアウトで完成しました。次は何でしょうか？
+> A) プロジェクトにコピー — HTML/コンポーネントをコードベースにコピーします
+> B) さらに反復 – 改良を続ける
+> C) 完了 — これを参考にします
 
 ---
 
-## Important Rules
+## 重要なルール
 
-- **Source of truth fidelity over code elegance.** When an approved mockup exists,
-  pixel-match it. If that requires `width: 312px` instead of a CSS grid class, that's
-  correct. When in plan-driven or freeform mode, the user's feedback during the
+- **コードの優雅さよりも真実のソースの忠実度** 承認されたモックアップが存在する場合、
+  それをピクセルマッチさせます。 CSS グリッド クラスの代わりに `width: 312px` が必要な場合は、
+  正しいです。プラン主導モードまたはフリーフォーム モードの場合、実行中のユーザーのフィードバック
   refinement loop is the source of truth. Code cleanup happens later during
-  component extraction.
+  成分抽出。
 
-- **Always use Pretext for text layout.** Even if the design looks simple, Pretext
-  ensures correct height computation on resize. The overhead is 30KB. Every page benefits.
+- **テキストのレイアウトには常に Pretext を使用してください。** デザインがシンプルに見えても、Pretext
+  サイズ変更時に正確な高さが計算されるようにします。オーバーヘッドは 30KB です。どのページにもメリットがあります。
 
-- **Surgical edits in the refinement loop.** Use the Edit tool to make targeted changes,
-  not the Write tool to regenerate the entire file. The user may have made manual edits
-  via contenteditable that should be preserved.
+- **改良ループでの外科的編集。** 編集ツールを使用して対象を絞った変更を加えます。
+  ファイル全体を再生成する書き込みツールではありません。ユーザーが手動で編集した可能性があります
+  保存する必要がある contenteditable 経由。
 
-- **Real content only.** When a mockup exists, extract text from it. In plan-driven mode,
-  use content from the plan. In freeform mode, generate realistic content based on the
-  user's description. Never use "Lorem ipsum", "Your text here", or placeholder content.
+- **実際のコンテンツのみ。** モックアップが存在する場合、そこからテキストを抽出します。計画主導モードでは、
+  use content from the plan.フリーフォーム モードでは、
+  ユーザーの説明。 「Lorem ipsum」、「Your text here」、またはプレースホルダー コンテンツは決して使用しないでください。
 
-- **One page per invocation.** For multi-page designs, run /design-html once per page.
-  Each run produces one HTML file.
+- **呼び出しごとに 1 ページ。** 複数ページのデザインの場合、/design-html をページごとに 1 回実行します。
+  実行ごとに 1 つの HTML ファイルが生成されます。

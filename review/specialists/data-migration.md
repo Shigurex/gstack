@@ -1,47 +1,47 @@
-# Data Migration Specialist Review Checklist
+# データ移行スペシャリストのレビュー チェックリスト
 
-Scope: When SCOPE_MIGRATIONS=true
-Output: JSON objects, one finding per line. Schema:
-{"severity":"CRITICAL|INFORMATIONAL","confidence":N,"path":"file","line":N,"category":"data-migration","summary":"...","fix":"...","fingerprint":"path:line:data-migration","specialist":"data-migration"}
-If no findings: output `NO FINDINGS` and nothing else.
+スコープ: SCOPE_MIGRATIONS=true の場合
+出力: JSON オブジェクト、1 行に 1 つの結果。スキーマ:
+{"重大度":"重大|情報"、"信頼性":N、"パス":"ファイル"、"行":N、"カテゴリ":"データ移行"、"概要":"..."、"修正":"..."、"フィンガープリント":"パス:行:データ移行"、"スペシャリスト":"データ移行"}
+検出結果がない場合: `NO FINDINGS` を出力し、それ以外は何も出力しません。
 
 ---
 
-## Categories
+## カテゴリ
 
-### Reversibility
-- Can this migration be rolled back without data loss?
-- Is there a corresponding down/rollback migration?
-- Does the rollback actually undo the change or just no-op?
-- Would rolling back break the current application code?
+### 可逆性
+- この移行はデータを失わずにロールバックできますか?
+- 対応するダウン/ロールバック移行はありますか?
+- ロールバックは実際に変更を元に戻しますか、それとも単に何もしないだけですか?
+- ロールバックすると現在のアプリケーション コードが壊れますか?
 
-### Data Loss Risk
-- Dropping columns that still contain data (add deprecation period first)
-- Changing column types that truncate data (varchar(255) → varchar(50))
-- Removing tables without verifying no code references them
-- Renaming columns without updating all references (ORM, raw SQL, views)
-- NOT NULL constraints added to columns with existing NULL values (needs backfill first)
+### データ損失のリスク
+- まだデータが含まれている列を削除します (最初に非推奨期間を追加します)
+- データを切り捨てる列の型の変更 (varchar(255) → varchar(50))
+- コードがテーブルを参照していないことを確認せずにテーブルを削除する
+- すべての参照 (ORM、生の SQL、ビュー) を更新せずに列の名前を変更する
+- 既存の NULL 値を持つ列に NOT NULL 制約を追加しました (最初にバックフィルが必要です)
 
-### Lock Duration
-- ALTER TABLE on large tables without CONCURRENTLY (PostgreSQL)
-- Adding indexes without CONCURRENTLY on tables with >100K rows
-- Multiple ALTER TABLE statements that could be combined into one lock acquisition
-- Schema changes that acquire exclusive locks during peak traffic hours
+### ロック期間
+- CONCURRENTLY を使用しない大きなテーブルでの ALTER TABLE (PostgreSQL)
+- 100K 行を超えるテーブルに CONCURRENTLY を使用せずにインデックスを追加する
+- 1 つのロック取得に結合できる複数の ALTER TABLE ステートメント
+- トラフィックのピーク時に排他的ロックを取得するスキーマ変更
 
-### Backfill Strategy
-- New NOT NULL columns without DEFAULT value (requires backfill before constraint)
-- New columns with computed defaults that need batch population
-- Missing backfill script or rake task for existing records
-- Backfill that updates all rows at once instead of batching (locks table)
+### バックフィル戦略
+- DEFAULT 値のない新しい NOT NULL 列 (制約の前にバックフィルが必要)
+- バッチ入力が必要な計算されたデフォルトを含む新しい列
+- 既存のレコードのバックフィル スクリプトまたは rake タスクが欠落しています
+- バッチ処理ではなくすべての行を一度に更新するバックフィル (テーブルをロック)
 
-### Index Creation
-- CREATE INDEX without CONCURRENTLY on production tables
-- Duplicate indexes (new index covers same columns as existing one)
-- Missing indexes on new foreign key columns
-- Partial indexes where a full index would be more useful (or vice versa)
+### インデックスの作成
+- 本番テーブルで CONCURRENTLY を使用しない CREATE INDEX
+- 重複したインデックス (新しいインデックスは既存のインデックスと同じ列をカバーします)
+- 新しい外部キー列のインデックスが欠落している
+- 完全なインデックスの方が便利な部分インデックス (またはその逆)
 
-### Multi-Phase Safety
-- Migrations that must be deployed in a specific order with application code
-- Schema changes that break the current running code (deploy code first, then migrate)
-- Migrations that assume a deploy boundary (old code + new schema = crash)
-- Missing feature flag to handle mixed old/new code during rolling deploy
+### 多相安全性
+- アプリケーション コードを使用して特定の順序でデプロイする必要がある移行
+- 現在実行中のコードを破壊するスキーマの変更 (最初にコードをデプロイし、次に移行)
+- デプロイ境界を想定した移行 (古いコード + 新しいスキーマ = クラッシュ)
+- ローリング デプロイ中に新旧混合コードを処理するための機能フラグがありません

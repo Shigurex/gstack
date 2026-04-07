@@ -1,36 +1,36 @@
-# DX Hall of Fame Reference
+# DX殿堂リファレンス
 
-Read ONLY the section for the current review pass. Do NOT load the entire file.
+現在のレビュー パスのセクションのみをお読みください。ファイル全体をロードしないでください。
 
-## Pass 1: Getting Started
+## パス 1: はじめに
 
-**Gold standards:**
-- **Stripe**: 7 lines of code to charge a card. Docs pre-fill YOUR test API keys when logged in. Stripe Shell runs CLI inside docs page. No local install needed.
-- **Vercel**: `git push` = live site on global CDN with HTTPS. Every PR gets preview URL. One CLI command: `vercel`.
-- **Clerk**: `<SignIn />`, `<SignUp />`, `<UserButton />`. 3 JSX components, working auth with email, social, MFA out of the box.
-- **Supabase**: Create a Postgres table, auto-generates REST API + Realtime + self-documenting docs instantly.
-- **Firebase**: `onSnapshot()`. 3 lines for real-time sync across all clients with offline persistence built-in.
-- **Twilio**: Virtual Phone in console. Send/receive SMS without buying a number, no credit card. Result: 62% improvement in activation.
+**ゴールドスタンダード:**
+- **ストライプ**: カードにチャージするための 7 行のコード。ドキュメントには、ログイン時にテスト API キーが事前に入力されます。Stripe Shell はドキュメント ページ内で CLI を実行します。ローカルにインストールする必要はありません。
+- **Vercel**: `git push` = HTTPS を使用したグローバル CDN 上のライブ サイト。すべての PR はプレビュー URL を取得します。 1 つの CLI コマンド: `vercel`。
+- **事務員**: `<SignIn />`、`<SignUp />`、`<UserButton />`。 3 つの JSX コンポーネント。電子メール、ソーシャル、MFA で認証をすぐに使用できます。
+- **Supabase**: Postgres テーブルを作成し、REST API + リアルタイム + 自己文書化ドキュメントを即座に自動生成します。
+- **Firebase**: `onSnapshot()`。オフライン永続性が組み込まれているすべてのクライアント間のリアルタイム同期のための 3 行。
+- **Twilio**: コンソール内の仮想電話。番号やクレジット カードを購入せずに SMS を送受信できます。結果: 活性化が 62% 向上しました。
 
-**Anti-patterns:**
-- Email verification before any value (breaks flow)
-- Credit card required before sandbox
-- "Choose your own adventure" with multiple paths (decision fatigue; one golden path wins)
-- API keys hidden in settings (Stripe pre-fills them into code examples)
-- Static code examples without language switching
-- Separate docs site from dashboard (context switching)
+**アンチパターン:**
+- 値の前に電子メールで検証します (フローを中断します)
+- サンドボックスの前にクレジット カードが必要です
+- 複数のパスを備えた「自分の冒険を選択」 (決断疲れ、1 つの黄金のパスが勝利)
+- API キーは設定に隠されています (Stripe はコード例に API キーを事前に入力します)
+- 言語切り替えを行わない静的コード例
+- ドキュメント サイトをダッシュボードから分離する (コンテキストの切り替え)
 
-## Pass 2: API/CLI/SDK Design
+## パス 2: API/CLI/SDK 設計
 
-**Gold standards:**
-- **Stripe prefixed IDs**: `ch_` for charges, `cus_` for customers. Self-documenting. Impossible to pass wrong ID type.
-- **Stripe expandable objects**: Default returns ID strings. `expand[]` gets full objects inline. Nested expansion up to 4 levels.
-- **Stripe idempotency keys**: Pass `Idempotency-Key` header on mutations. Safe retries. No "did I double-charge?" anxiety.
-- **Stripe API versioning**: First call pins account to that day's version. Test new versions per-request via `Stripe-Version` header.
-- **GitHub CLI**: Auto-detects terminal vs pipe. Human-readable in terminal, tab-delimited when piped. `gh pr <tab>` shows all PR actions.
-- **SwiftUI progressive disclosure**: `Button("Save") { save() }` to full customization, same API at every level.
-- **htmx**: HTML attributes replace JS. 14KB total. `hx-get="/search" hx-trigger="keyup changed delay:300ms"`. Zero build step.
-- **shadcn/ui**: Copy source code into your project. You own every line. No dependency, no version conflicts.
+**ゴールドスタンダード:**
+- **ストライプ接頭辞付き ID**: 請求の場合は `ch_`、顧客の場合は `cus_`。自己文書化。間違った ID タイプを渡すことはできません。
+- **ストライプ展開可能オブジェクト**: デフォルトでは ID 文字列が返されます。 `expand[]` は完全なオブジェクトをインラインで取得します。最大 4 レベルまでのネストされた拡張。
+- **ストライプ冪等キー**: 突然変異時に `Idempotency-Key` ヘッダーを渡します。安全な再試行。いいえ、「二重請求しましたか？」不安。
+- **ストライプ API のバージョン管理**: 最初に呼び出すと、アカウントがその日のバージョンに固定されます。 `Stripe-Version` ヘッダーを介してリクエストごとに新しいバージョンをテストします。
+- **GitHub CLI**: ターミナルとパイプを自動検出します。ターミナルでは人間が判読可能で、パイプ接続時にはタブ区切りになります。 `gh pr <tab>` はすべての PR アクションを示します。
+- **SwiftUI の段階的な開示**: `Button("Save") { save() }` から完全なカスタマイズ、すべてのレベルで同じ API。
+- **htmx**: HTML 属性が JS を置き換えます。合計14KB。 `hx-get="/search" hx-trigger="keyup changed delay:300ms"`。ビルドステップはゼロ。
+- **shadcn/ui**: ソース コードをプロジェクトにコピーします。すべてのラインを所有しているのはあなたです。依存関係やバージョンの競合はありません。
 
 **Anti-patterns:**
 - Chatty API: requiring 5 calls for one user-visible action
@@ -39,11 +39,11 @@ Read ONLY the section for the current review pass. Do NOT load the entire file.
 - God endpoint: 47 parameter combinations with different behavior per subset
 - Documentation-required API: 3 pages of docs before first call = too much ceremony
 
-## Pass 3: Error Messages & Debugging
+
 
 **Three tiers of error quality:**
 
-**Tier 1, Elm (Conversational Compiler):**
+**Tier 1、Elm (会話型コンパイラー):**
 ```
 -- TYPE MISMATCH ---- src/Main.elm
 I cannot do addition with String values like this one:
@@ -51,9 +51,9 @@ I cannot do addition with String values like this one:
      ^^^^^^^
 Hint: To put strings together, use the (++) operator instead.
 ```
-First person, complete sentences, exact location, suggested fix, further reading.
+一人称、完全な文、正確な場所、修正案、詳細情報。
 
-**Tier 2, Rust (Annotated Source):**
+**Tier 2、Rust (注釈付きソース):**
 ```
 error[E0308]: mismatched types
  --> src/main.rs:4:20
@@ -62,13 +62,13 @@ help: consider borrowing here
 4 |     let name: &str = &get_name();
   |                       +
 ```
-Error code links to tutorial. Primary + secondary labels. Help section shows exact edit.
+エラーコードはチュートリアルへのリンクです。プライマリ + セカンダリ ラベル。ヘルプセクションに正確な編集内容が表示されます。
 
-**Tier 3, Stripe API (Structured with doc_url):**
+**階層 3、Stripe API (doc_url で構造化):**
 ```json
 {"error":{"type":"invalid_request_error","code":"resource_missing","message":"No such customer: 'cus_nonexistent'","param":"customer","doc_url":"https://stripe.com/docs/error-codes/resource-missing"}}
 ```
-Five fields, zero ambiguity.
+5 つのフィールド、曖昧さゼロ。
 
 **The formula:** What happened + Why + How to fix + Where to learn more + Actual values that caused it.
 
@@ -84,20 +84,20 @@ Five fields, zero ambiguity.
 
 ## Pass 5: Upgrade & Migration Path
 
-**Gold standards:**
-- **Next.js**: `npx @next/codemod upgrade major`. One command upgrades Next.js, React, React DOM, runs all relevant codemods.
-- **AG Grid**: Every release from v31+ includes a codemod.
-- **Stripe API versioning**: One codebase internally. Version pinning per account. Breaking changes never surprise you.
-- **Martin Fowler's pipeline pattern**: Compose small, testable transformations rather than one monolithic codemod.
-- 21.9% of breaking changes in Maven Central were undocumented (Ochoa et al., 2021)
+**ゴールドスタンダード:**
+- **Next.js**: `npx @next/codemod upgrade major`。 1 つのコマンドで Next.js、React、React DOM をアップグレードし、関連するすべての codemod を実行します。
+- **AG Grid**: v31 以降のすべてのリリースには codemod が含まれています。
+- **ストライプ API のバージョン管理**: 内部的には 1 つのコードベース。アカウントごとのバージョンの固定。重大な変更に驚かれることはありません。
+- **Martin Fowler のパイプライン パターン**: 1 つのモノリシック codemod ではなく、小さくてテスト可能な変換を作成します。
+- Maven Central の破壊的変更の 21.9% は文書化されていませんでした (Ochoa et al., 2021)
 
 ## Pass 6: Developer Environment & Tooling
 
-**Gold standards:**
-- **Bun**: 100x faster than npm install, 4x faster than Node.js runtime. Speed IS DX.
+**ゴールドスタンダード:**
+- **Bun**: npm install より 100 倍、Node.js ランタイムより 4 倍高速です。スピードはDX。
 - 87 interruptions per day average; 25 minutes to recover from each. Devs code only 2-4 hours/day.
-- Each 1-point DXI improvement = 13 minutes saved per developer per week.
-- **GitHub Copilot**: 55.8% faster task completion. PR time from 9.6 days to 2.4 days.
+- DXI の 1 ポイントの改善ごとに、開発者あたり 1 週間あたり 13 分が節約されます。
+- **GitHub Copilot**: タスクの完了が 55.8% 高速化されました。 PR time from 9.6 days to 2.4 days.
 
 ## Pass 7: Community & Ecosystem
 
@@ -106,22 +106,22 @@ Five fields, zero ambiguity.
 
 ## Pass 8: DX Measurement
 
-**Three academic frameworks:**
-1. **SPACE** (Microsoft Research, 2021): Satisfaction, Performance, Activity, Communication, Efficiency. Measure at least 3 dimensions.
-2. **DevEx** (ACM Queue, 2023): Feedback Loops, Cognitive Load, Flow State. Combine perceptual + workflow data.
-3. **Fagerholm & Munch** (IEEE, 2012): Cognition, Affect, Conation. The psychological "trilogy of mind."
+**3 つの学術フレームワーク:**
+1. **スペース** (Microsoft Research、2021): 満足度、パフォーマンス、アクティビティ、コミュニケーション、効率。少なくとも 3 つの寸法を測定します。
+2. **DevEx** (ACM キュー、2023): フィードバック ループ、認知負荷、フロー状態。知覚データとワークフロー データを組み合わせます。
+3. **ファーガーホルムとムンク** (IEEE、2012): 認知、感情、認知。心理学の「心の三部作」。
 
-## Claude Code Skill DX Checklist
 
-Use when reviewing plans for Claude Code skills, MCP servers, or AI agent tools.
 
-- [ ] **AskUserQuestion design**: One issue per call. Re-ground context (project, branch, task). Browser handoff for visual feedback.
-- [ ] **State storage**: Global (~/.tool/) vs per-project ($SLUG/) vs per-session. Append-only JSONL for audit trails.
-- [ ] **Progressive consent**: One-time prompts with marker files. Never re-ask. Reversible.
-- [ ] **Auto-upgrade**: Version check with cache + snooze backoff. Migration scripts. Inline offer.
-- [ ] **Skill composition**: Benefits-from chains. Review chaining. Inline invocation with section skipping.
-- [ ] **Error recovery**: Resume from failure. Partial results preserved. Checkpoint-safe.
-- [ ] **Session continuity**: Timeline events. Compaction recovery. Cross-session learnings.
-- [ ] **Bounded autonomy**: Clear operational limits. Mandatory escalation for destructive actions. Audit trails.
+クロード コード スキル、MCP サーバー、または AI エージェント ツールの計画を検討するときに使用します。
 
-Reference implementations: gstack's design-shotgun loop, auto-upgrade flow, progressive consent, hierarchical storage.
+- [ ] **AskUserQuestion デザイン**: 通話ごとに 1 つの問題。コンテキスト (プロジェクト、ブランチ、タスク) を再接地します。視覚的なフィードバックのためのブラウザーハンドオフ。
+- [ ] **状態ストレージ**: グローバル (~/.tool/)、プロジェクトごと ($SLUG/)、セッションごと。監査証跡用の追加専用 JSONL。
+- [ ] **プログレッシブ同意**: マーカー ファイルを使用した 1 回限りのプロンプト。決して再質問しないでください。可逆。
+- [ ] **自動アップグレード**: キャッシュ + スヌーズ バックオフによるバージョン チェック。移行スクリプト。インラインオファー。
+- [ ] **スキル構成**: チェーンによる恩恵。連鎖を確認します。セクションをスキップしたインライン呼び出し。
+- [ ] **エラー回復**: 失敗から再開します。部分的な結果が保存されます。チェックポイントセーフ。
+- [ ] **セッションの継続性**: タイムライン イベント。圧縮回復。セッションをまたいだ学習。
+- [ ] **制限された自律性**: 操作上の制限をクリアします。破壊的な行為には必須のエスカレーション。監査証跡。
+
+参照実装: gstack の設計ショットガン ループ、自動アップグレード フロー、プログレッシブ コンセント、階層ストレージ。

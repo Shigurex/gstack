@@ -1,21 +1,21 @@
-# Design: Design Shotgun — Browser-to-Agent Feedback Loop
+# 設計: Shotgun の設計 — ブラウザからエージェントへのフィードバック ループ
 
-Generated on 2026-03-27
-Branch: garrytan/agent-design-tools
-Status: LIVING DOCUMENT — update as bugs are found and fixed
+2026-03-27 に生成
+ブランチ: garrytan/agent-design-tools
+ステータス: LIVING DOCUMENT — バグが見つかって修正され次第更新します
 
-## What This Feature Does
+## この機能の内容
 
-Design Shotgun generates multiple AI design mockups, opens them side-by-side in the
-user's real browser as a comparison board, and collects structured feedback (pick a
-favorite, rate alternatives, leave notes, request regeneration). The feedback flows
-back to the coding agent, which acts on it: either proceeding with the approved
-variant or generating new variants and reloading the board.
+Design Shotgun は複数の AI デザイン モックアップを生成し、それらを並べて開きます。
+ユーザーの実際のブラウザを比較ボードとして使用し、構造化されたフィードバックを収集します (選択
+お気に入り、代替案の評価、メモを残す、再生成のリクエストなど）。フィードバックの流れ
+コーディング エージェントに戻り、コーディング エージェントがそれに基づいて動作します。
+バリアントを作成するか、新しいバリアントを生成してボードをリロードします。
 
-The user never leaves their browser tab. The agent never asks redundant questions.
-The board is the feedback mechanism.
+ユーザーはブラウザのタブから離れることはありません。エージェントは冗長な質問をすることはありません。
+ボードはフィードバック機構です。
 
-## The Core Problem: Two Worlds That Must Talk
+## 核心問題: 話し合わなければならない 2 つの世界
 
 ```
   ┌─────────────────────┐          ┌──────────────────────┐
@@ -31,11 +31,11 @@ The board is the feedback mechanism.
   └─────────────────────┘          └──────────────────────┘
 ```
 
-The "???" is the hard part. The user clicks a button in Chrome. The agent running in
-a terminal needs to know about it. These are two completely separate processes with
-no shared memory, no shared event bus, no WebSocket connection.
+「？？」難しい部分です。ユーザーが Chrome でボタンをクリックします。実行中のエージェント
+端末はそれについて知る必要があります。これらは 2 つの完全に別個のプロセスです。
+共有メモリ、共有イベント バス、WebSocket 接続はありません。
 
-## Architecture: How the Linkage Works
+## アーキテクチャ: リンケージの仕組み
 
 ```
   USER'S BROWSER                    $D serve (Bun HTTP)              AGENT
@@ -61,15 +61,15 @@ no shared memory, no shared event bus, no WebSocket connection.
        │                                   │                   reads file]
 ```
 
-### The Three Files
+### 3 つのファイル
 
-| File | Written when | Means | Agent action |
-|------|-------------|-------|-------------|
-| `feedback.json` | User clicks Submit | Final selection, done | Read it, proceed |
-| `feedback-pending.json` | User clicks Regenerate/More Like This | Wants new options | Read it, delete it, generate new variants, reload board |
-| `feedback.json` (round 2+) | User clicks Submit after regeneration | Final selection after iteration | Read it, proceed |
+|ファイル |いつ書かれた |手段 |エージェントのアクション |
+|------|---------------|------|---------------|
+| `feedback.json` |ユーザーが「送信」をクリックします |最終選択、完了 |読んで続行してください |
+| `feedback-pending.json` |ユーザーが「再生成」/「もっと見る」をクリックします。新しいオプションが欲しい |読み取り、削除、新しいバリアントの生成、ボードのリロード |
+| `feedback.json` (ラウンド 2+) |ユーザーは再生成後に「送信」をクリックします。反復後の最終選択 |読んで続行してください |
 
-### The State Machine
+### ステートマシン
 
 ```
   $D serve starts
@@ -102,188 +102,188 @@ no shared memory, no shared event bus, no WebSocket connection.
                                  └──────────────┘
 ```
 
-### Port Discovery
+### ポートディスカバリ
 
-The agent backgrounds `$D serve` and reads stderr for the port:
+エージェントは `$D serve` をバックグラウンドにして、ポートの stderr を読み取ります。
 
 ```
 SERVE_STARTED: port=54321 html=/path/to/board.html
 SERVE_BROWSER_OPENED: url=http://127.0.0.1:54321
 ```
 
-The agent parses `port=XXXXX` from stderr. This port is needed later to POST
-`/api/reload` when the user requests regeneration. If the agent loses the port
-number, it cannot reload the board.
+エージェントは stderr から `port=XXXXX` を解析します。このポートは後で POST するために必要になります
+`/api/reload` ユーザーが再生成を要求したとき。エージェントがポートを失った場合
+いいえ、ボードをリロードできません。
 
-### Why 127.0.0.1, Not localhost
+### なぜローカルホストではなく 127.0.0.1 なのか
 
-`localhost` can resolve to IPv6 `::1` on some systems while Bun.serve() listens
-on IPv4 only. More importantly, `localhost` sends all dev cookies for every domain
-the developer has been working on. On a machine with many active sessions, this
-blows past Bun's default header size limit (HTTP 431 error). `127.0.0.1` avoids
-both issues.
+Bun.serve() がリッスンしている間、一部のシステムでは `localhost` が IPv6 `::1` に解決されることがあります
+IPv4 のみ。さらに重要なのは、`localhost` がすべてのドメインのすべての開発 Cookie を送信することです。
+開発者が取り組んできました。アクティブなセッションが多数あるマシンでは、これは
+Bun のデフォルトのヘッダー サイズ制限を超えています (HTTP 431 エラー)。 `127.0.0.1` は回避します
+どちらの問題も。
 
-## Every Edge Case and Pitfall
+## あらゆるエッジケースと落とし穴
 
-### 1. The Zombie Form Problem
+### 1. ゾンビフォームの問題
 
-**What:** User submits feedback, the POST succeeds, the server exits. But the HTML
-page is still open in Chrome. It looks interactive. The user might edit their
-feedback and click Submit again. Nothing happens because the server is gone.
+**内容:** ユーザーがフィードバックを送信すると、POST が成功し、サーバーが終了します。しかし、HTML
+ページは Chrome でまだ開いています。インタラクティブに見えます。ユーザーは自分のファイルを編集する可能性があります。
+フィードバックを入力し、もう一度「送信」をクリックします。サーバーがなくなっているので何も起こりません。
 
-**Fix:** After successful POST, the board JS:
-- Disables ALL inputs (buttons, radios, textareas, star ratings)
-- Hides the Regenerate bar entirely
-- Replaces the Submit button with: "Feedback received! Return to your coding agent."
-- Shows: "Want to make more changes? Run `/design-shotgun` again."
-- The page becomes a read-only record of what was submitted
+**修正:** POST が成功した後、ボード JS:
+- すべての入力 (ボタン、ラジオ、テキストエリア、星評価) を無効にします。
+- 再生バーを完全に非表示にします
+- 送信ボタンを「フィードバックを受け取りました! コーディング エージェントに返信してください。」に置き換えます。
+- 表示: 「さらに変更を加えますか? `/design-shotgun` をもう一度実行してください。」
+- ページは送信された内容の読み取り専用の記録になります。
 
-**Implemented in:** `compare.ts:showPostSubmitState()` (line 484)
+**実装場所:** `compare.ts:showPostSubmitState()` (484 行目)
 
-### 2. The Dead Server Problem
+### 2. デッドサーバーの問題
 
-**What:** The server times out (10 min default) or crashes while the user still has
-the board open. User clicks Submit. The fetch() fails silently.
+**内容:** ユーザーがまだアクセスしている間に、サーバーがタイムアウトするか (デフォルトは 10 分)、クラッシュします。
+ボードが開きます。ユーザーが「送信」をクリックします。 fetch() はサイレントに失敗します。
 
-**Fix:** The `postFeedback()` function has a `.catch()` handler. On network failure:
-- Shows red error banner: "Connection lost"
-- Displays the collected feedback JSON in a copyable `<pre>` block
-- User can copy-paste it directly into their coding agent
+**修正:** `postFeedback()` 関数には `.catch()` ハンドラーがあります。ネットワーク障害の場合:
+- 赤いエラー バナーが表示されます:「接続が失われました」
+- 収集されたフィードバック JSON をコピー可能な `<pre>` ブロックに表示します
+- ユーザーはそれをコピーしてコーディング エージェントに直接貼り付けることができます
 
-**Implemented in:** `compare.ts:showPostFailure()` (line 546)
+**実装場所:** `compare.ts:showPostFailure()` (行 546)
 
-### 3. The Stale Regeneration Spinner
+### 3. 古くなった再生スピナー
 
-**What:** User clicks Regenerate. Board shows spinner and polls `/api/progress`
-every 2 seconds. Agent crashes or takes too long to generate new variants. The
-spinner spins forever.
+**内容:** ユーザーが「再生成」をクリックします。ボードにはスピナーと投票が表示されます `/api/progress`
+2秒ごとに。エージェントがクラッシュするか、新しいバリアントの生成に時間がかかりすぎます。の
+スピナーは永遠に回転します。
 
-**Fix:** Progress polling has a hard 5-minute timeout (150 polls x 2s interval).
-After 5 minutes:
-- Spinner replaced with: "Something went wrong."
-- Shows: "Run `/design-shotgun` again in your coding agent."
-- Polling stops. Page becomes informational.
+**修正:** 進行状況ポーリングには 5 分間のハード タイムアウトがあります (150 ポーリング x 2 秒間隔)。
+5分後:
+- スピナーは「何か問題が発生しました。」と置き換えられました。
+- 表示: 「コーディング エージェントで `/design-shotgun` を再度実行します。」
+- ポーリングが停止します。ページは情報提供になります。
 
-**Implemented in:** `compare.ts:startProgressPolling()` (line 511)
+**実装場所:** `compare.ts:startProgressPolling()` (行 511)
 
-### 4. The file:// URL Problem (THE ORIGINAL BUG)
+### 4. file:// URL の問題 (元のバグ)
 
-**What:** The skill template originally used `$B goto file:///path/to/board.html`.
-But `browse/src/url-validation.ts:71` blocks `file://` URLs for security. The
-fallback `open file://...` opens the user's macOS browser, but `$B eval` polls
-Playwright's headless browser (different process, never loaded the page).
-Agent polls empty DOM forever.
+**内容:** スキル テンプレートは元々 `$B goto file:///path/to/board.html` を使用していました。
+ただし、`browse/src/url-validation.ts:71` はセキュリティのため `file://` URL をブロックします。の
+フォールバック `open file://...` はユーザーの macOS ブラウザを開きますが、 `$B eval` はポーリングを行います
+Playwright のヘッドレス ブラウザ (別のプロセス、ページは決して読み込まれません)。
+エージェントは空の DOM を永久にポーリングします。
 
-**Fix:** `$D serve` serves over HTTP. Never use `file://` for the board. The
-`--serve` flag on `$D compare` combines board generation and HTTP serving in
-one command.
+**修正:** `$D serve` は HTTP 経由で提供されます。ボードには `file://` を決して使用しないでください。の
+`$D compare` の `--serve` フラグは、ボード生成と HTTP サービスを組み合わせます。
+一つのコマンド。
 
-**Evidence:** See `.context/attachments/image-v2.png` — a real user hit this exact
-bug. The agent correctly diagnosed: (1) `$B goto` rejects `file://` URLs,
-(2) no polling loop even with the browse daemon.
+**証拠:** `.context/attachments/image-v2.png` を参照 — 実際のユーザーはこれを正確にヒットしました
+バグ。エージェントは正しく診断しました: (1) `$B goto` が `file://` URL を拒否します。
+(2) ブラウズ デーモンを使用してもポーリング ループは発生しません。
 
-### 5. The Double-Click Race
+### 5. ダブルクリックレース
 
-**What:** User clicks Submit twice rapidly. Two POST requests arrive at the server.
-First one sets state to "done" and schedules exit(0) in 100ms. Second one arrives
-during that 100ms window.
+**内容:** ユーザーが [送信] を素早く 2 回クリックします。 2 つの POST リクエストがサーバーに到着します。
+最初の方法では、状態を「done」に設定し、100 ミリ秒以内に exit(0) をスケジュールします。 2本目到着
+その 100ms ウィンドウの間に。
 
-**Current state:** NOT fully guarded. The `handleFeedback()` function doesn't check
-if state is already "done" before processing. The second POST would succeed and
-write a second `feedback.json` (harmless, same data). The exit still fires after
-100ms.
+**現在の状態:** 完全に保護されていません。 `handleFeedback()` 関数はチェックしません
+処理前に状態がすでに「完了」している場合。 2 回目の POST は成功し、
+2 番目の `feedback.json` (無害、同じデータ) を書き込みます。その後も出口が起動します
+100ミリ秒。
 
-**Risk:** Low. The board disables all inputs on the first successful POST response,
-so a second click would need to arrive within ~1ms. And both writes would contain
-the same feedback data.
+**リスク:** 低い。ボードは、最初に成功した POST 応答ですべての入力を無効にします。
+したがって、2 回目のクリックは 1 ミリ秒以内に到達する必要があります。そして両方の書き込みには次のものが含まれます
+同じフィードバックデータ。
 
-**Potential fix:** Add `if (state === 'done') return Response.json({error: 'already submitted'}, {status: 409})` at the top of `handleFeedback()`.
+**修正の可能性:** `handleFeedback()` の先頭に `if (state === 'done') return Response.json({error: 'already submitted'}, {status: 409})` を追加します。
 
-### 6. The Port Coordination Problem
+### 6. ポート調整の問題
 
-**What:** Agent backgrounds `$D serve` and parses `port=54321` from stderr. Agent
-needs this port later to POST `/api/reload` during regeneration. If the agent
-loses context (conversation compresses, context window fills up), it may not
-remember the port.
+**内容:** エージェントは `$D serve` をバックグラウンド化し、stderr から `port=54321` を解析します。エージェント
+後で再生成中に `/api/reload` を POST するためにこのポートが必要になります。エージェントの場合
+コンテキストが失われます (会話が圧縮され、コンテキスト ウィンドウがいっぱいになります)。
+港を思い出してください。
 
-**Current state:** The port is printed to stderr once. The agent must remember it.
-There is no port file written to disk.
+**現在の状態:** ポートは stderr に 1 回出力されます。エージェントはそれを覚えておく必要があります。
+ディスクに書き込まれたポート ファイルがありません。
 
-**Potential fix:** Write a `serve.pid` or `serve.port` file next to the board HTML
-on startup. Agent can read it anytime:
+**修正の可能性:** ボード HTML の隣に `serve.pid` または `serve.port` ファイルを書き込みます
+起動時。エージェントはいつでもそれを読むことができます:
 ```bash
 cat "$_DESIGN_DIR/serve.port"  # → 54321
 ```
 
-### 7. The Feedback File Cleanup Problem
+### 7. フィードバック ファイルのクリーンアップの問題
 
-**What:** `feedback-pending.json` from a regeneration round is left on disk. If the
-agent crashes before reading it, the next `$D serve` session finds a stale file.
+**内容:** 再生成ラウンドからの `feedback-pending.json` がディスク上に残ります。もし
+エージェントが読み取り前にクラッシュすると、次の `$D serve` セッションで古いファイルが見つかります。
 
-**Current state:** The polling loop in the resolver template says to delete
-`feedback-pending.json` after reading it. But this depends on the agent following
-instructions perfectly. Stale files could confuse a new session.
+**現在の状態:** リゾルバー テンプレートのポーリング ループは削除するように指示しています。
+`feedback-pending.json` を読んだ後。ただし、これはフォローするエージェント次第です
+指示を完璧に。ファイルが古いと、新しいセッションが混乱する可能性があります。
 
-**Potential fix:** `$D serve` could check for and delete stale feedback files on
-startup. Or: name files with timestamps (`feedback-pending-1711555200.json`).
+**修正の可能性:** `$D serve` は、古いフィードバック ファイルをチェックして削除する可能性がありました。
+スタートアップ。または: タイムスタンプ (`feedback-pending-1711555200.json`) を使用してファイルに名前を付けます。
 
-### 8. Sequential Generate Rule
+### 8. 順次生成ルール
 
-**What:** The underlying OpenAI GPT Image API rate-limits concurrent image generation
-requests. When 3 `$D generate` calls run in parallel, 1 succeeds and 2 get aborted.
+**内容:** 基盤となる OpenAI GPT Image API は、同時イメージ生成のレート制限を行います。
+リクエスト。 3 つの `$D generate` 呼び出しが並行して実行されると、1 つは成功し、2 つは中止されます。
 
-**Fix:** The skill template must explicitly say: "Generate mockups ONE AT A TIME.
-Do not parallelize `$D generate` calls." This is a prompt-level instruction, not
-a code-level lock. The design binary does not enforce sequential execution.
+**修正:** スキル テンプレートでは、「一度に 1 つずつモックアップを生成します。
+`$D generate` 呼び出しを並列化しないでください。」これはプロンプトレベルの指示ではなく、
+コードレベルのロック。デザイン バイナリはシーケンシャル実行を強制しません。
 
-**Risk:** Agents are trained to parallelize independent work. Without an explicit
-instruction, they will try to run 3 generates simultaneously. This wastes API calls
-and money.
+**リスク:** エージェントは、独立した作業を並列化するようにトレーニングされています。明示的に言わずに
+命令を実行すると、3 つの生成を同時に実行しようとします。これにより API 呼び出しが無駄になります
+そしてお金。
 
-### 9. The AskUserQuestion Redundancy
+### 9. AskUserQuestion の冗長性
 
-**What:** After the user submits feedback via the board (with preferred variant,
-ratings, comments all in the JSON), the agent asks them again: "Which variant do
-you prefer?" This is annoying. The whole point of the board is to avoid this.
+**内容:** ユーザーがボード経由でフィードバックを送信した後 (優先バリアントを使用して、
+評価、コメントはすべて JSON 内にある)、エージェントは再度質問します。「どのバリアントが
+あなたのほうが好きですか？」これは迷惑です。理事会の重要な点は、これを回避することです。
 
-**Fix:** The skill template must say: "Do NOT use AskUserQuestion to ask the user's
-preference. Read `feedback.json`, it contains their selection. Only AskUserQuestion
-to confirm you understood correctly, not to re-ask."
+**修正:** スキル テンプレートには、「ユーザーの質問に AskUserQuestion を使用しないでください」と記載する必要があります。
+好み。 `feedback.json` を読んでください。そこには彼らの選択が含まれています。ユーザーにのみ質問する
+正しく理解したことを確認するためであり、再質問するためではありません。」
 
-### 10. The CORS Problem
+### 10. CORS 問題
 
-**What:** If the board HTML references external resources (fonts, images from CDN),
-the browser sends requests with `Origin: http://127.0.0.1:PORT`. Most CDNs allow
-this, but some might block it.
+**内容:** ボードの HTML が外部リソース (CDN からのフォント、画像) を参照している場合、
+ブラウザは `Origin: http://127.0.0.1:PORT` を使用してリクエストを送信します。ほとんどの CDN では許可されています
+これですが、ブロックする人もいるかもしれません。
 
-**Current state:** The server does not set CORS headers. The board HTML is
-self-contained (images base64-encoded, styles inline), so this hasn't been an
-issue in practice.
+**現在の状態:** サーバーは CORS ヘッダーを設定しません。ボードのHTMLは
+自己完結型 (画像は Base64 でエンコードされ、スタイルはインライン) なので、これは
+実際の問題。
 
-**Risk:** Low for current design. Would matter if the board loaded external
-resources.
+**リスク:** 現在の設計では低いです。ボードが外部にロードされているかどうかは重要です
+リソース。
 
-### 11. The Large Payload Problem
+### 11. ペイロードが大きい問題
 
-**What:** No size limit on POST bodies to `/api/feedback`. If the board somehow
-sends a multi-MB payload, `req.json()` will parse it all into memory.
+**内容:** `/api/feedback` への POST 本文にサイズ制限はありません。何らかの形でボードがあれば
+複数 MB のペイロードを送信すると、`req.json()` がそれをすべてメモリに解析します。
 
-**Current state:** In practice, feedback JSON is ~500 bytes to ~2KB. The risk is
-theoretical, not practical. The board JS constructs a fixed-shape JSON object.
+**現在の状態:** 実際には、フィードバック JSON は約 500 バイトから約 2KB です。リスクは
+理論的であり、実践的ではありません。ボード JS は、固定形状の JSON オブジェクトを構築します。
 
-### 12. The fs.writeFileSync Error
+### 12. fs.writeFileSync エラー
 
-**What:** `feedback.json` write in `serve.ts:138` uses `fs.writeFileSync()` with no
-try/catch. If the disk is full or the directory is read-only, this throws and
-crashes the server. The user sees a spinner forever (server is dead, but board
-doesn't know).
+**内容:** `feedback.json` `serve.ts:138` は、`fs.writeFileSync()` を使用せずに書き込みます
+試す/捕まえる。ディスクがいっぱいであるか、ディレクトリが読み取り専用の場合、これはスローされ、
+サーバーがクラッシュします。ユーザーにはスピナーが永遠に表示されます (サーバーは停止していますが、ボードは停止しています)
+わかりません）。
 
-**Risk:** Low in practice (the board HTML was just written to the same directory,
-proving it's writable). But a try/catch with a 500 response would be cleaner.
+**リスク:** 実際には低い (ボードの HTML は同じディレクトリに書き込まれただけですが、
+書き込み可能であることを証明します)。ただし、応答が 500 の try/catch の方がきれいです。
 
-## The Complete Flow (Step by Step)
+## 完全なフロー (ステップバイステップ)
 
-### Happy Path: User Picks on First Try
+### ハッピー パス: 最初の試行でユーザーが選択
 
 ```
 1. Agent runs: $D compare --images "A.png,B.png,C.png" --output board.html --serve &
@@ -306,7 +306,7 @@ proving it's writable). But a try/catch with a 500 response would be cleaner.
 17. Agent reads it, summarizes to user, proceeds
 ```
 
-### Regeneration Path: User Wants Different Options
+### 再生成パス: ユーザーはさまざまなオプションを望んでいます
 
 ```
 1-6.  Same as above
@@ -335,7 +335,7 @@ proving it's writable). But a try/catch with a 500 response would be cleaner.
 25. User picks one, clicks Submit → happy path from step 10
 ```
 
-### "More Like This" Path
+### 「もっと似たもの」パス
 
 ```
 Same as regeneration, except:
@@ -344,7 +344,7 @@ Same as regeneration, except:
   instead of $D variants
 ```
 
-### Fallback Path: $D serve Fails
+### フォールバック パス: $D サーブが失敗する
 
 ```
 1. Agent tries $D compare --serve, it fails (binary missing, port error, etc.)
@@ -355,97 +355,97 @@ Same as regeneration, except:
 5. Agent proceeds with text feedback (no structured JSON)
 ```
 
-## Files That Implement This
+## これを実装するファイル
 
-| File | Role |
+|ファイル |役割 |
 |------|------|
-| `design/src/serve.ts` | HTTP server, state machine, file writing, browser launch |
-| `design/src/compare.ts` | Board HTML generation, JS for ratings/picks/regen, POST logic, post-submit lifecycle |
-| `design/src/cli.ts` | CLI entry point, wires `serve` and `compare --serve` commands |
-| `design/src/commands.ts` | Command registry, defines `serve` and `compare` with their args |
-| `scripts/resolvers/design.ts` | `generateDesignShotgunLoop()` — template resolver that outputs the polling loop and reload instructions |
-| `design-shotgun/SKILL.md.tmpl` | Skill template that orchestrates the full flow: context gathering, variant generation, `{{DESIGN_SHOTGUN_LOOP}}`, feedback confirmation |
-| `design/test/serve.test.ts` | Unit tests for HTTP endpoints and state transitions |
-| `design/test/feedback-roundtrip.test.ts` | E2E test: browser click → JS fetch → HTTP POST → file on disk |
-| `browse/test/compare-board.test.ts` | DOM-level tests for the comparison board UI |
+| `design/src/serve.ts` | HTTP サーバー、ステート マシン、ファイル書き込み、ブラウザ起動 |
+| `design/src/compare.ts` |ボード HTML 生成、評価/選択/再生成用の JS、POST ロジック、送信後のライフサイクル |
+| `design/src/cli.ts` | CLI エントリ ポイント、`serve` および `compare --serve` コマンドの配線 |
+| `design/src/commands.ts` |コマンド レジストリ。 `serve` と `compare` を引数とともに定義します。
+| `scripts/resolvers/design.ts` | `generateDesignShotgunLoop()` — ポーリング ループとリロード命令を出力するテンプレート リゾルバー |
+| `design-shotgun/SKILL.md.tmpl` |完全なフローを調整するスキル テンプレート: コンテキスト収集、バリアント生成、`{{DESIGN_SHOTGUN_LOOP}}`、フィードバック確認 |
+| `design/test/serve.test.ts` | HTTP エンドポイントと状態遷移の単体テスト |
+| `design/test/feedback-roundtrip.test.ts` | E2E テスト: ブラウザーのクリック → JS フェッチ → HTTP POST → ディスク上のファイル |
+| `browse/test/compare-board.test.ts` |比較ボード UI の DOM レベルのテスト |
 
-## What Could Still Go Wrong
+## まだ問題が発生する可能性があるもの
 
-### Known Risks (ordered by likelihood)
+### 既知のリスク (可能性の高い順)
 
-1. **Agent doesn't follow sequential generate rule** — most LLMs want to parallelize. Without enforcement in the binary, this is a prompt-level instruction that can be ignored.
+1. **エージェントは順次生成ルールに従っていません** - ほとんどの LLM は並列化を望んでいます。バイナリで強制を行わない場合、これは無視できるプロンプトレベルの指示です。
 
-2. **Agent loses port number** — context compression drops the stderr output. Agent can't reload the board. Mitigation: write port to a file.
+2. **エージェントがポート番号を失う** — コンテキスト圧縮により stderr 出力がドロップされます。エージェントはボードをリロードできません。軽減策: ポートをファイルに書き込みます。
 
-3. **Stale feedback files** — leftover `feedback-pending.json` from a crashed session confuses the next run. Mitigation: clean on startup.
+3. **古いフィードバック ファイル** — クラッシュしたセッションから残った `feedback-pending.json` は、次回の実行を混乱させます。軽減策: 起動時にクリーン。
 
-4. **fs.writeFileSync crash** — no try/catch on the feedback file write. Silent server death if disk is full. User sees infinite spinner.
+4. **fs.writeFileSync クラッシュ** — フィードバック ファイルの書き込みで try/catch が発生しません。ディスクがいっぱいの場合はサイレントサーバーが停止します。ユーザーには無限スピナーが表示されます。
 
-5. **Progress polling drift** — `setInterval(fn, 2000)` over 5 minutes. In practice, JavaScript timers are accurate enough. But if the browser tab is backgrounded, Chrome may throttle intervals to once per minute.
+5. **進行状況ポーリング ドリフト** — 5 分間にわたる `setInterval(fn, 2000)`。実際には、JavaScript タイマーは十分に正確です。ただし、ブラウザ タブがバックグラウンドになっている場合、Chrome は間隔を 1 分に 1 回に調整することがあります。
 
-### Things That Work Well
+### うまくいくこと
 
-1. **Dual-channel feedback** — stdout for foreground mode, files for background mode. Both always active. Agent can use whichever works.
+1. **デュアルチャネル フィードバック** — フォアグラウンド モードの場合は標準出力、バックグラウンド モードの場合はファイル。どちらも常にアクティブです。エージェントは機能するものを使用できます。
 
-2. **Self-contained HTML** — board has all CSS, JS, and base64-encoded images inline. No external dependencies. Works offline.
+2. **自己完結型 HTML** — ボードには、すべての CSS、JS、および Base64 でエンコードされた画像がインラインで含まれています。外部依存関係はありません。オフラインでも動作します。
 
-3. **Same-tab regeneration** — user stays in one tab. Board auto-refreshes via `/api/progress` polling + `window.location.reload()`. No tab explosion.
+3. **同じタブの再生成** — ユーザーは 1 つのタブに留まります。ボードは、`/api/progress` ポーリング + `window.location.reload()` を介して自動更新されます。タブの爆発はありません。
 
-4. **Graceful degradation** — POST failure shows copyable JSON. Progress timeout shows clear error message. No silent failures.
+4. **正常な機能低下** — POST エラーにより、コピー可能な JSON が表示されます。進行状況のタイムアウトにより、明確なエラー メッセージが表示されます。サイレントな失敗はありません。
 
-5. **Post-submit lifecycle** — board becomes read-only after submit. No zombie forms. Clear "what to do next" message.
+5. **送信後のライフサイクル** — ボードは送信後に読み取り専用になります。ゾンビの形態はありません。 「次に何をすべきか」というメッセージをクリアします。
 
-## Test Coverage
+## テストカバレッジ
 
-### What's Tested
+### テスト内容
 
-| Flow | Test | File |
+|フロー |テスト |ファイル |
 |------|------|------|
-| Submit → feedback.json on disk | browser click → file | `feedback-roundtrip.test.ts` |
-| Post-submit UI lockdown | inputs disabled, success shown | `feedback-roundtrip.test.ts` |
-| Regenerate → feedback-pending.json | chiclet + regen click → file | `feedback-roundtrip.test.ts` |
-| "More like this" → specific action | more_like_B in JSON | `feedback-roundtrip.test.ts` |
-| Spinner after regenerate | DOM shows loading text | `feedback-roundtrip.test.ts` |
-| Full regen → reload → submit | 2-round trip | `feedback-roundtrip.test.ts` |
-| Server starts on random port | port 0 binding | `serve.test.ts` |
-| HTML injection of server URL | __GSTACK_SERVER_URL check | `serve.test.ts` |
-| Invalid JSON rejection | 400 response | `serve.test.ts` |
-| HTML file validation | exit 1 if missing | `serve.test.ts` |
-| Timeout behavior | exit 1 after timeout | `serve.test.ts` |
-| Board DOM structure | radios, stars, chiclets | `compare-board.test.ts` |
+|送信 → ディスク上のフィードバック.json |ブラウザをクリック → ファイル | `feedback-roundtrip.test.ts` |
+|送信後の UI ロックダウン |入力は無効になり、成功が表示されます | `feedback-roundtrip.test.ts` |
+|再生成→フィードバック保留.json |チクレット + リジェネクリック → ファイル | `feedback-roundtrip.test.ts` |
+| 「もっとこう」 → 具体的なアクション | JSON の more_like_B | `feedback-roundtrip.test.ts` |
+|再生後のスピナー | DOM はテキストの読み込みを示しています | `feedback-roundtrip.test.ts` |
+|完全に再生成→リロード→送信 | 2往復 | `feedback-roundtrip.test.ts` |
+|サーバーはランダムなポートで起動します |ポート 0 バインディング | `serve.test.ts` |
+|サーバー URL の HTML インジェクション | __GSTACK_SERVER_URL チェック | `serve.test.ts` |
+|無効な JSON 拒否 | 400 応答 | `serve.test.ts` |
+| HTML ファイルの検証 |見つからない場合は 1 を終了します | `serve.test.ts` |
+|タイムアウトの動作 |タイムアウト後に終了 1 | `serve.test.ts` |
+|ボード DOM 構造 |ラジオ、スター、チクレット | `compare-board.test.ts` |
 
-### What's NOT Tested
+### テストされていないもの
 
-| Gap | Risk | Priority |
+|ギャップ |リスク |優先順位 |
 |-----|------|----------|
-| Double-click submit race | Low — inputs disable on first response | P3 |
-| Progress polling timeout (150 iterations) | Medium — 5 min is long to wait in a test | P2 |
-| Server crash during regeneration | Medium — user sees infinite spinner | P2 |
-| Network timeout during POST | Low — localhost is fast | P3 |
-| Backgrounded Chrome tab throttling intervals | Medium — could extend 5-min timeout to 30+ min | P2 |
-| Large feedback payload | Low — board constructs fixed-shape JSON | P3 |
-| Concurrent sessions (two boards, one server) | Low — each $D serve gets its own port | P3 |
-| Stale feedback file from prior session | Medium — could confuse new polling loop | P2 |
+|ダブルクリックしてレースを送信 |低 - 最初の応答で入力が無効になります。 P3 |
+|進行状況ポーリングのタイムアウト (150 回の反復) |中 — テストで 5 分は待つのに長い | P2 |
+|再生成中にサーバーがクラッシュする |中 — ユーザーには無限のスピナーが表示されます。 P2 |
+| POST 中のネットワーク タイムアウト |低い - ローカルホストは速い | P3 |
+|バックグラウンドの Chrome タブのスロットリング間隔 |中 - 5 分のタイムアウトを 30 分以上に延長できる | P2 |
+|大きなフィードバック ペイロード |低 — ボードは固定形状の JSON を構築します。 P3 |
+|同時セッション (2 つのボード、1 つのサーバー) |低 — 各 $D サーブは独自のポートを取得します。 P3 |
+|前のセッションからの古いフィードバック ファイル |中 - 新しいポーリング ループを混乱させる可能性があります。 P2 |
 
-## Potential Improvements
+## 改善の可能性
 
-### Short-term (this branch)
+### 短期 (当支店)
 
-1. **Write port to file** — `serve.ts` writes `serve.port` to disk on startup. Agent reads it anytime. 5 lines.
-2. **Clean stale files on startup** — `serve.ts` deletes `feedback*.json` before starting. 3 lines.
-3. **Guard double-click** — check `state === 'done'` at top of `handleFeedback()`. 2 lines.
-4. **try/catch file write** — wrap `fs.writeFileSync` in try/catch, return 500 on failure. 5 lines.
+1. **ポートをファイルに書き込む** — `serve.ts` は起動時に `serve.port` をディスクに書き込みます。エージェントはいつでもそれを読みます。 5行。
+2. **起動時に古いファイルを削除** — `serve.ts` は起動前に `feedback*.json` を削除します。 3行。
+3. **ダブルクリックをガード** — `handleFeedback()` の上部にある `state === 'done'` をチェックします。 2行。
+4. **try/catch ファイルの書き込み** — try/catch で `fs.writeFileSync` をラップし、失敗した場合は 500 を返します。 5行。
 
-### Medium-term (follow-up)
+### 中期（フォローアップ）
 
-5. **WebSocket instead of polling** — replace `setInterval` + `GET /api/progress` with a WebSocket connection. Board gets instant notification when new HTML is ready. Eliminates polling drift and backgrounded-tab throttling. ~50 lines in serve.ts + ~20 lines in compare.ts.
+5. **ポーリングの代わりに WebSocket** — `setInterval` + `GET /api/progress` を WebSocket 接続に置き換えます。新しい HTML が準備できると、ボードは即座に通知を受け取ります。ポーリング ドリフトとバックグラウンド タブのスロットルを排除します。 serve.ts に最大 50 行 + Compare.ts に最大 20 行。
 
-6. **Port file for agent** — write `{"port": 54321, "pid": 12345, "html": "/path/board.html"}` to `$_DESIGN_DIR/serve.json`. Agent reads this instead of parsing stderr. Makes the system more robust to context loss.
+6. **エージェントのポート ファイル** — `{"port": 54321, "pid": 12345, "html": "/path/board.html"}` から `$_DESIGN_DIR/serve.json` を書き込みます。エージェントは標準エラー出力を解析する代わりにこれを読み取ります。システムをコンテキスト損失に対してより堅牢にします。
 
-7. **Feedback schema validation** — validate the POST body against a JSON schema before writing. Catch malformed feedback early instead of confusing the agent downstream.
+7. **フィードバック スキーマの検証** — 書き込む前に、JSON スキーマに対して POST 本文を検証します。下流のエージェントを混乱させるのではなく、不正なフィードバックを早期にキャッチします。
 
-### Long-term (design direction)
+### 長期 (設計方向性)
 
-8. **Persistent design server** — instead of launching `$D serve` per session, run a long-lived design daemon (like the browse daemon). Multiple boards share one server. Eliminates cold start. But adds daemon lifecycle management complexity.
+8. **永続デザイン サーバー** — セッションごとに `$D serve` を起動する代わりに、存続期間の長いデザイン デーモン (ブラウズ デーモンなど) を実行します。複数のボードが 1 つのサーバーを共有します。コールドスタートを解消します。ただし、デーモンのライフサイクル管理が複雑になります。
 
-9. **Real-time collaboration** — two agents (or one agent + one human) working on the same board simultaneously. Server broadcasts state changes via WebSocket. Requires conflict resolution on feedback.
+9. **リアルタイム コラボレーション** — 2 人のエージェント (または 1 人のエージェント + 1 人の人間) が同じボード上で同時に作業します。サーバーは WebSocket 経由で状態の変更をブロードキャストします。フィードバック時に競合を解決する必要があります。

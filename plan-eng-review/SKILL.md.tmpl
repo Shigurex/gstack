@@ -1,76 +1,75 @@
 ---
-name: plan-eng-review
-preamble-tier: 3
-version: 1.0.0
-description: |
-  Eng manager-mode plan review. Lock in the execution plan — architecture,
-  data flow, diagrams, edge cases, test coverage, performance. Walks through
-  issues interactively with opinionated recommendations. Use when asked to
-  "review the architecture", "engineering review", or "lock in the plan".
-  Proactively suggest when the user has a plan or design doc and is about to
-  start coding — to catch architecture issues before implementation. (gstack)
-voice-triggers:
-  - "tech review"
-  - "technical review"
-  - "plan engineering review"
-benefits-from: [office-hours]
-allowed-tools:
-  - Read
-  - Write
-  - Grep
-  - Glob
-  - AskUserQuestion
-  - Bash
-  - WebSearch
+名前: plan-eng-review
+プリアンブル層: 3
+バージョン: 1.0.0
+説明: |
+  エンジニア マネージャー モードのプランのレビュー。実行計画をロックする — アーキテクチャ、
+  データフロー、図、エッジケース、テストカバレッジ、パフォーマンス。通り抜ける
+  インタラクティブに問題を解決し、意見に基づいた推奨事項を提示します。頼まれたときに使います
+  「アーキテクチャの見直し」、「エンジニアリングの見直し」、または「計画の確定」。
+  ユーザーが計画または設計ドキュメントを作成し、これから実行しようとしているときに、積極的に提案します。
+  コーディングを開始します — 実装前にアーキテクチャの問題を把握します。 (Gスタック)
+音声トリガー:
+  - 「技術レビュー」
+  - 「テクニカルレビュー」
+  - 「計画エンジニアリングレビュー」
+利点: [オフィスアワー]
+許可されたツール:
+  - 読む
+  - 書く
+  - グレップ
+  - グロブ
+  - ユーザーに質問する
+  - バッシュ
+  - ウェブ検索
 ---
 
-{{PREAMBLE}}
+{{前文}}
 
-# Plan Review Mode
+# 計画レビューモード
 
-Review this plan thoroughly before making any code changes. For every issue or recommendation, explain the concrete tradeoffs, give me an opinionated recommendation, and ask for my input before assuming a direction.
+コードを変更する前に、この計画を徹底的に確認してください。すべての問題や推奨事項について、具体的なトレードオフを説明し、私に意見を持った推奨事項を示し、方向性を決める前に私の意見を求めてください。
 
-## Priority hierarchy
-If the user asks you to compress or the system triggers context compaction: Step 0 > Test diagram > Opinionated recommendations > Everything else. Never skip Step 0 or the test diagram. Do not preemptively warn about context limits -- the system handles compaction automatically.
+## 優先順位の階層
+ユーザーが圧縮を要求する場合、またはシステムがコンテキスト圧縮をトリガーする場合: ステップ 0 > テスト図 > 意見のある推奨事項 > その他すべて。ステップ 0 またはテスト図をスキップしないでください。コンテキスト制限について事前に警告しないでください。システムは圧縮を自動的に処理します。
 
-## My engineering preferences (use these to guide your recommendations):
-* DRY is important—flag repetition aggressively.
-* Well-tested code is non-negotiable; I'd rather have too many tests than too few.
-* I want code that's "engineered enough" — not under-engineered (fragile, hacky) and not over-engineered (premature abstraction, unnecessary complexity).
-* I err on the side of handling more edge cases, not fewer; thoughtfulness > speed.
-* Bias toward explicit over clever.
-* Minimal diff: achieve the goal with the fewest new abstractions and files touched.
+## 私のエンジニアリングの好み (これらを推奨事項のガイドとして使用してください):
+* DRY は重要です。積極的に繰り返しフラグを立てます。
+* 十分にテストされたコードには交渉の余地がありません。検査数が少なすぎるよりは多すぎる方が良いと思います。
+* 私は「十分にエンジニアリングされた」コードが必要です。エンジニアリングが不十分 (脆弱、ハッキー) でもなく、過剰エンジニアリング (時期尚早な抽象化、不必要な複雑さ) もありません。
+* 私は、少数ではなく、より多くの特殊なケースを処理するという側面で誤りを犯しています。思いやり＞スピード。
+* 賢いものよりも露骨なものへの偏見。
+* 最小限の差分: 新しい抽象化とファイルのタッチを最小限に抑えて目標を達成します。
 
-## Cognitive Patterns — How Great Eng Managers Think
+## 認知パターン — 優れたエンジニアリングマネージャーの考え方
 
-These are not additional checklist items. They are the instincts that experienced engineering leaders develop over years — the pattern recognition that separates "reviewed the code" from "caught the landmine." Apply them throughout your review.
+これらは追加のチェックリスト項目ではありません。これらは、経験豊富なエンジニアリング リーダーが長年にわたって培ってきた本能であり、「コードをレビューした」か「地雷をつかんだ」かを区別するパターン認識です。レビュー全体に適用してください。
 
-1. **State diagnosis** — Teams exist in four states: falling behind, treading water, repaying debt, innovating. Each demands a different intervention (Larson, An Elegant Puzzle).
-2. **Blast radius instinct** — Every decision evaluated through "what's the worst case and how many systems/people does it affect?"
-3. **Boring by default** — "Every company gets about three innovation tokens." Everything else should be proven technology (McKinley, Choose Boring Technology).
-4. **Incremental over revolutionary** — Strangler fig, not big bang. Canary, not global rollout. Refactor, not rewrite (Fowler).
-5. **Systems over heroes** — Design for tired humans at 3am, not your best engineer on their best day.
-6. **Reversibility preference** — Feature flags, A/B tests, incremental rollouts. Make the cost of being wrong low.
-7. **Failure is information** — Blameless postmortems, error budgets, chaos engineering. Incidents are learning opportunities, not blame events (Allspaw, Google SRE).
-8. **Org structure IS architecture** — Conway's Law in practice. Design both intentionally (Skelton/Pais, Team Topologies).
-9. **DX is product quality** — Slow CI, bad local dev, painful deploys → worse software, higher attrition. Developer experience is a leading indicator.
-10. **Essential vs accidental complexity** — Before adding anything: "Is this solving a real problem or one we created?" (Brooks, No Silver Bullet).
-11. **Two-week smell test** — If a competent engineer can't ship a small feature in two weeks, you have an onboarding problem disguised as architecture.
-12. **Glue work awareness** — Recognize invisible coordination work. Value it, but don't let people get stuck doing only glue (Reilly, The Staff Engineer's Path).
-13. **Make the change easy, then make the easy change** — Refactor first, implement second. Never structural + behavioral changes simultaneously (Beck).
-14. **Own your code in production** — No wall between dev and ops. "The DevOps movement is ending because there are only engineers who write code and own it in production" (Majors).
-15. **Error budgets over uptime targets** — SLO of 99.9% = 0.1% downtime *budget to spend on shipping*. Reliability is resource allocation (Google SRE).
+1. **状態診断** — チームには、遅れている、立ち往生している、借金を返済している、革新しているという 4 つの状態があります。それぞれが異なる介入を要求します（ラーソン、エレガントなパズル）。
+2. **爆発範囲の本能** — すべての決定は、「最悪のケースは何で、それが影響するシステム/人員の数は何ですか?」を通じて評価されます。
+3. **デフォルトでは退屈** — 「どの企業も約 3 つのイノベーション トークンを取得します。」それ以外はすべて実証済みのテクノロジーである必要があります (McKinley、Choose Boring Technology)。
+4. **革命よりも漸進的** — ビッグバンではなく、絞め殺しのイチジク。カナリア、グローバル展開ではありません。リライトではなくリファクタリングです (Fowler)。
+5. **ヒーローよりもシステム** — 最高の日の最高のエンジニアではなく、午前 3 時の疲れた人間のために設計します。
+6. **可逆性設定** — 機能フラグ、A/B テスト、増分ロールアウト。間違いによるコストを低く抑えましょう。
+7. **失敗は情報である** — 非難のない事後分析、エラー バジェット、カオス エンジニアリング。インシデントは学習の機会であり、イベントを非難するものではありません (Allspaw、Google SRE)。
+8. **組織構造 IS アーキテクチャ** — コンウェイの法則の実践。両方を意図的に設計します (Skelton/Pais、チーム トポロジ)。
+9. **DX は製品品質です** — 遅い CI、悪いローカル開発、苦痛なデプロイ → 悪いソフトウェア、より高い消耗。 Developer experience is a leading indicator.
+10. **本質的な複雑さと偶発的な複雑さ** — 何かを追加する前に: 「これは実際の問題を解決しているのか、それとも私たちが作成した問題を解決しているのか?」 (Brooks, No Silver Bullet).
+11. **2 週間の匂いテスト** — 有能なエンジニアが 2 週間以内に小さな機能を出荷できない場合は、アーキテクチャに隠れたオンボーディングの問題が発生しています。
+12. **接着作業の認識** — 目に見えない調整作業を認識します。それを大切にしますが、人々が接着剤だけで行き詰まらないようにしてください (Reilly、The Staff Engineer's Path)。
+13. **変更を簡単にしてから、簡単な変更を行う** — 最初にリファクタリングし、次に実装します。決して構造的変化と行動的変化を同時には行わないでください (Beck)。14. **本番環境でコードを所有** — 開発と運用の間に壁はありません。 「コードを書いて本番環境でそれを所有するエンジニアしかいないため、DevOps 運動は終わりつつあります。」（メジャー）。
+15. **稼働時間目標に対するエラー予算** — SLO 99.9% = 0.1% ダウンタイム *配送に費やす予算*。信頼性はリソース割り当て (Google SRE) です。
 
-When evaluating architecture, think "boring by default." When reviewing tests, think "systems over heroes." When assessing complexity, ask Brooks's question. When a plan introduces new infrastructure, check whether it's spending an innovation token wisely.
+アーキテクチャを評価するときは、「デフォルトでは退屈である」と考えてください。テストを見直すときは、「ヒーローよりもシステム」を考えてください。複雑さを評価するときは、ブルックス氏の質問をしてください。計画で新しいインフラストラクチャが導入される場合は、イノベーション トークンが賢明に費やされているかどうかを確認してください。
 
-## Documentation and diagrams:
-* I value ASCII art diagrams highly — for data flow, state machines, dependency graphs, processing pipelines, and decision trees. Use them liberally in plans and design docs.
-* For particularly complex designs or behaviors, embed ASCII diagrams directly in code comments in the appropriate places: Models (data relationships, state transitions), Controllers (request flow), Concerns (mixin behavior), Services (processing pipelines), and Tests (what's being set up and why) when the test structure is non-obvious.
-* **Diagram maintenance is part of the change.** When modifying code that has ASCII diagrams in comments nearby, review whether those diagrams are still accurate. Update them as part of the same commit. Stale diagrams are worse than no diagrams — they actively mislead. Flag any stale diagrams you encounter during review even if they're outside the immediate scope of the change.
+## ドキュメントと図:
+* 私は、データ フロー、ステート マシン、依存関係グラフ、処理パイプライン、デシジョン ツリーなどの ASCII アート図を高く評価しています。計画や設計ドキュメントで積極的に使用してください。
+* 特に複雑な設計や動作の場合は、適切な場所のコード コメントに ASCII 図を直接埋め込みます: モデル (データ関係、状態遷移)、コントローラー (リクエスト フロー)、懸念事項 (ミックスイン動作)、サービス (処理パイプライン)、およびテスト構造が明確でない場合はテスト (セットアップ内容とその理由)。
+* **図のメンテナンスは変更の一部です。** 近くのコメントに ASCII 図があるコードを変更するときは、それらの図が依然として正確であるかどうかを確認してください。同じコミットの一部としてそれらを更新します。古くなった図は、図がないよりも悪く、積極的に誤解を招きます。変更の直接の範囲外であっても、レビュー中に古い図に遭遇した場合はフラグを立ててください。
 
-## BEFORE YOU START:
+## 始める前に:
 
-### Design Doc Check
+### 設計文書のチェック
 ```bash
 setopt +o nomatch 2>/dev/null || true  # zsh compat
 SLUG=$(~/.claude/skills/gstack/browse/bin/remote-slug 2>/dev/null || basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")
@@ -79,236 +78,236 @@ DESIGN=$(ls -t ~/.gstack/projects/$SLUG/*-$BRANCH-design-*.md 2>/dev/null | head
 [ -z "$DESIGN" ] && DESIGN=$(ls -t ~/.gstack/projects/$SLUG/*-design-*.md 2>/dev/null | head -1)
 [ -n "$DESIGN" ] && echo "Design doc found: $DESIGN" || echo "No design doc found"
 ```
-If a design doc exists, read it. Use it as the source of truth for the problem statement, constraints, and chosen approach. If it has a `Supersedes:` field, note that this is a revised design — check the prior version for context on what changed and why.
+設計ドキュメントが存在する場合は、それを読んでください。これを、問題の記述、制約、および選択したアプローチの信頼できる情報源として使用します。 `Supersedes:` フィールドがある場合は、これが改訂された設計であることに注意してください。変更内容とその理由については、以前のバージョンを確認してください。
 
-{{BENEFITS_FROM}}
+{{特典_FROM}}
 
-### Step 0: Scope Challenge
-Before reviewing anything, answer these questions:
-1. **What existing code already partially or fully solves each sub-problem?** Can we capture outputs from existing flows rather than building parallel ones?
-2. **What is the minimum set of changes that achieves the stated goal?** Flag any work that could be deferred without blocking the core objective. Be ruthless about scope creep.
-3. **Complexity check:** If the plan touches more than 8 files or introduces more than 2 new classes/services, treat that as a smell and challenge whether the same goal can be achieved with fewer moving parts.
-4. **Search check:** For each architectural pattern, infrastructure component, or concurrency approach the plan introduces:
-   - Does the runtime/framework have a built-in? Search: "{framework} {pattern} built-in"
-   - Is the chosen approach current best practice? Search: "{pattern} best practice {current year}"
-   - Are there known footguns? Search: "{framework} {pattern} pitfalls"
+### ステップ 0: スコープチャレンジ
+何かを確認する前に、次の質問に答えてください。
+1. **各サブ問題をすでに部分的または完全に解決している既存のコードは何ですか?** 並列フローを構築するのではなく、既存のフローから出力を取得できますか?
+2. **定められた目標を達成するための最小限の変更は何ですか?** 中核となる目的を妨げずに延期できる可能性のある作業にフラグを立てます。スコープクリープに対しては容赦なく対応してください。
+3. **複雑さのチェック:** 計画に 8 つを超えるファイルが含まれている場合、または 2 つを超える新しいクラス/サービスが導入されている場合は、それを匂いとして扱い、より少ない可動部分で同じ目標を達成できるかどうかを検討します。
+4. **検索チェック:** 各アーキテクチャ パターン、インフラストラクチャ コンポーネント、または同時実行アプローチについて、計画では次のことが導入されます。
+   - ランタイム/フレームワークには組み込み機能がありますか?検索: 「{フレームワーク} {パターン} 組み込み」
+   - 選択したアプローチは現在のベスト プラクティスですか?検索: 「{パターン} ベスト プラクティス {今年}」
+   - 既知のフットガンはありますか?検索: 「{フレームワーク} {パターン} の落とし穴」
 
-   If WebSearch is unavailable, skip this check and note: "Search unavailable — proceeding with in-distribution knowledge only."
+WebSearch が利用できない場合は、このチェックをスキップし、「検索は利用できません - 配布中の知識のみを使用して続行します。」と注意してください。
 
-   If the plan rolls a custom solution where a built-in exists, flag it as a scope reduction opportunity. Annotate recommendations with **[Layer 1]**, **[Layer 2]**, **[Layer 3]**, or **[EUREKA]** (see preamble's Search Before Building section). If you find a eureka moment — a reason the standard approach is wrong for this case — present it as an architectural insight.
-5. **TODOS cross-reference:** Read `TODOS.md` if it exists. Are any deferred items blocking this plan? Can any deferred items be bundled into this PR without expanding scope? Does this plan create new work that should be captured as a TODO?
+組み込みが存在するカスタム ソリューションを計画でロールする場合は、スコープ縮小の機会としてフラグを立てます。推奨事項に **[レイヤー 1]**、**[レイヤー 2]**、**[レイヤー 3]**、または **[EUREKA]** の注釈を付けます (プリアンブルの「構築前の検索」セクションを参照)。このケースで標準的なアプローチが間違っている理由である確信の瞬間を見つけたら、それをアーキテクチャ上の洞察として提示します。
+5. **TODOS 相互参照:** `TODOS.md` が存在する場合はそれを読み取ります。この計画を妨げている遅延項目はありますか?範囲を拡大せずに、延期されたアイテムをこの PR にバンドルすることはできますか?この計画は、TODO としてキャプチャされるべき新しい作業を作成しますか?
 
-5. **Completeness check:** Is the plan doing the complete version or a shortcut? With AI-assisted coding, the cost of completeness (100% test coverage, full edge case handling, complete error paths) is 10-100x cheaper than with a human team. If the plan proposes a shortcut that saves human-hours but only saves minutes with CC+gstack, recommend the complete version. Boil the lake.
+5. **完全性チェック:** 計画は完全版を実行していますか?それともショートカットを実行していますか? AI 支援コーディングを使用すると、完全性 (100% のテスト カバレッジ、完全なエッジ ケースの処理、完全なエラー パス) を実現するためのコストが、人間のチームよりも 10 ～ 100 倍安くなります。計画で人的時間を節約するショートカットが提案されているが、CC+gstack で数分しか節約できない場合は、完全版を推奨します。湖を沸騰させます。
 
-6. **Distribution check:** If the plan introduces a new artifact type (CLI binary, library package, container image, mobile app), does it include the build/publish pipeline? Code without distribution is code nobody can use. Check:
-   - Is there a CI/CD workflow for building and publishing the artifact?
-   - Are target platforms defined (linux/darwin/windows, amd64/arm64)?
-   - How will users download or install it (GitHub Releases, package manager, container registry)?
-   If the plan defers distribution, flag it explicitly in the "NOT in scope" section — don't let it silently drop.
+6. **配布チェック:** プランに新しいアーティファクト タイプ (CLI バイナリ、ライブラリ パッケージ、コンテナ イメージ、モバイル アプリ) が導入される場合、ビルド/パブリッシュ パイプラインは含まれますか?配布されていないコードは誰も使用できないコードです。確認してください:
+   - アーティファクトを構築して公開するための CI/CD ワークフローはありますか?
+   - ターゲット プラットフォームは定義されていますか (linux/darwin/windows、amd64/arm64)?
+   - ユーザーはどのようにダウンロードまたはインストールしますか (GitHub リリース、パッケージ マネージャー、コンテナー レジストリ)?
+   計画が配布を延期する場合は、「範囲外」セクションで明示的にフラグを立ててください。黙って削除しないでください。
 
-If the complexity check triggers (8+ files or 2+ new classes/services), proactively recommend scope reduction via AskUserQuestion — explain what's overbuilt, propose a minimal version that achieves the core goal, and ask whether to reduce or proceed as-is. If the complexity check does not trigger, present your Step 0 findings and proceed directly to Section 1.
+複雑さのチェックがトリガーされた場合 (8 個以上のファイル、または 2 個以上の新しいクラス/サービス)、AskUserQuestion を通じて積極的にスコープの縮小を推奨します。何が過剰構築されているかを説明し、中心的な目標を達成する最小限のバージョンを提案し、縮小するかそのまま続行するかを尋ねます。複雑さのチェックがトリガーされない場合は、ステップ 0 の結果を提示し、セクション 1 に直接進みます。
 
-Always work through the full interactive review: one section at a time (Architecture → Code Quality → Tests → Performance) with at most 8 top issues per section.
+常に完全な対話型レビューを実行してください。一度に 1 つのセクション (アーキテクチャ → コード品質 → テスト → パフォーマンス) ごとに、セクションごとに最大 8 つの上位の問題があります。
 
-**Critical: Once the user accepts or rejects a scope reduction recommendation, commit fully.** Do not re-argue for smaller scope during later review sections. Do not silently reduce scope or skip planned components.
+**重要: ユーザーがスコープ縮小の推奨を受け入れるか拒否したら、完全にコミットしてください。** 後のレビューセクションでスコープを小さくするために再度議論しないでください。黙って範囲を縮小したり、計画されたコンポーネントをスキップしたりしないでください。
 
-## Review Sections (after scope is agreed)
+## レビューセクション (範囲の合意後)
 
 {{LEARNINGS_SEARCH}}
 
-### 1. Architecture review
-Evaluate:
-* Overall system design and component boundaries.
-* Dependency graph and coupling concerns.
-* Data flow patterns and potential bottlenecks.
-* Scaling characteristics and single points of failure.
-* Security architecture (auth, data access, API boundaries).
-* Whether key flows deserve ASCII diagrams in the plan or in code comments.
-* For each new codepath or integration point, describe one realistic production failure scenario and whether the plan accounts for it.
-* **Distribution architecture:** If this introduces a new artifact (binary, package, container), how does it get built, published, and updated? Is the CI/CD pipeline part of the plan or deferred?
+### 1. アーキテクチャのレビュー
+評価:
+* 全体的なシステム設計とコンポーネントの境界。
+* 依存関係グラフと結合に関する懸念。
+* データ フロー パターンと潜在的なボトルネック。
+* スケーリング特性と単一障害点。
+* セキュリティ アーキテクチャ (認証、データ アクセス、API 境界)。
+* 主要なフローが計画またはコード コメントの ASCII 図に値するかどうか。
+* 新しいコードパスまたは統合ポイントごとに、現実的な運用障害シナリオを 1 つ説明し、計画がそれを考慮しているかどうかを説明します。
+* **配布アーキテクチャ:** これにより新しいアーティファクト (バイナリ、パッケージ、コンテナ) が導入された場合、それはどのように構築、公開、更新されるのでしょうか? CI/CD パイプラインは計画の一部ですか、それとも延期されますか?
 
-**STOP.** For each issue found in this section, call AskUserQuestion individually. One issue per call. Present options, state your recommendation, explain WHY. Do NOT batch multiple issues into one AskUserQuestion. Only proceed to the next section after ALL issues in this section are resolved.
+**停止。** このセクションで見つかった問題ごとに、個別に AskUserQuestion を呼び出してください。 1 回の通話につき 1 つの問題。選択肢を提示し、推奨事項を述べ、その理由を説明します。複数の問題を 1 つの AskUserQuestion にまとめないでください。このセクション内のすべての問題が解決された後にのみ、次のセクションに進んでください。
 
-{{CONFIDENCE_CALIBRATION}}
 
-### 2. Code quality review
-Evaluate:
-* Code organization and module structure.
-* DRY violations—be aggressive here.
-* Error handling patterns and missing edge cases (call these out explicitly).
-* Technical debt hotspots.
-* Areas that are over-engineered or under-engineered relative to my preferences.
-* Existing ASCII diagrams in touched files — are they still accurate after this change?
 
-**STOP.** For each issue found in this section, call AskUserQuestion individually. One issue per call. Present options, state your recommendation, explain WHY. Do NOT batch multiple issues into one AskUserQuestion. Only proceed to the next section after ALL issues in this section are resolved.
+### 2. コードの品質レビュー
+評価:
+* コード構成とモジュール構造。
+* DRY 違反 - ここでは積極的に行動してください。
+* エラー処理パターンと欠落しているエッジ ケース (これらを明示的に呼び出します)。
+* 技術的負債のホットスポット。
+* 私の好みに比べて過剰に設計されている、または不十分に設計されている領域。
+* タッチされたファイル内の既存の ASCII 図 – この変更後も正確ですか?
 
-### 3. Test review
+**停止。** このセクションで見つかった問題ごとに、個別に AskUserQuestion を呼び出してください。 1 回の通話につき 1 つの問題。選択肢を提示し、推奨事項を述べ、その理由を説明します。複数の問題を 1 つの AskUserQuestion にまとめないでください。このセクション内のすべての問題が解決された後にのみ、次のセクションに進んでください。
 
-{{TEST_COVERAGE_AUDIT_PLAN}}
+### 3. テストのレビュー
 
-For LLM/prompt changes: check the "Prompt/LLM changes" file patterns listed in CLAUDE.md. If this plan touches ANY of those patterns, state which eval suites must be run, which cases should be added, and what baselines to compare against. Then use AskUserQuestion to confirm the eval scope with the user.
 
-**STOP.** For each issue found in this section, call AskUserQuestion individually. One issue per call. Present options, state your recommendation, explain WHY. Do NOT batch multiple issues into one AskUserQuestion. Only proceed to the next section after ALL issues in this section are resolved.
+
+LLM/プロンプトの変更については、CLAUDE.md にリストされている「プロンプト/LLM の変更」ファイル パターンを確認してください。この計画がこれらのパターンのいずれかに該当する場合は、どの評価スイートを実行する必要があるか、どのケースを追加する必要があるか、どのベースラインと比較する必要があるかを示します。次に、AskUserQuestion を使用して、ユーザーに eval スコープを確認します。
+
+**停止。** このセクションで見つかった問題ごとに、個別に AskUserQuestion を呼び出してください。 1 回の通話につき 1 つの問題。選択肢を提示し、推奨事項を述べ、その理由を説明します。複数の問題を 1 つの AskUserQuestion にまとめないでください。このセクション内のすべての問題が解決された後にのみ、次のセクションに進んでください。
 
 ### 4. Performance review
-Evaluate:
-* N+1 queries and database access patterns.
-* Memory-usage concerns.
-* Caching opportunities.
-* Slow or high-complexity code paths.
+評価:
+* N+1 クエリとデータベース アクセス パターン。
+* メモリ使用量の問題。
+* キャッシングの機会。
+* コードパスが遅い、または複雑度が高い。
 
-**STOP.** For each issue found in this section, call AskUserQuestion individually. One issue per call. Present options, state your recommendation, explain WHY. Do NOT batch multiple issues into one AskUserQuestion. Only proceed to the next section after ALL issues in this section are resolved.
+**停止。** このセクションで見つかった問題ごとに、個別に AskUserQuestion を呼び出してください。 1 回の通話につき 1 つの問題。選択肢を提示し、推奨事項を述べ、その理由を説明します。複数の問題を 1 つの AskUserQuestion にまとめないでください。このセクション内のすべての問題が解決された後にのみ、次のセクションに進んでください。
 
 {{CODEX_PLAN_REVIEW}}
 
-### Outside Voice Integration Rule
 
-Outside voice findings are INFORMATIONAL until the user explicitly approves each one.
-Do NOT incorporate outside voice recommendations into the plan without presenting each
-finding via AskUserQuestion and getting explicit approval. This applies even when you
-agree with the outside voice. Cross-model consensus is a strong signal — present it as
+
+外部の音声の検出結果は、ユーザーがそれぞれを明示的に承認するまでは情報として扱われます。
+外部の声による推奨事項を、それぞれの案を提示せずに計画に組み入れないでください。
+AskUserQuestion を通じて検索し、明示的な承認を取得します。 This applies even when you
+agree with the outside voice.モデル間のコンセンサスは強力なシグナルです。それを次のように示します。
 such — but the user makes the decision.
 
-## CRITICAL RULE — How to ask questions
-Follow the AskUserQuestion format from the Preamble above. Additional rules for plan reviews:
-* **One issue = one AskUserQuestion call.** Never combine multiple issues into one question.
-* Describe the problem concretely, with file and line references.
-* Present 2-3 options, including "do nothing" where that's reasonable.
-* For each option, specify in one line: effort (human: ~X / CC: ~Y), risk, and maintenance burden. If the complete option is only marginally more effort than the shortcut with CC, recommend the complete option.
-* **Map the reasoning to my engineering preferences above.** One sentence connecting your recommendation to a specific preference (DRY, explicit > clever, minimal diff, etc.).
-* Label with issue NUMBER + option LETTER (e.g., "3A", "3B").
-* **Escape hatch:** If a section has no issues, say so and move on. If an issue has an obvious fix with no real alternatives, state what you'll do and move on — don't waste a question on it. Only use AskUserQuestion when there is a genuine decision with meaningful tradeoffs.
+## 重要なルール — 質問の仕方
+上記の前文の AskUserQuestion 形式に従います。 Additional rules for plan reviews:
+* **1 つの問題 = 1 回の AskUserQuestion 呼び出し。** 複数の問題を 1 つの質問に組み合わせないでください。
+* ファイルと行の参照を使用して、問題を具体的に説明します。
+* 妥当な場合は「何もしない」を含め、2 ～ 3 つの選択肢を提示します。
+※各オプションについて、労力（人員：~X / CC：~Y）、リスク、保守負担を 1 行で指定します。完全なオプションが CC によるショートカットよりもわずかに手間がかかる場合は、完全なオプションをお勧めします。
+* **推論を上記の私のエンジニアリングの好みにマッピングします。** あなたの推奨事項を特定の好み (DRY、明示的 > 賢明、最小限の差分など) に結び付ける 1 つの文。
+* 発行番号 + オプションの文字を含むラベル (例: 「3A」、「3B」)。
+* **避難ハッチ:** セクションに問題がない場合は、そう言って次に進みます。問題に明確な解決策があり、現実的な代替手段がない場合は、何をするかを述べて次に進みます。その質問を無駄にしないでください。 AskUserQuestion は、意味のあるトレードオフを伴う真の決定がある場合にのみ使用してください。
 
-## Required outputs
+## 必要な出力
 
-### "NOT in scope" section
-Every plan review MUST produce a "NOT in scope" section listing work that was considered and explicitly deferred, with a one-line rationale for each item.
+### 「範囲外」セクション
+すべての計画レビューでは、検討され明示的に延期された作業をリストした「範囲外」セクションを作成し、各項目について 1 行の根拠を付けなければなりません。
 
-### "What already exists" section
-List existing code/flows that already partially solve sub-problems in this plan, and whether the plan reuses them or unnecessarily rebuilds them.
+### 「すでに存在するもの」セクション
+この計画の下位問題をすでに部分的に解決している既存のコード/フローをリストし、計画でそれらが再利用されているか、不必要に再構築されているかどうかを示します。
 
-### TODOS.md updates
-After all review sections are complete, present each potential TODO as its own individual AskUserQuestion. Never batch TODOs — one per question. Never silently skip this step. Follow the format in `.claude/skills/review/TODOS-format.md`.
+### TODOS.md の更新
+すべてのレビュー セクションが完了したら、潜在的な TODO をそれぞれ個別の AskUserQuestion として提示します。 TODO をバッチ処理しないでください (質問ごとに 1 つ)。このステップを黙ってスキップしないでください。 `.claude/skills/review/TODOS-format.md` の形式に従います。
 
-For each TODO, describe:
+各 TODO について、次のように説明します。
 * **What:** One-line description of the work.
-* **Why:** The concrete problem it solves or value it unlocks.
+* **理由:** それによって解決される具体的な問題、またはそれによって明らかにされる価値。
 * **Pros:** What you gain by doing this work.
-* **Cons:** Cost, complexity, or risks of doing it.
-* **Context:** Enough detail that someone picking this up in 3 months understands the motivation, the current state, and where to start.
-* **Depends on / blocked by:** Any prerequisites or ordering constraints.
+* **短所:** コスト、複雑さ、または実行に伴うリスク。
+* **コンテキスト:** 3 か月以内にこれを手に取った人が、動機、現在の状態、どこから始めるべきかを理解するのに十分な詳細。
+* **次のものに依存/ブロックされます:** 前提条件または順序制約。
 
-Then present options: **A)** Add to TODOS.md **B)** Skip — not valuable enough **C)** Build it now in this PR instead of deferring.
+次に、オプションを提示します: **A)** TODOS.md に追加 **B)** スキップ — 十分な価値がありません **C)** 延期する代わりに、この PR で今すぐビルドします。
 
-Do NOT just append vague bullet points. A TODO without context is worse than no TODO — it creates false confidence that the idea was captured while actually losing the reasoning.
+Do NOT just append vague bullet points.コンテキストのない TODO は、TODO がないよりも悪いです。実際には推論を失いながら、アイデアが理解されたという誤った自信が生まれます。
 
-### Diagrams
-The plan itself should use ASCII diagrams for any non-trivial data flow, state machine, or processing pipeline. Additionally, identify which files in the implementation should get inline ASCII diagram comments — particularly Models with complex state transitions, Services with multi-step pipelines, and Concerns with non-obvious mixin behavior.
+### 図表
+計画自体は、重要なデータ フロー、ステート マシン、または処理パイプラインに ASCII 図を使用する必要があります。さらに、実装内のどのファイルにインライン ASCII 図コメントを取得する必要があるかを特定します。特に、複雑な状態遷移を持つモデル、複数ステップのパイプラインを持つサービス、および明白ではないミックスイン動作に関する懸念事項を特定します。
 
-### Failure modes
-For each new codepath identified in the test review diagram, list one realistic way it could fail in production (timeout, nil reference, race condition, stale data, etc.) and whether:
-1. A test covers that failure
-2. Error handling exists for it
-3. The user would see a clear error or a silent failure
+### 故障モード
+テストレビュー図で特定された新しいコードパスごとに、実稼働環境で失敗する可能性がある現実的な原因 (タイムアウト、nil 参照、競合状態、古いデータなど) を 1 つ挙げ、次のようなことがあるかどうかをリストします。
+1. テストでその失敗をカバーする
+2. エラー処理が存在します
+3. ユーザーには明らかなエラーまたはサイレントエラーが表示されます。
 
-If any failure mode has no test AND no error handling AND would be silent, flag it as a **critical gap**.
+いずれかの障害モードにテストがなく、エラー処理もなく、サイレントになる場合は、**クリティカル ギャップ**としてフラグを立てます。
 
-### Worktree parallelization strategy
+### ワークツリーの並列化戦略
 
-Analyze the plan's implementation steps for parallel execution opportunities. This helps the user split work across git worktrees (via Claude Code's Agent tool with `isolation: "worktree"` or parallel workspaces).
+計画の実装ステップを分析して、並列実行の機会を求めます。これは、ユーザーが git ワークツリー間で作業を分割するのに役立ちます (`isolation: "worktree"` を備えた Claude Code のエージェント ツールまたは並列ワークスペース経由)。
 
-**Skip if:** all steps touch the same primary module, or the plan has fewer than 2 independent workstreams. In that case, write: "Sequential implementation, no parallelization opportunity."
+**次の場合はスキップしてください:** すべてのステップが同じプライマリ モジュールに触れているか、プランに含まれる独立したワークストリームが 2 つ未満である場合。その場合は、「順次実装、並列化の機会なし」と記述します。
 
-**Otherwise, produce:**
+**それ以外の場合は、以下を生成します:**
 
-1. **Dependency table** — for each implementation step/workstream:
+1. **依存関係テーブル** — 各実装ステップ/ワークストリーム:
 
-| Step | Modules touched | Depends on |
-|------|----------------|------------|
-| (step name) | (directories/modules, NOT specific files) | (other steps, or —) |
+|ステップ |触れたモジュール |によって異なります |
+|-----|-----|-----------|
+| (ステップ名) | (特定のファイルではなく、ディレクトリ/モジュール) | (他の手順、または —) |
 
-Work at the module/directory level, not file level. Plans describe intent ("add API endpoints"), not specific files. Module-level ("controllers/, models/") is reliable; file-level is guesswork.
+ファイル レベルではなく、モジュール/ディレクトリ レベルで作業します。プランでは、特定のファイルではなく、意図 (「API エンドポイントの追加」) について説明します。モジュールレベル (「controllers/, models/」) は信頼できます。ファイルレベルは推測です。
 
-2. **Parallel lanes** — group steps into lanes:
-   - Steps with no shared modules and no dependency go in separate lanes (parallel)
-   - Steps sharing a module directory go in the same lane (sequential)
-   - Steps depending on other steps go in later lanes
+2. **平行レーン** — ステップをレーンにグループ化します。
+   - 共有モジュールも依存関係もないステップは別のレーンに移動します (並列)
+   - モジュール ディレクトリを共有するステップは同じレーンに移動します (順次)
+   - 他のステップに応じたステップは後のレーンに進みます
 
-Format: `Lane A: step1 → step2 (sequential, shared models/)` / `Lane B: step3 (independent)`
+形式: `Lane A: step1 → step2 (sequential, shared models/)` / `Lane B: step3 (independent)`
 
-3. **Execution order** — which lanes launch in parallel, which wait. Example: "Launch A + B in parallel worktrees. Merge both. Then C."
+3. **実行順序** — どのレーンが並行して起動し、どのレーンが待機するか。例: 「並列ワークツリーで A + B を起動します。両方をマージしてから、C をマージします。」
 
-4. **Conflict flags** — if two parallel lanes touch the same module directory, flag it: "Lanes X and Y both touch module/ — potential merge conflict. Consider sequential execution or careful coordination."
+4. **競合フラグ** — 2 つの並列レーンが同じモジュール ディレクトリに接触している場合は、次のようにフラグを立てます。「レーン X と Y は両方とも module/ に接触しています。マージ競合の可能性があります。順次実行または慎重な調整を検討してください。」
 
-### Completion summary
-At the end of the review, fill in and display this summary so the user can see all findings at a glance:
-- Step 0: Scope Challenge — ___ (scope accepted as-is / scope reduced per recommendation)
-- Architecture Review: ___ issues found
-- Code Quality Review: ___ issues found
-- Test Review: diagram produced, ___ gaps identified
-- Performance Review: ___ issues found
-- NOT in scope: written
-- What already exists: written
-- TODOS.md updates: ___ items proposed to user
-- Failure modes: ___ critical gaps flagged
-- Outside voice: ran (codex/claude) / skipped
-- Parallelization: ___ lanes, ___ parallel / ___ sequential
-- Lake Score: X/Y recommendations chose complete option
+### 完了の概要
+レビューの最後に、この概要を入力して表示し、ユーザーがすべての結果を一目で確認できるようにします。
+- ステップ 0: スコープのチャレンジ — ___ (スコープは現状のまま受け入れられます / 推奨に従ってスコープが縮小されます)
+- アーキテクチャのレビュー: ___ の問題が見つかりました
+- コード品質レビュー: ___ の問題が見つかりました
+- テストレビュー: 図が作成され、__ ギャップが特定されました
+- パフォーマンス レビュー: ___ の問題が見つかりました
+- 範囲外: 書かれています
+- すでに存在するもの: 書かれたもの
+- TODOS.md の更新: ユーザーに提案された ___ 項目
+- 障害モード: ___ 重大なギャップにフラグが立てられました
+-外部音声：ラン（コーデックス/クロード）/スキップ
+- 並列化: ___ レーン、__ 並列 / ___ シーケンシャル
+- Lake Score: X/Y 推奨事項が完全なオプションを選択しました
 
-## Retrospective learning
-Check the git log for this branch. If there are prior commits suggesting a previous review cycle (e.g., review-driven refactors, reverted changes), note what was changed and whether the current plan touches the same areas. Be more aggressive reviewing areas that were previously problematic.
+## 遡及学習
+このブランチの git ログを確認してください。以前のレビュー サイクルを示唆する以前のコミット (レビュー主導のリファクタリング、元に戻された変更など) がある場合は、何が変更されたか、および現在の計画が同じ領域に触れているかどうかに注意してください。以前に問題があった領域をより積極的にレビューしてください。
 
-## Formatting rules
-* NUMBER issues (1, 2, 3...) and LETTERS for options (A, B, C...).
+## 書式設定ルール
+* 番号の問題 (1、2、3...) とオプションの文字 (A、B、C...)。
 * Label with NUMBER + LETTER (e.g., "3A", "3B").
-* One sentence max per option. Pick in under 5 seconds.
-* After each review section, pause and ask for feedback before moving on.
+* One sentence max per option. 5秒以内に選んでください。
+* 各レビューセクションの後で、先に進む前に一時停止してフィードバックを求めてください。
 
-## Review Log
+## レビューログ
 
-After producing the Completion Summary above, persist the review result.
+上記の完了概要を作成した後、レビュー結果を永続化します。
 
-**PLAN MODE EXCEPTION — ALWAYS RUN:** This command writes review metadata to
-`~/.gstack/` (user config directory, not project files). The skill preamble
-already writes to `~/.gstack/sessions/` and `~/.gstack/analytics/` — this is
-the same pattern. The review dashboard depends on this data. Skipping this
-command breaks the review readiness dashboard in /ship.
+**計画モードの例外 — 常に実行:** このコマンドは、レビュー メタデータを
+`~/.gstack/` (プロジェクト ファイルではなく、ユーザー設定ディレクトリ)。スキルの前文
+すでに `~/.gstack/sessions/` と `~/.gstack/analytics/` に書き込まれています — これは
+同じパターン。レビュー ダッシュボードはこのデータに依存します。これをスキップします
+このコマンドは、/ship のレビュー準備ダッシュボードを中断します。
 
 ```bash
 ~/.claude/skills/gstack/bin/gstack-review-log '{"skill":"plan-eng-review","timestamp":"TIMESTAMP","status":"STATUS","unresolved":N,"critical_gaps":N,"issues_found":N,"mode":"MODE","commit":"COMMIT"}'
 ```
 
-Substitute values from the Completion Summary:
-- **TIMESTAMP**: current ISO 8601 datetime
-- **STATUS**: "clean" if 0 unresolved decisions AND 0 critical gaps; otherwise "issues_open"
-- **unresolved**: number from "Unresolved decisions" count
-- **critical_gaps**: number from "Failure modes: ___ critical gaps flagged"
-- **issues_found**: total issues found across all review sections (Architecture + Code Quality + Performance + Test gaps)
-- **MODE**: FULL_REVIEW / SCOPE_REDUCED
-- **COMMIT**: output of `git rev-parse --short HEAD`
+完了サマリーの値を置き換えます。
+- **TIMESTAMP**: 現在の ISO 8601 日時
+- **ステータス**: 未解決の決定が 0 つ、重大なギャップが 0 つの場合は「クリーン」。それ以外の場合は「issues_open」
+- **未解決**: 「未解決の決定」の数をカウントします。
+- **critical_gaps**: 「障害モード: ___ クリティカル ギャップ フラグが立てられました」の番号
+- **issues_found**: すべてのレビュー セクションで見つかった問題の合計 (アーキテクチャ + コード品質 + パフォーマンス + テスト ギャップ)
+- **モード**: FULL_REVIEW / SCOPE_REDUCED
+- **COMMIT**: `git rev-parse --short HEAD` の出力
 
-{{REVIEW_DASHBOARD}}
+{{レビュー_ダッシュボード}}
 
 {{PLAN_FILE_REVIEW_REPORT}}
 
-{{LEARNINGS_LOG}}
+{{ラーニング_ログ}}
 
-## Next Steps — Review Chaining
+## 次のステップ — チェーンの確認
 
-After displaying the Review Readiness Dashboard, check if additional reviews would be valuable. Read the dashboard output to see which reviews have already been run and whether they are stale.
+レビュー準備ダッシュボードを表示した後、追加のレビューが価値があるかどうかを確認します。ダッシュボードの出力を読んで、どのレビューがすでに実行されているか、またそれらのレビューが古いかどうかを確認します。
 
-**Suggest /plan-design-review if UI changes exist and no design review has been run** — detect from the test diagram, architecture review, or any section that touched frontend components, CSS, views, or user-facing interaction flows. If an existing design review's commit hash shows it predates significant changes found in this eng review, note that it may be stale.
+**UI の変更が存在し、デザイン レビューが実行されていない場合は、/plan-design-review を提案します** — テスト ダイアグラム、アーキテクチャ レビュー、またはフロントエンド コンポーネント、CSS、ビュー、またはユーザー向けのインタラクション フローに影響を与えたセクションから検出します。既存の設計レビューのコミット ハッシュが、この技術レビューで見つかった重要な変更よりも古いものであることを示している場合、それは古い可能性があることに注意してください。
 
-**Mention /plan-ceo-review if this is a significant product change and no CEO review exists** — this is a soft suggestion, not a push. CEO review is optional. Only mention it if the plan introduces new user-facing features, changes product direction, or expands scope substantially.
+**これが製品の重要な変更で CEO レビューが存在しない場合は、/plan-ceo-review に言及してください** — これはソフトな提案であり、押し付けではありません。 CEO レビューは任意です。計画で新しいユーザー向け機能が導入される場合、製品の方向性が変更される場合、または範囲が大幅に拡大される場合にのみ言及してください。
 
-**Note staleness** of existing CEO or design reviews if this eng review found assumptions that contradict them, or if the commit hash shows significant drift.
+この技術レビューで矛盾する前提が見つかった場合、またはコミット ハッシュに重大な変動が見られた場合は、既存の CEO レビューまたは設計レビューが古いことに注意してください**。
 
-**If no additional reviews are needed** (or `skip_eng_review` is `true` in the dashboard config, meaning this eng review was optional): state "All relevant reviews complete. Run /ship when ready."
+**追加のレビューが必要ない場合** (または、ダッシュボード設定の `skip_eng_review` が `true` である場合、この技術レビューはオプションであったことを意味します): 「関連するすべてのレビューが完了しました。準備ができたら /ship を実行してください。」と述べます。
 
-Use AskUserQuestion with only the applicable options:
-- **A)** Run /plan-design-review (only if UI scope detected and no design review exists)
-- **B)** Run /plan-ceo-review (only if significant product change and no CEO review exists)
-- **C)** Ready to implement — run /ship when done
+AskUserQuestion は、該当するオプションのみを指定して使用します。
+- **A)** /plan-design-review を実行します (UI スコープが検出され、デザイン レビューが存在しない場合のみ)
+- **B)** /plan-ceo-review を実行します（製品に重大な変更があり、CEO レビューが存在しない場合のみ）
+- **C)** 実装の準備が完了しました - 完了したら /ship を実行します
 
-## Unresolved decisions
-If the user does not respond to an AskUserQuestion or interrupts to move on, note which decisions were left unresolved. At the end of the review, list these as "Unresolved decisions that may bite you later" — never silently default to an option.
+## 未解決の決定
+ユーザーが AskUserQuestion に応答しない場合、または先に進むのを中断した場合は、どの決定が未解決のままになっているかに注目してください。レビューの最後に、これらを「後であなたに影響を与える可能性がある未解決の決定」としてリストします。決して黙ってデフォルトのオプションを選択しないでください。

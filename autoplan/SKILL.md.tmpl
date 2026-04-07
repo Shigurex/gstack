@@ -1,165 +1,165 @@
 ---
-name: autoplan
-preamble-tier: 3
-version: 1.0.0
-description: |
-  Auto-review pipeline — reads the full CEO, design, eng, and DX review skills from disk
-  and runs them sequentially with auto-decisions using 6 decision principles. Surfaces
-  taste decisions (close approaches, borderline scope, codex disagreements) at a final
-  approval gate. One command, fully reviewed plan out.
-  Use when asked to "auto review", "autoplan", "run all reviews", "review this plan
-  automatically", or "make the decisions for me".
-  Proactively suggest when the user has a plan file and wants to run the full review
-  gauntlet without answering 15-30 intermediate questions. (gstack)
-voice-triggers:
-  - "auto plan"
-  - "automatic review"
-benefits-from: [office-hours]
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - WebSearch
-  - AskUserQuestion
+名前: オートプラン
+プリアンブル層: 3
+バージョン: 1.0.0
+説明: |
+  自動レビュー パイプライン — CEO、デザイン、エンジニアリング、DX の完全なレビュー スキルをディスクから読み取ります
+  そして、6 つの決定原則を使用した自動決定でそれらを順次実行します。表面
+  最終審査での好みの決定（接近したアプローチ、境界線の範囲、コーデックスの不一致）
+  承認ゲート。コマンド 1 つで、徹底的に検討して計画を立てます。
+  「自動レビュー」、「自動計画」、「すべてのレビューを実行」、「この計画をレビュー」を求められた場合に使用します。
+  自動的に」または「私に代わって決定を下します」。
+  ユーザーが計画ファイルを持っており、完全なレビューを実行したい場合は、事前に提案します。
+  15 ～ 30 個の中級質問に答えずに挑戦する。 (Gスタック)
+音声トリガー:
+  ・「オートプラン」
+  - 「自動レビュー」
+利点: [オフィスアワー]
+許可されたツール:
+  - バッシュ
+  - 読む
+  - 書く
+  - 編集
+  - グロブ
+  - グレップ
+  - ウェブ検索
+  - ユーザーに質問する
 ---
 
-{{PREAMBLE}}
+{{前文}}
 
 {{BASE_BRANCH_DETECT}}
 
-{{BENEFITS_FROM}}
+{{特典_FROM}}
 
-# /autoplan — Auto-Review Pipeline
+# /autoplan — 自動レビュー パイプライン
 
-One command. Rough plan in, fully reviewed plan out.
+コマンドは 1 つです。大まかな計画を立て、完全に検討した計画を立てます。
 
-/autoplan reads the full CEO, design, eng, and DX review skill files from disk and follows
-them at full depth — same rigor, same sections, same methodology as running each skill
-manually. The only difference: intermediate AskUserQuestion calls are auto-decided using
-the 6 principles below. Taste decisions (where reasonable people could disagree) are
-surfaced at a final approval gate.
-
----
-
-## The 6 Decision Principles
-
-These rules auto-answer every intermediate question:
-
-1. **Choose completeness** — Ship the whole thing. Pick the approach that covers more edge cases.
-2. **Boil lakes** — Fix everything in the blast radius (files modified by this plan + direct importers). Auto-approve expansions that are in blast radius AND < 1 day CC effort (< 5 files, no new infra).
-3. **Pragmatic** — If two options fix the same thing, pick the cleaner one. 5 seconds choosing, not 5 minutes.
-4. **DRY** — Duplicates existing functionality? Reject. Reuse what exists.
-5. **Explicit over clever** — 10-line obvious fix > 200-line abstraction. Pick what a new contributor reads in 30 seconds.
-6. **Bias toward action** — Merge > review cycles > stale deliberation. Flag concerns but don't block.
-
-**Conflict resolution (context-dependent tiebreakers):**
-- **CEO phase:** P1 (completeness) + P2 (boil lakes) dominate.
-- **Eng phase:** P5 (explicit) + P3 (pragmatic) dominate.
-- **Design phase:** P5 (explicit) + P1 (completeness) dominate.
+/autoplan は、CEO、デザイン、エンジニアリング、DX の完全なレビュー スキル ファイルをディスクから読み取り、次のコマンドを実行します。
+それらを徹底的に – 各スキルを実行するのと同じ厳密さ、同じセクション、同じ方法論
+手動で。唯一の違い: 中間の AskUserQuestion 呼び出しは、次を使用して自動的に決定されます。
+以下の6つの原則です。好みの決定（合理的な人々が同意しない可能性がある場合）は、
+最終承認ゲートで浮上しました。
 
 ---
 
-## Decision Classification
+## 6 つの意思決定原則
 
-Every auto-decision is classified:
+これらのルールは、すべての中間質問に自動回答します。
 
-**Mechanical** — one clearly right answer. Auto-decide silently.
-Examples: run codex (always yes), run evals (always yes), reduce scope on a complete plan (always no).
+1. **完全性を選択** — すべてを出荷します。より多くのエッジケースをカバーするアプローチを選択してください。
+2. **湖を沸騰させる** — 爆発範囲内のすべてを修正します (この計画によって変更されたファイル + 直接インポーター)。爆発範囲内にあり、CC 作業時間が 1 日未満の拡張を自動承認します (ファイル数が 5 未満、新しいインフラストラクチャなし)。
+3. **実用的** — 2 つのオプションで同じ問題が解決される場合は、よりクリーンな方を選択します。選ぶのは5分ではなく5秒。
+4. **DRY** — 既存の機能と重複しますか?拒否する。存在するものを再利用します。
+5. **賢明ではなく明示的** — 10 行の明白な修正 > 200 行の抽象化。新しい投稿者が 30 秒以内に読んだ内容を選択してください。
+6. **行動へのバイアス** — マージ > レビュー サイクル > 停滞した審議。懸念がある場合はフラグを立てますが、ブロックしないでください。
 
-**Taste** — reasonable people could disagree. Auto-decide with recommendation, but surface at the final gate. Three natural sources:
-1. **Close approaches** — top two are both viable with different tradeoffs.
-2. **Borderline scope** — in blast radius but 3-5 files, or ambiguous radius.
-3. **Codex disagreements** — codex recommends differently and has a valid point.
-
-**User Challenge** — both models agree the user's stated direction should change.
-This is qualitatively different from taste decisions. When Claude and Codex both
-recommend merging, splitting, adding, or removing features/skills/workflows that
-the user specified, this is a User Challenge. It is NEVER auto-decided.
-
-User Challenges go to the final approval gate with richer context than taste
-decisions:
-- **What the user said:** (their original direction)
-- **What both models recommend:** (the change)
-- **Why:** (the models' reasoning)
-- **What context we might be missing:** (explicit acknowledgment of blind spots)
-- **If we're wrong, the cost is:** (what happens if the user's original direction
-  was right and we changed it)
-
-The user's original direction is the default. The models must make the case for
-change, not the other way around.
-
-**Exception:** If both models flag the change as a security vulnerability or
-feasibility blocker (not a preference), the AskUserQuestion framing explicitly
-warns: "Both models believe this is a security/feasibility risk, not just a
-preference." The user still decides, but the framing is appropriately urgent.
+**競合解決 (コンテキスト依存のタイブレーカー):**
+- **CEO フェーズ:** P1 (完全性) + P2 (レイクの沸騰) が支配的です。
+- **英語フェーズ:** P5 (明示的) + P3 (実用的) が支配的です。
+- **設計フェーズ:** P5 (明示的) + P1 (完全性) が支配的です。
 
 ---
 
-## Sequential Execution — MANDATORY
+## 意思決定の分類
 
-Phases MUST execute in strict order: CEO → Design → Eng → DX.
-Each phase MUST complete fully before the next begins.
-NEVER run phases in parallel — each builds on the previous.
+すべての自動決定は分類されます。
 
-Between each phase, emit a phase-transition summary and verify that all required
-outputs from the prior phase are written before starting the next.
+**機械的** — 明らかに正しい答えが 1 つあります。黙って自動決定します。
+例: codex の実行 (常に Yes)、evals の実行 (常に Yes)、完全な計画のスコープの縮小 (常に No)。
 
----
+**味** — まともな人は反対するかもしれません。推奨で自動決定しますが、最終ゲートで浮上します。 3 つの天然源:
+1. **接近アプローチ** — 上位 2 つは、異なるトレードオフを伴いますが、両方とも実行可能です。
+2. **境界範囲** — 爆発範囲内だが 3 ～ 5 ファイル、または範囲があいまい。
+3. **コーデックスの意見の相違** — コーデックスは異なる推奨をしており、正当な指摘があります。
 
-## What "Auto-Decide" Means
+**ユーザーの挑戦** — どちらのモデルも、ユーザーが表明した方向性を変更する必要があることに同意しています。
+これは味覚の決定とは質的に異なります。クロードとコーデックスが両方とも
+機能/スキル/ワークフローをマージ、分割、追加、または削除することを推奨します。
+ユーザーが指定したもの、これはユーザー チャレンジです。決して自動的に決定されることはありません。
 
-Auto-decide replaces the USER'S judgment with the 6 principles. It does NOT replace
-the ANALYSIS. Every section in the loaded skill files must still be executed at the
-same depth as the interactive version. The only thing that changes is who answers the
-AskUserQuestion: you do, using the 6 principles, instead of the user.
+ユーザーのチャレンジは、好みよりも豊かなコンテキストを伴って最終承認ゲートに進みます
+決定:
+- **ユーザーの発言:** (元の方向性)
+- **両モデルの推奨事項:** (変更点)
+- **理由:** (モデルの推論)
+- **どのようなコンテキストが欠落している可能性がありますか:** (盲点の明示的な認識)
+- **私たちが間違っている場合、コストは次のとおりです。** (ユーザーの本来の指示が間違っていた場合はどうなるか)
+  それは正しかったので変更しました）
 
-**Two exceptions — never auto-decided:**
-1. Premises (Phase 1) — require human judgment about what problem to solve.
-2. User Challenges — when both models agree the user's stated direction should change
-   (merge, split, add, remove features/workflows). The user always has context models
-   lack. See Decision Classification above.
+ユーザーの元の方向がデフォルトです。モデルは次のことを主張しなければなりません
+その逆ではなく、変化します。
 
-**You MUST still:**
-- READ the actual code, diffs, and files each section references
-- PRODUCE every output the section requires (diagrams, tables, registries, artifacts)
-- IDENTIFY every issue the section is designed to catch
-- DECIDE each issue using the 6 principles (instead of asking the user)
-- LOG each decision in the audit trail
-- WRITE all required artifacts to disk
-
-**You MUST NOT:**
-- Compress a review section into a one-liner table row
-- Write "no issues found" without showing what you examined
-- Skip a section because "it doesn't apply" without stating what you checked and why
-- Produce a summary instead of the required output (e.g., "architecture looks good"
-  instead of the ASCII dependency graph the section requires)
-
-"No issues found" is a valid output for a section — but only after doing the analysis.
-State what you examined and why nothing was flagged (1-2 sentences minimum).
-"Skipped" is never valid for a non-skip-listed section.
+**例外:** 両方のモデルがセキュリティ上の脆弱性として変更を報告した場合、または
+実現可能性のブロッカー (優先事項ではありません)、AskUserQuestion の明示的なフレーム化
+警告: 「どちらのモデルも、これは単なるセキュリティ上のリスクではなく、セキュリティ/実現可能性のリスクであると考えています。
+好み。」ユーザーが決定することはできますが、フレーミングは適切に緊急です。
 
 ---
 
-## Filesystem Boundary — Codex Prompts
+## 順次実行 — 必須
 
-All prompts sent to Codex (via `codex exec` or `codex review`) MUST be prefixed with
-this boundary instruction:
+フェーズは、CEO → 設計 → エンジニアリング → DX という厳密な順序で実行する必要があります。
+各フェーズは、次のフェーズが始まる前に完全に完了しなければなりません。
+フェーズを決して並行して実行しないでください。各フェーズは前のフェーズに基づいて構築されます。
 
-> IMPORTANT: Do NOT read or execute any SKILL.md files or files in skill definition directories (paths containing skills/gstack). These are AI assistant skill definitions meant for a different system. They contain bash scripts and prompt templates that will waste your time. Ignore them completely. Stay focused on the repository code only.
-
-This prevents Codex from discovering gstack skill files on disk and following their
-instructions instead of reviewing the plan.
+各フェーズ間で、フェーズ遷移の概要を出力し、必要なものがすべて揃っていることを確認します。
+前のフェーズからの出力は、次のフェーズを開始する前に書き込まれます。
 
 ---
 
-## Phase 0: Intake + Restore Point
+## 「自動決定」の意味
 
-### Step 1: Capture restore point
+自動決定は、ユーザーの判断を 6 つの原則に置き換えます。代わりにはなりません
+分析。ロードされたスキル ファイルのすべてのセクションは引き続き実行される必要があります。
+インタラクティブバージョンと同じ深さです。唯一変わることは、誰が答えるかということです
+AskUserQuestion: ユーザーの代わりに、6 つの原則を使用して質問します。
 
-Before doing anything, save the plan file's current state to an external file:
+**2 つの例外があります — 自動決定されることはありません:**
+1. 前提 (フェーズ 1) — どの問題を解決するかについて人間の判断が必要です。
+2. ユーザーの課題 — 両方のモデルが同意した場合、ユーザーが表明した方向を変更する必要があります
+   (機能/ワークフローのマージ、分割、追加、削除)。ユーザーは常にコンテキストモデルを持っています
+   欠如。上記の決定分類を参照してください。
+
+**必ず次のことを行ってください:**
+- 実際のコード、差分、各セクションが参照しているファイルを読む
+- セクションに必要なすべての出力 (図、表、レジストリ、アーティファクト) を作成します。
+- このセクションが取り上げるように設計されているすべての問題を特定する
+- (ユーザーに質問するのではなく) 6 つの原則を使用して各問題を決定します
+- 各決定を監査証跡に記録します
+- 必要なすべてのアーティファクトをディスクに書き込みます
+
+**してはいけないこと:**
+- レビューセクションを一行表の行に圧縮します
+- 調べた内容を示さずに「問題は見つかりませんでした」と書く
+- チェック内容とその理由を明示せずに「該当しない」という理由でセクションをスキップする
+- 必要な出力の代わりに概要を生成します (例: 「アーキテクチャは良さそうです」)
+  このセクションで必要な ASCII 依存関係グラフの代わりに)
+
+「問題は見つかりませんでした」はセクションの有効な出力ですが、これは分析を行った後でのみです。
+何を調べたか、そしてなぜ何もフラグが立てられなかったのかを述べてください (最低 1 ～ 2 文)。
+「スキップ」は、スキップリストに登録されていないセクションに対しては決して有効ではありません。
+
+---
+
+## ファイルシステムの境界 — コーデックスのプロンプト
+
+Codex に送信されるすべてのプロンプト (`codex exec` または `codex review` 経由) には接頭辞が付けられなければなりません。
+この境界命令:
+
+> 重要: SKILL.md ファイルやスキル定義ディレクトリ (skills/gstack を含むパス) 内のファイルを読み取ったり実行したりしないでください。これらは、別のシステムを対象とした AI アシスタントのスキル定義です。これらには、時間を無駄にする bash スクリプトとプロンプト テンプレートが含まれています。完全に無視してください。リポジトリのコードのみに注目してください。
+
+これにより、Codex がディスク上の gstack スキル ファイルを検出し、そのファイルを追跡することができなくなります。
+計画を見直す代わりに指示を出します。
+
+---
+
+## フェーズ 0: インテーク + 復元ポイント
+
+### ステップ 1: 復元ポイントをキャプチャする
+
+何かを行う前に、プラン ファイルの現在の状態を外部ファイルに保存します。
 
 ```bash
 {{SLUG_SETUP}}
@@ -168,7 +168,7 @@ DATETIME=$(date +%Y%m%d-%H%M%S)
 echo "RESTORE_PATH=$HOME/.gstack/projects/$SLUG/${BRANCH}-autoplan-restore-${DATETIME}.md"
 ```
 
-Write the plan file's full contents to the restore path with this header:
+次のヘッダーを使用して、プラン ファイルの完全な内容を復元パスに書き込みます。
 ```
 # /autoplan Restore Point
 Captured: [timestamp] | Branch: [branch] | Commit: [short hash]
@@ -181,76 +181,76 @@ Captured: [timestamp] | Branch: [branch] | Commit: [short hash]
 [verbatim plan file contents]
 ```
 
-Then prepend a one-line HTML comment to the plan file:
+次に、1 行の HTML コメントをプラン ファイルの先頭に追加します。
 `<!-- /autoplan restore point: [RESTORE_PATH] -->`
 
-### Step 2: Read context
+### ステップ 2: コンテキストを読む
 
-- Read CLAUDE.md, TODOS.md, git log -30, git diff against the base branch --stat
-- Discover design docs: `ls -t ~/.gstack/projects/$SLUG/*-design-*.md 2>/dev/null | head -1`
-- Detect UI scope: grep the plan for view/rendering terms (component, screen, form,
-  button, modal, layout, dashboard, sidebar, nav, dialog). Require 2+ matches. Exclude
-  false positives ("page" alone, "UI" in acronyms).
-- Detect DX scope: grep the plan for developer-facing terms (API, endpoint, REST,
-  GraphQL, gRPC, webhook, CLI, command, flag, argument, terminal, shell, SDK, library,
-  package, npm, pip, import, require, SKILL.md, skill template, Claude Code, MCP, agent,
-  OpenClaw, action, developer docs, getting started, onboarding, integration, debug,
-  implement, error message). Require 2+ matches. Also trigger DX scope if the product IS
-  a developer tool (the plan describes something developers install, integrate, or build
-  on top of) or if an AI agent is the primary user (OpenClaw actions, Claude Code skills,
-  MCP servers).
+- CLAUDE.md、TODOS.md、git log -30、ベースブランチに対する git diff を読み取ります --stat
+- 設計ドキュメントを見つける: `ls -t ~/.gstack/projects/$SLUG/*-design-*.md 2>/dev/null | head -1`
+- UI スコープの検出: ビュー/レンダリング用語 (コンポーネント、画面、フォーム、
+  ボタン、モーダル、レイアウト、ダッシュボード、サイドバー、ナビゲーション、ダイアログ)。 2 つ以上の一致が必要です。除外する
+  誤検知 (「ページ」のみ、頭字語で「UI」)。
+- DX スコープの検出: 開発者向けの用語 (API、エンドポイント、REST、
+  GraphQL、gRPC、Webhook、CLI、コマンド、フラグ、引数、ターミナル、シェル、SDK、ライブラリ、
+  パッケージ、npm、pip、インポート、require、SKILL.md、スキルテンプレート、クロードコード、MCP、エージェント、
+  OpenClaw、アクション、開発者ドキュメント、入門、オンボーディング、統合、デバッグ、
+  実装、エラー メッセージ)。 2 つ以上の一致が必要です。製品が IS の場合、DX スコープもトリガーします
+  開発者ツール (計画では、開発者がインストール、統合、または構築するものについて説明します)
+  AI エージェントがプライマリ ユーザーである場合 (OpenClaw アクション、Claude Code スキル、
+  MCP サーバー)。
 
-### Step 3: Load skill files from disk
+### ステップ 3: ディスクからスキル ファイルをロードする
 
-Read each file using the Read tool:
+読み取りツールを使用して各ファイルを読み取ります。
 - `~/.claude/skills/gstack/plan-ceo-review/SKILL.md`
-- `~/.claude/skills/gstack/plan-design-review/SKILL.md` (only if UI scope detected)
+- `~/.claude/skills/gstack/plan-design-review/SKILL.md` (UI スコープが検出された場合のみ)
 - `~/.claude/skills/gstack/plan-eng-review/SKILL.md`
-- `~/.claude/skills/gstack/plan-devex-review/SKILL.md` (only if DX scope detected)
+- `~/.claude/skills/gstack/plan-devex-review/SKILL.md` (DX スコープが検出された場合のみ)
 
-**Section skip list — when following a loaded skill file, SKIP these sections
-(they are already handled by /autoplan):**
-- Preamble (run first)
-- AskUserQuestion Format
-- Completeness Principle — Boil the Lake
-- Search Before Building
-- Completion Status Protocol
-- Telemetry (run last)
-- Step 0: Detect base branch
-- Review Readiness Dashboard
-- Plan File Review Report
-- Prerequisite Skill Offer (BENEFITS_FROM)
-- Outside Voice — Independent Plan Challenge
-- Design Outside Voices (parallel)
+**セクションスキップリスト — ロードされたスキルファイルをフォローする場合、これらのセクションをスキップします
+(それらはすでに /autoplan によって処理されています):**
+- プリアンブル (最初に実行)
+- AskUserQuestion フォーマット
+- 完全性の原則 — 湖を沸騰させる
+- 構築前に検索
+- 完了ステータスプロトコル
+- テレメトリー (最後に実行)
+- ステップ 0: ベースブランチの検出
+- レビュー準備ダッシュボード
+- 計画ファイルレビューレポート
+- 前提条件のスキルオファー (BENEFITS_FROM)
+- 外部の声 — 自主企画チャレンジ
+- 外部の声のデザイン (並行)
 
-Follow ONLY the review-specific methodology, sections, and required outputs.
+レビュー固有の方法論、セクション、および必要な出力のみに従ってください。
 
-Output: "Here's what I'm working with: [plan summary]. UI scope: [yes/no]. DX scope: [yes/no].
-Loaded review skills from disk. Starting full review pipeline with auto-decisions."
+出力: 「私が取り組んでいる内容は次のとおりです: [計画の概要]。UI スコープ: [はい/いいえ]。DX スコープ: [はい/いいえ]。
+レビュースキルをディスクからロードしました。自動決定による完全なレビュー パイプラインを開始します。」
 
 ---
 
-## Phase 1: CEO Review (Strategy & Scope)
+## フェーズ 1: CEO レビュー (戦略と範囲)
 
-Follow plan-ceo-review/SKILL.md — all sections, full depth.
-Override: every AskUserQuestion → auto-decide using the 6 principles.
+plan-ceo-review/SKILL.md に従ってください — すべてのセクション、詳細情報。
+オーバーライド: すべての AskUserQuestion → 6 つの原則を使用して自動決定します。
 
-**Override rules:**
-- Mode selection: SELECTIVE EXPANSION
-- Premises: accept reasonable ones (P6), challenge only clearly wrong ones
-- **GATE: Present premises to user for confirmation** — this is the ONE AskUserQuestion
-  that is NOT auto-decided. Premises require human judgment.
-- Alternatives: pick highest completeness (P1). If tied, pick simplest (P5).
-  If top 2 are close → mark TASTE DECISION.
-- Scope expansion: in blast radius + <1d CC → approve (P2). Outside → defer to TODOS.md (P3).
-  Duplicates → reject (P4). Borderline (3-5 files) → mark TASTE DECISION.
-- All 10 review sections: run fully, auto-decide each issue, log every decision.
-- Dual voices: always run BOTH Claude subagent AND Codex if available (P6).
-  Run them sequentially in foreground. First the Claude subagent (Agent tool,
-  foreground — do NOT use run_in_background), then Codex (Bash). Both must
-  complete before building the consensus table.
+**上書きルール:**
+- モード選択: SELECTIVE EXPANSION
+- 前提: 合理的なものは受け入れ（P6）、明らかに間違っているもののみに異議を唱えます
+- **ゲート: 確認のためにユーザーに施設を提示します** — これは 1 つの AskUserQuestion です
+  それは自動的に決定されるものではありません。敷地内には人間の判断が必要です。
+- 代替案: 最も高い完全性 (P1) を選択します。同点の場合は、最も単純な (P5) を選択します。
+  上位 2 名が近い場合 → TASTE DECISION をマークします。
+- 範囲拡張: 爆発半径 + <1d CC → 承認 (P2)。外部 → TODOS.md (P3) に従う。
+  重複→拒否（P4）。ボーダーライン (3 ～ 5 ファイル) → 味の決定をマークします。
+- 10 個すべてのレビュー セクション: 完全に実行され、各問題が自動決定され、すべての決定が記録されます。
+- デュアルボイス: 利用可能な場合は常にクロード サブエージェントとコーデックスの両方を実行します (P6)。
+  それらをフォアグラウンドで順番に実行します。まず、Claude サブエージェント (エージェント ツール、
+  フォアグラウンド — run_in_background) を使用しないでください)、その後 Codex (Bash) を使用します。両方とも必要です
+  コンセンサステーブルを作成する前に完了してください。
 
-  **Codex CEO voice** (via Bash):
+**Codex CEO の声** (Bash 経由):
   ```bash
   _REPO_ROOT=$(git rev-parse --show-toplevel) || { echo "ERROR: not in a git repo" >&2; exit 1; }
   codex exec "IMPORTANT: Do NOT read or execute any SKILL.md files or files in skill definition directories (paths containing skills/gstack). These are AI assistant skill definitions meant for a different system. Stay focused on repository code only.
@@ -263,44 +263,44 @@ Override: every AskUserQuestion → auto-decide using the 6 principles.
   No compliments. Just the strategic blind spots.
   File: <plan_path>" -C "$_REPO_ROOT" -s read-only --enable web_search_cached
   ```
-  Timeout: 10 minutes
+  タイムアウト: 10分
 
-  **Claude CEO subagent** (via Agent tool):
-  "Read the plan file at <plan_path>. You are an independent CEO/strategist
-  reviewing this plan. You have NOT seen any prior review. Evaluate:
-  1. Is this the right problem to solve? Could a reframing yield 10x impact?
-  2. Are the premises stated or just assumed? Which ones could be wrong?
-  3. What's the 6-month regret scenario — what will look foolish?
-  4. What alternatives were dismissed without sufficient analysis?
-  5. What's the competitive risk — could someone else solve this first/better?
-  For each finding: what's wrong, severity (critical/high/medium), and the fix."
+**クロード CEO サブエージェント** (エージェント ツール経由):
+  「<plan_path> にある計画ファイルを読んでください。あなたは独立した CEO/ストラテジストです
+  この計画を見直しています。以前のレビューは見ていません。評価:
+  1. これは解決すべき問題ですか?リフレーミングで10倍の効果が得られるでしょうか?
+  2. 前提条件は述べられていますか、それとも単に仮定されていますか?どれが間違っている可能性がありますか?
+  3. 6 か月の後悔シナリオとは何ですか? 何が愚かに見えるでしょうか?
+  4. 十分な分析が行われずに却下された代替案は何ですか?
+  5. 競争上のリスクは何ですか — 他の誰かがこれを最初に/より良く解決できるでしょうか?
+  それぞれの発見について: 問題点、重大度 (重大/高/中)、および修正。」
 
-  **Error handling:** Both calls block in foreground. Codex auth/timeout/empty → proceed with
-  Claude subagent only, tagged `[single-model]`. If Claude subagent also fails →
-  "Outside voices unavailable — continuing with primary review."
+**エラー処理:** どちらの呼び出しもフォアグラウンドでブロックされます。コーデックス認証/タイムアウト/空 → 続行
+  クロードサブエージェントのみ、`[single-model]` のタグが付けられています。クロード副代理も失敗した場合→
+  「外部の声は利用できません。一次審査を継続します。」
 
-  **Degradation matrix:** Both fail → "single-reviewer mode". Codex only →
-  tag `[codex-only]`. Subagent only → tag `[subagent-only]`.
+**劣化マトリックス:** 両方とも失敗 → 「単一レビュー者モード」。コーデックスのみ→
+  タグ`[codex-only]`。サブエージェントのみ → タグ `[subagent-only]`。
 
-- Strategy choices: if codex disagrees with a premise or scope decision with valid
-  strategic reason → TASTE DECISION. If both models agree the user's stated structure
-  should change (merge, split, add, remove) → USER CHALLENGE (never auto-decided).
+- 戦略の選択: コーデックスが有効な前提または範囲の決定に同意しない場合
+  戦略的理由 → 好みの決定。両方のモデルがユーザーの指定した構造に一致する場合
+  変更する必要があります (マージ、分割、追加、削除) → ユーザーチャレンジ (自動決定されません)。
 
-**Required execution checklist (CEO):**
+**必須実行チェックリスト (CEO):**
 
-Step 0 (0A-0F) — run each sub-step and produce:
-- 0A: Premise challenge with specific premises named and evaluated
-- 0B: Existing code leverage map (sub-problems → existing code)
-- 0C: Dream state diagram (CURRENT → THIS PLAN → 12-MONTH IDEAL)
-- 0C-bis: Implementation alternatives table (2-3 approaches with effort/risk/pros/cons)
-- 0D: Mode-specific analysis with scope decisions logged
-- 0E: Temporal interrogation (HOUR 1 → HOUR 6+)
-- 0F: Mode selection confirmation
+ステップ 0 (0A ～ 0F) — 各サブステップを実行し、以下を生成します。
+- 0A: 特定の施設を指定して評価した施設チャレンジ
+- 0B: 既存コード活用マップ (サブ問題 → 既存コード)
+- 0C: 夢の状態図 (現在 → この計画 → 12 か月の理想)
+- 0C-bis: 実装代替案表 (労力/リスク/長所/短所を伴う 2 ～ 3 のアプローチ)
+- 0D: スコープの決定がログに記録されたモード固有の分析
+- 0E: 時間的尋問 (1 時間目 → 6 時間目以降)
+- 0F: モード選択確認
 
-Step 0.5 (Dual Voices): Run Claude subagent (foreground Agent tool) first, then
-Codex (Bash). Present Codex output under CODEX SAYS (CEO — strategy challenge)
-header. Present subagent output under CLAUDE SUBAGENT (CEO — strategic independence)
-header. Produce CEO consensus table:
+ステップ 0.5 (デュアルボイス): 最初に Claude サブエージェント (フォアグラウンド エージェント ツール) を実行し、次に
+コーデックス (Bash)。 CODEX SAYS (CEO - 戦略課題) の下で Codex の成果物を提示する
+ヘッダー。 CLAUDE SUBAGENT (CEO - 戦略的独立性) の下でサブエージェントの成果を提示する
+ヘッダー。 CEO のコンセンサステーブルを作成します。
 
 ```
 CEO DUAL VOICES — CONSENSUS TABLE:
@@ -318,50 +318,50 @@ CONFIRMED = both agree. DISAGREE = models differ (→ taste decision).
 Missing voice = N/A (not CONFIRMED). Single critical finding from one voice = flagged regardless.
 ```
 
-Sections 1-10 — for EACH section, run the evaluation criteria from the loaded skill file:
-- Sections WITH findings: full analysis, auto-decide each issue, log to audit trail
-- Sections with NO findings: 1-2 sentences stating what was examined and why nothing
-  was flagged. NEVER compress a section to just its name in a table row.
-- Section 11 (Design): run only if UI scope was detected in Phase 0
+セクション 1 ～ 10 — 各セクションに対して、ロードされたスキル ファイルから評価基準を実行します。
+- 調査結果のあるセクション: 完全な分析、各問題の自動決定、監査証跡へのログ
+- 所見がなかったセクション: 何が検査されたのか、なぜ何も検査されなかったのかを説明する 1 ～ 2 文
+  フラグが立てられました。セクションをテーブル行の名前だけに圧縮しないでください。
+- セクション 11 (デザイン): フェーズ 0 で UI スコープが検出された場合にのみ実行
 
-**Mandatory outputs from Phase 1:**
-- "NOT in scope" section with deferred items and rationale
-- "What already exists" section mapping sub-problems to existing code
-- Error & Rescue Registry table (from Section 2)
-- Failure Modes Registry table (from review sections)
-- Dream state delta (where this plan leaves us vs 12-month ideal)
-- Completion Summary (the full summary table from the CEO skill)
+**フェーズ 1 からの必須出力:**
+- 延期された項目と根拠を含む「範囲外」セクション
+- 「既存のもの」セクションでサブ問題を既存のコードにマッピング
+- エラーおよびレスキュー レジストリ テーブル (セクション 2 より)
+- 故障モード レジストリ テーブル (レビュー セクションより)
+- 夢の状態デルタ (この計画では 12 か月の理想が達成されない)
+- 完了概要 (CEO スキルからの完全な概要表)
 
-**PHASE 1 COMPLETE.** Emit phase-transition summary:
-> **Phase 1 complete.** Codex: [N concerns]. Claude subagent: [N issues].
-> Consensus: [X/6 confirmed, Y disagreements → surfaced at gate].
-> Passing to Phase 2.
+**フェーズ 1 が完了しました。** フェーズ遷移の概要を出力します:
+> **フェーズ 1 が完了しました。** コーデックス: [N 個の懸念事項]。クロード副代理人: [問題数件]。
+> 合意: [X/6 が確認、Y の意見の相違 → ゲートで表面化]。
+> フェーズ 2 に移行します。
 
-Do NOT begin Phase 2 until all Phase 1 outputs are written to the plan file
-and the premise gate has been passed.
+すべてのフェーズ 1 の出力が計画ファイルに書き込まれるまで、フェーズ 2 を開始しないでください。
+そして敷地のゲートを通過しました。
 
 ---
 
-**Pre-Phase 2 checklist (verify before starting):**
-- [ ] CEO completion summary written to plan file
-- [ ] CEO dual voices ran (Codex + Claude subagent, or noted unavailable)
-- [ ] CEO consensus table produced
-- [ ] Premise gate passed (user confirmed)
-- [ ] Phase-transition summary emitted
+**フェーズ 2 前のチェックリスト (開始前に確認してください):**
+- [ ] CEO の完了概要が計画ファイルに書き込まれました
+- [ ] CEO の二重音声が実行されました (コーデックス + クロードのサブエージェント、または利用不可と通知されました)
+- [ ] CEO コンセンサステーブルを作成
+- [ ] 敷地ゲートを通過しました (ユーザーが確認済み)
+- [ ] 相転移の概要が出力される
 
-## Phase 2: Design Review (conditional — skip if no UI scope)
+## フェーズ 2: 設計レビュー (条件付き - UI スコープがない場合はスキップ)
 
-Follow plan-design-review/SKILL.md — all 7 dimensions, full depth.
-Override: every AskUserQuestion → auto-decide using the 6 principles.
+plan-design-review/SKILL.md に従ってください — 7 つの次元すべて、完全な深さ。
+オーバーライド: すべての AskUserQuestion → 6 つの原則を使用して自動決定します。
 
-**Override rules:**
-- Focus areas: all relevant dimensions (P1)
-- Structural issues (missing states, broken hierarchy): auto-fix (P5)
-- Aesthetic/taste issues: mark TASTE DECISION
-- Design system alignment: auto-fix if DESIGN.md exists and fix is obvious
-- Dual voices: always run BOTH Claude subagent AND Codex if available (P6).
+**上書きルール:**
+- 重点分野: 関連するすべての次元 (P1)
+- 構造上の問題 (状態の欠落、階層の破損): 自動修正 (P5)
+- 美的/味覚の問題: 味覚の決定をマークする
+- デザインシステムの調整: DESIGN.md が存在し、修正が明らかな場合は自動修正します。
+- デュアルボイス: 利用可能な場合は常にクロード サブエージェントとコーデックスの両方を実行します (P6)。
 
-  **Codex design voice** (via Bash):
+**Codex デザインの声** (Bash 経由):
   ```bash
   _REPO_ROOT=$(git rev-parse --show-toplevel) || { echo "ERROR: not in a git repo" >&2; exit 1; }
   codex exec "IMPORTANT: Do NOT read or execute any SKILL.md files or files in skill definition directories (paths containing skills/gstack). These are AI assistant skill definitions meant for a different system. Stay focused on repository code only.
@@ -380,63 +380,63 @@ Override: every AskUserQuestion → auto-decide using the 6 principles.
   What design decisions will haunt the implementer if left ambiguous?
   Be opinionated. No hedging." -C "$_REPO_ROOT" -s read-only --enable web_search_cached
   ```
-  Timeout: 10 minutes
+  タイムアウト: 10分
 
-  **Claude design subagent** (via Agent tool):
-  "Read the plan file at <plan_path>. You are an independent senior product designer
-  reviewing this plan. You have NOT seen any prior review. Evaluate:
-  1. Information hierarchy: what does the user see first, second, third? Is it right?
-  2. Missing states: loading, empty, error, success, partial — which are unspecified?
-  3. User journey: what's the emotional arc? Where does it break?
-  4. Specificity: does the plan describe SPECIFIC UI or generic patterns?
-  5. What design decisions will haunt the implementer if left ambiguous?
-  For each finding: what's wrong, severity (critical/high/medium), and the fix."
-  NO prior-phase context — subagent must be truly independent.
+**クロード デザイン サブエージェント** (エージェント ツール経由):
+  「<plan_path> にあるプラン ファイルを読んでください。あなたは独立したシニア プロダクト デザイナーです。
+  この計画を見直しています。以前のレビューは見ていません。評価:
+  1. 情報階層: ユーザーは最初、二番目、三番目に何を目にしますか?そうですか？
+  2. 欠落している状態: 読み込み中、空、エラー、成功、部分的 — どれが未指定ですか?
+  3. ユーザージャーニー: 感情的な部分とは何ですか?どこが壊れますか？
+  4. 具体性: 計画には特定の UI または一般的なパターンが記述されていますか?
+  5. 曖昧なままにしておくと、どのような設計上の決定が実装者を悩ませることになりますか?
+  それぞれの発見について: 問題点、重大度 (重大/高/中)、および修正。」
+  前の段階のコンテキストはありません。サブエージェントは完全に独立している必要があります。
 
-  Error handling: same as Phase 1 (both foreground/blocking, degradation matrix applies).
+エラー処理: フェーズ 1 と同じ (フォアグラウンド/ブロッキングの両方、劣化マトリックスが適用されます)。
 
-- Design choices: if codex disagrees with a design decision with valid UX reasoning
-  → TASTE DECISION. Scope changes both models agree on → USER CHALLENGE.
+- デザインの選択: コーデックスが有効な UX 推論を伴うデザインの決定に同意しない場合
+  → 味の決定。両方のモデルが同意する範囲の変更 → ユーザーチャレンジ。
 
-**Required execution checklist (Design):**
+**必須の実行チェックリスト (設計):**
 
-1. Step 0 (Design Scope): Rate completeness 0-10. Check DESIGN.md. Map existing patterns.
+1. ステップ 0 (設計範囲): 完全性を 0 ～ 10 で評価します。 DESIGN.mdを確認してください。既存のパターンをマッピングします。
 
-2. Step 0.5 (Dual Voices): Run Claude subagent (foreground) first, then Codex. Present under
-   CODEX SAYS (design — UX challenge) and CLAUDE SUBAGENT (design — independent review)
-   headers. Produce design litmus scorecard (consensus table). Use the litmus scorecard
-   format from plan-design-review. Include CEO phase findings in Codex prompt ONLY
-   (not Claude subagent — stays independent).
+2. ステップ 0.5 (デュアルボイス): 最初に Claude サブエージェント (フォアグラウンド) を実行し、次に Codex を実行します。現在の状態
+   CODEX SAYS (デザイン — UX チャレンジ) および CLAUDE SUBAGENT (デザイン — 独立したレビュー)
+   ヘッダー。デザインリトマススコアカード（コンセンサステーブル）を作成します。リトマス試験紙のスコアカードを使用する
+   企画→設計→検討という形式になります。 CEO フェーズの結果を Codex プロンプトのみに含める
+   (クロードの代理人ではありません - 独立したままです)。
 
-3. Passes 1-7: Run each from loaded skill. Rate 0-10. Auto-decide each issue.
-   DISAGREE items from scorecard → raised in the relevant pass with both perspectives.
+3. パス 1 ～ 7: ロードされたスキルからそれぞれを実行します。 0 ～ 10 の評価。各問題を自動決定します。
+   スコアカードの項目に同意しない → 両方の観点から関連するパスで提起されました。
 
-**PHASE 2 COMPLETE.** Emit phase-transition summary:
-> **Phase 2 complete.** Codex: [N concerns]. Claude subagent: [N issues].
-> Consensus: [X/Y confirmed, Z disagreements → surfaced at gate].
-> Passing to Phase 3.
+**フェーズ 2 が完了しました。** フェーズ遷移の概要を出力します:
+> **フェーズ 2 が完了しました。** コーデックス: [N 個の懸念事項]。クロード副代理人: [問題数件]。
+> 合意: [X/Y は確認、Z の意見の相違→ ゲートで表面化]。
+> フェーズ 3 に移行します。
 
-Do NOT begin Phase 3 until all Phase 2 outputs (if run) are written to the plan file.
+すべてのフェーズ 2 の出力 (実行した場合) がプラン ファイルに書き込まれるまで、フェーズ 3 を開始しないでください。
 
 ---
 
-**Pre-Phase 3 checklist (verify before starting):**
-- [ ] All Phase 1 items above confirmed
-- [ ] Design completion summary written (or "skipped, no UI scope")
-- [ ] Design dual voices ran (if Phase 2 ran)
-- [ ] Design consensus table produced (if Phase 2 ran)
-- [ ] Phase-transition summary emitted
+**フェーズ 3 前のチェックリスト (開始前に確認してください):**
+- [ ] 上記のフェーズ 1 項目をすべて確認済み
+- [ ] デザイン完了の概要が書き込まれました (または「スキップ、UI スコープなし」)
+- [ ] デザインデュアルボイスが実行されました (フェーズ 2 が実行された場合)
+- [ ] 設計コンセンサステーブルが作成されました (フェーズ 2 が実行された場合)
+- [ ] 相転移の概要が出力される
 
-## Phase 3: Eng Review + Dual Voices
+## フェーズ 3: エンジニアリング レビュー + デュアル ボイス
 
-Follow plan-eng-review/SKILL.md — all sections, full depth.
-Override: every AskUserQuestion → auto-decide using the 6 principles.
+plan-eng-review/SKILL.md に従ってください — すべてのセクション、詳細情報。
+オーバーライド: すべての AskUserQuestion → 6 つの原則を使用して自動決定します。
 
-**Override rules:**
-- Scope challenge: never reduce (P2)
-- Dual voices: always run BOTH Claude subagent AND Codex if available (P6).
+**上書きルール:**
+- スコープチャレンジ: 決して減らさない(P2)
+- デュアルボイス: 利用可能な場合は常にクロード サブエージェントとコーデックスの両方を実行します (P6)。
 
-  **Codex eng voice** (via Bash):
+**Codex eng voice** (Bash 経由):
   ```bash
   _REPO_ROOT=$(git rev-parse --show-toplevel) || { echo "ERROR: not in a git repo" >&2; exit 1; }
   codex exec "IMPORTANT: Do NOT read or execute any SKILL.md files or files in skill definition directories (paths containing skills/gstack). These are AI assistant skill definitions meant for a different system. Stay focused on repository code only.
@@ -450,35 +450,35 @@ Override: every AskUserQuestion → auto-decide using the 6 principles.
 
   File: <plan_path>" -C "$_REPO_ROOT" -s read-only --enable web_search_cached
   ```
-  Timeout: 10 minutes
+  タイムアウト: 10分
 
-  **Claude eng subagent** (via Agent tool):
-  "Read the plan file at <plan_path>. You are an independent senior engineer
-  reviewing this plan. You have NOT seen any prior review. Evaluate:
-  1. Architecture: Is the component structure sound? Coupling concerns?
-  2. Edge cases: What breaks under 10x load? What's the nil/empty/error path?
-  3. Tests: What's missing from the test plan? What would break at 2am Friday?
-  4. Security: New attack surface? Auth boundaries? Input validation?
-  5. Hidden complexity: What looks simple but isn't?
-  For each finding: what's wrong, severity, and the fix."
-  NO prior-phase context — subagent must be truly independent.
+**Claude eng サブエージェント** (エージェント ツール経由):
+  「<plan_path> にある計画ファイルを読んでください。あなたは独立した上級エンジニアです。
+  この計画を見直しています。以前のレビューは見ていません。評価:
+  1. アーキテクチャ: コンポーネントの構造は健全ですか?カップリングの懸念?
+  2. エッジケース: 10 倍の負荷がかかると何が壊れますか? nil/空/エラーパスとは何ですか?
+  3. テスト: テスト計画に欠けているものは何ですか?金曜日の午前2時に何が壊れるでしょうか？
+  4. セキュリティ: 新たな攻撃対象領域?認証の境界?入力検証?
+  5. 隠れた複雑さ: 単純そうに見えて実はそうではないものは何ですか?
+  それぞれの発見について: 問題点、重大度、修正方法。」
+  前の段階のコンテキストはありません。サブエージェントは完全に独立している必要があります。
 
-  Error handling: same as Phase 1 (both foreground/blocking, degradation matrix applies).
+エラー処理: フェーズ 1 と同じ (フォアグラウンド/ブロッキングの両方、劣化マトリックスが適用されます)。
 
-- Architecture choices: explicit over clever (P5). If codex disagrees with valid reason → TASTE DECISION. Scope changes both models agree on → USER CHALLENGE.
-- Evals: always include all relevant suites (P1)
-- Test plan: generate artifact at `~/.gstack/projects/$SLUG/{user}-{branch}-test-plan-{datetime}.md`
-- TODOS.md: collect all deferred scope expansions from Phase 1, auto-write
+- アーキテクチャの選択: 賢いものより明示的なもの (P5)。コーデックスが正当な理由に同意しない場合 → 好みの決定。両方のモデルが同意する範囲の変更 → ユーザーチャレンジ。
+- Evals: 常に関連するすべてのスイート (P1) を含めます。
+- テスト計画: `~/.gstack/projects/$SLUG/{user}-{branch}-test-plan-{datetime}.md` でアーティファクトを生成
+- TODOS.md: フェーズ 1 からのすべての遅延スコープ拡張を収集し、自動書き込み
 
-**Required execution checklist (Eng):**
+**必須の実行チェックリスト (英語):**
 
-1. Step 0 (Scope Challenge): Read actual code referenced by the plan. Map each
-   sub-problem to existing code. Run the complexity check. Produce concrete findings.
+1. ステップ 0 (スコープ チャレンジ): プランによって参照される実際のコードを読み取ります。それぞれのマップ
+   既存のコードのサブ問題。複雑さのチェックを実行します。具体的な調査結果を導き出します。
 
-2. Step 0.5 (Dual Voices): Run Claude subagent (foreground) first, then Codex. Present
-   Codex output under CODEX SAYS (eng — architecture challenge) header. Present subagent
-   output under CLAUDE SUBAGENT (eng — independent review) header. Produce eng consensus
-   table:
+2. ステップ 0.5 (デュアルボイス): 最初に Claude サブエージェント (フォアグラウンド) を実行し、次に Codex を実行します。プレゼント
+   CODEX SAYS (eng — アーキテクチャ チャレンジ) ヘッダーの下のコーデックス出力。現在の復代理人
+   CLAUDE SUBAGENT (eng — 独立したレビュー) ヘッダーの下に出力されます。エンジニアのコンセンサスを生成する
+   表:
 
 ```
 ENG DUAL VOICES — CONSENSUS TABLE:
@@ -496,59 +496,59 @@ CONFIRMED = both agree. DISAGREE = models differ (→ taste decision).
 Missing voice = N/A (not CONFIRMED). Single critical finding from one voice = flagged regardless.
 ```
 
-3. Section 1 (Architecture): Produce ASCII dependency graph showing new components
-   and their relationships to existing ones. Evaluate coupling, scaling, security.
+3. セクション 1 (アーキテクチャ): 新しいコンポーネントを示す ASCII 依存関係グラフを作成します。
+   そして既存のものとの関係。結合、スケーリング、セキュリティを評価します。
 
-4. Section 2 (Code Quality): Identify DRY violations, naming issues, complexity.
-   Reference specific files and patterns. Auto-decide each finding.
+4. セクション 2 (コードの品質): DRY 違反、名前付けの問題、複雑さを特定します。
+   特定のファイルとパターンを参照します。各結果を自動決定します。
 
-5. **Section 3 (Test Review) — NEVER SKIP OR COMPRESS.**
-   This section requires reading actual code, not summarizing from memory.
-   - Read the diff or the plan's affected files
-   - Build the test diagram: list every NEW UX flow, data flow, codepath, and branch
-   - For EACH item in the diagram: what type of test covers it? Does one exist? Gaps?
-   - For LLM/prompt changes: which eval suites must run?
-   - Auto-deciding test gaps means: identify the gap → decide whether to add a test
-     or defer (with rationale and principle) → log the decision. It does NOT mean
-     skipping the analysis.
-   - Write the test plan artifact to disk
+5. **セクション 3 (テストレビュー) — 決してスキップしたり圧縮したりしないでください。**
+   このセクションでは、メモリから要約するのではなく、実際のコードを読み取る必要があります。
+   - 差分またはプランの影響を受けるファイルを読み取る
+   - テスト図を作成する: すべての新しい UX フロー、データ フロー、コードパス、およびブランチをリストします。
+   - 図の各項目について、どのような種類のテストが対象になりますか?存在しますか?ギャップ？
+   - LLM/プロンプト変更の場合: どの評価スイートを実行する必要がありますか?
+   - テストギャップの自動決定とは、ギャップを特定→テストを追加するかどうかを決定することを意味します。
+     または延期（根拠と原則を伴う） → 決定を記録します。という意味ではありません
+     分析をスキップします。
+   - テスト計画成果物をディスクに書き込む
 
-6. Section 4 (Performance): Evaluate N+1 queries, memory, caching, slow paths.
+6. セクション 4 (パフォーマンス): N+1 クエリ、メモリ、キャッシュ、低速パスを評価します。
 
-**Mandatory outputs from Phase 3:**
-- "NOT in scope" section
-- "What already exists" section
-- Architecture ASCII diagram (Section 1)
-- Test diagram mapping codepaths to coverage (Section 3)
-- Test plan artifact written to disk (Section 3)
-- Failure modes registry with critical gap flags
-- Completion Summary (the full summary from the Eng skill)
-- TODOS.md updates (collected from all phases)
+**フェーズ 3 からの必須出力:**
+- 「範囲外」セクション
+- 「すでに存在するもの」セクション
+- アーキテクチャ ASCII 図 (セクション 1)
+- コードパスをカバレッジにマッピングするテスト図 (セクション 3)
+- ディスクに書き込まれるテスト計画成果物 (セクション 3)
+- クリティカルギャップフラグを備えた障害モードレジストリ
+- 完了概要 (英語スキルの完全な概要)
+- TODOS.md アップデート (すべてのフェーズから収集)
 
-**PHASE 3 COMPLETE.** Emit phase-transition summary:
-> **Phase 3 complete.** Codex: [N concerns]. Claude subagent: [N issues].
-> Consensus: [X/6 confirmed, Y disagreements → surfaced at gate].
-> Passing to Phase 3.5 (DX Review) or Phase 4 (Final Gate).
+**フェーズ 3 が完了しました。** フェーズ遷移の概要を出力します:
+> **フェーズ 3 が完了しました。** コーデックス: [N 個の懸念事項]。クロード副代理人: [問題数件]。
+> コンセンサス: [X/6 が確認、Y の意見の相違 → ゲートで表面化]。
+> フェーズ 3.5 (DX レビュー) またはフェーズ 4 (最終ゲート) に移行します。
 
 ---
 
-## Phase 3.5: DX Review (conditional — skip if no developer-facing scope)
+## フェーズ 3.5: DX レビュー (条件付き - 開発者向けのスコープがない場合はスキップ)
 
-Follow plan-devex-review/SKILL.md — all 8 DX dimensions, full depth.
-Override: every AskUserQuestion → auto-decide using the 6 principles.
+plan-devex-review/SKILL.md に従ってください — 8 つのすべての DX ディメンション、フルデプス。
+オーバーライド: すべての AskUserQuestion → 6 つの原則を使用して自動決定します。
 
-**Skip condition:** If DX scope was NOT detected in Phase 0, skip this phase entirely.
-Log: "Phase 3.5 skipped — no developer-facing scope detected."
+**スキップ条件:** フェーズ 0 で DX スコープが検出されなかった場合、このフェーズを完全にスキップします。
+ログ: 「フェーズ 3.5 はスキップされました — 開発者向けスコープが検出されませんでした。」
 
-**Override rules:**
-- Focus areas: all relevant DX dimensions (P1)
-- Getting started friction: always optimize toward fewer steps (P5, simpler over clever)
-- Error message quality: always require problem + cause + fix (P1, completeness)
-- API/CLI naming: consistency wins over cleverness (P5)
-- DX taste decisions (e.g., opinionated defaults vs flexibility): mark TASTE DECISION
-- Dual voices: always run BOTH Claude subagent AND Codex if available (P6).
+**上書きルール:**
+- 重点分野: 関連するすべての DX ディメンション (P1)
+- 開始時の摩擦: 常に少ないステップに向けて最適化します (P5、賢明よりもシンプルに)
+- エラー メッセージの品質: 常に問題 + 原因 + 修正が必要 (P1、完全性)
+- API/CLI 命名: 賢さよりも一貫性が優先されます (P5)
+- DX の好みの決定 (例: 独断的なデフォルト vs 柔軟性): 好みの決定をマークします。
+- デュアルボイス: 利用可能な場合は常にクロード サブエージェントとコーデックスの両方を実行します (P6)。
 
-  **Codex DX voice** (via Bash):
+**Codex DX の音声** (Bash 経由):
   ```bash
   _REPO_ROOT=$(git rev-parse --show-toplevel) || { echo "ERROR: not in a git repo" >&2; exit 1; }
   codex exec "IMPORTANT: Do NOT read or execute any SKILL.md files or files in skill definition directories (paths containing skills/gstack). These are AI assistant skill definitions meant for a different system. Stay focused on repository code only.
@@ -567,32 +567,32 @@ Log: "Phase 3.5 skipped — no developer-facing scope detected."
   5. Upgrade path: can devs upgrade without fear? Migration guides? Deprecation warnings?
   Be adversarial. Think like a developer who is evaluating this against 3 competitors." -C "$_REPO_ROOT" -s read-only --enable web_search_cached
   ```
-  Timeout: 10 minutes
+  タイムアウト: 10分
 
-  **Claude DX subagent** (via Agent tool):
-  "Read the plan file at <plan_path>. You are an independent DX engineer
-  reviewing this plan. You have NOT seen any prior review. Evaluate:
-  1. Getting started: how many steps from zero to hello world? What's the TTHW?
-  2. API/CLI ergonomics: naming consistency, sensible defaults, progressive disclosure?
-  3. Error handling: does every error path specify problem + cause + fix + docs link?
-  4. Documentation: copy-paste examples? Information architecture? Interactive elements?
-  5. Escape hatches: can developers override every opinionated default?
-  For each finding: what's wrong, severity (critical/high/medium), and the fix."
-  NO prior-phase context — subagent must be truly independent.
+**Claude DX サブエージェント** (エージェント ツール経由):
+  「<plan_path> にあるプラン ファイルを読み取ります。あなたは独立した DX エンジニアです。
+  この計画を見直しています。以前のレビューは見ていません。評価:
+  1. はじめに: ゼロから Hello World まで何ステップ? TTHWって何ですか？
+  2. API/CLI 人間工学: 命名の一貫性、賢明なデフォルト、漸進的な開示?
+  3. エラー処理: すべてのエラー パスで、問題 + 原因 + 修正 + ドキュメントのリンクが指定されていますか?
+  4. ドキュメント: 例をコピー＆ペーストしますか?情報アーキテクチャ?インタラクティブ要素?
+  5. エスケープハッチ: 開発者は独自のデフォルトをすべてオーバーライドできますか?
+  それぞれの発見について: 問題点、重大度 (重大/高/中)、および修正。」
+  前の段階のコンテキストはありません。サブエージェントは完全に独立している必要があります。
 
-  Error handling: same as Phase 1 (both foreground/blocking, degradation matrix applies).
+エラー処理: フェーズ 1 と同じ (フォアグラウンド/ブロッキングの両方、劣化マトリックスが適用されます)。
 
-- DX choices: if codex disagrees with a DX decision with valid developer empathy reasoning
-  → TASTE DECISION. Scope changes both models agree on → USER CHALLENGE.
+- DX の選択: コーデックスが有効な開発者共感の理由による DX の決定に同意しない場合
+  → 味の決定。両方のモデルが同意する範囲の変更 → ユーザーチャレンジ。
 
-**Required execution checklist (DX):**
+**必須の実行チェックリスト (DX):**
 
-1. Step 0 (DX Scope Assessment): Auto-detect product type. Map the developer journey.
-   Rate initial DX completeness 0-10. Assess TTHW.
+1. ステップ 0 (DX スコープ評価): 製品タイプを自動検出します。開発者の取り組みを計画します。
+   DX の初期完成度を 0 ～ 10 で評価します。 TTHW を評価します。
 
-2. Step 0.5 (Dual Voices): Run Claude subagent (foreground) first, then Codex. Present
-   under CODEX SAYS (DX — developer experience challenge) and CLAUDE SUBAGENT
-   (DX — independent review) headers. Produce DX consensus table:
+2. ステップ 0.5 (デュアルボイス): 最初に Claude サブエージェント (フォアグラウンド) を実行し、次に Codex を実行します。プレゼント
+   CODEX SAYS (DX - 開発者エクスペリエンスチャレンジ) および CLAUDE SUBAGENT の下で
+   (DX — 独立したレビュー) ヘッダー。 DX コンセンサステーブルを作成します。
 
 ```
 DX DUAL VOICES — CONSENSUS TABLE:
@@ -610,29 +610,29 @@ CONFIRMED = both agree. DISAGREE = models differ (→ taste decision).
 Missing voice = N/A (not CONFIRMED). Single critical finding from one voice = flagged regardless.
 ```
 
-3. Passes 1-8: Run each from loaded skill. Rate 0-10. Auto-decide each issue.
-   DISAGREE items from consensus table → raised in the relevant pass with both perspectives.
+3. パス 1 ～ 8: ロードされたスキルからそれぞれを実行します。 0 ～ 10 の評価。各問題を自動決定します。
+   コンセンサステーブルの項目に同意しません → 両方の観点から関連するパスで提起されました。
 
-4. DX Scorecard: Produce the full scorecard with all 8 dimensions scored.
+4. DX スコアカード: 8 つの次元すべてがスコア化された完全なスコアカードを作成します。
 
-**Mandatory outputs from Phase 3.5:**
-- Developer journey map (9-stage table)
-- Developer empathy narrative (first-person perspective)
-- DX Scorecard with all 8 dimension scores
-- DX Implementation Checklist
-- TTHW assessment with target
+**フェーズ 3.5 からの必須出力:**
+- デベロッパージャーニーマップ（9段階テーブル）
+- 開発者の共感ナラティブ (一人称視点)
+- 8 次元スコアすべてを含む DX スコアカード
+- DX導入チェックリスト
+- ターゲットを使用した TTHW 評価
 
-**PHASE 3.5 COMPLETE.** Emit phase-transition summary:
-> **Phase 3.5 complete.** DX overall: [N]/10. TTHW: [N] min → [target] min.
-> Codex: [N concerns]. Claude subagent: [N issues].
-> Consensus: [X/6 confirmed, Y disagreements → surfaced at gate].
-> Passing to Phase 4 (Final Gate).
+**フェーズ 3.5 が完了しました。** フェーズ遷移の概要を出力します:
+> **フェーズ 3.5 完了。** DX 全体: [N]/10。 TTHW: [N] 分 → [ターゲット] 分。
+> コーデックス: [N 件の懸念事項]。クロード副代理人: [問題数件]。
+> 合意: [X/6 が確認、Y の意見の相違 → ゲートで表面化]。
+> フェーズ 4 (最終ゲート) に進みます。
 
 ---
 
-## Decision Audit Trail
+## 意思決定監査証跡
 
-After each auto-decision, append a row to the plan file using Edit:
+各自動決定の後、編集を使用して計画ファイルに行を追加します。
 
 ```markdown
 <!-- AUTONOMOUS DECISION LOG -->
@@ -642,72 +642,72 @@ After each auto-decision, append a row to the plan file using Edit:
 |---|-------|----------|-----------|-----------|----------|
 ```
 
-Write one row per decision incrementally (via Edit). This keeps the audit on disk,
-not accumulated in conversation context.
+決定ごとに 1 行を段階的に書き込みます (編集経由)。これにより、監査がディスク上に保持されます。
+会話の文脈に蓄積されない。
 
 ---
 
-## Pre-Gate Verification
+## ゲート前の検証
 
-Before presenting the Final Approval Gate, verify that required outputs were actually
-produced. Check the plan file and conversation for each item.
+最終承認ゲートを提示する前に、必要な出力が実際に行われたことを確認してください。
+生産された。各項目のプランファイルと会話を確認してください。
 
-**Phase 1 (CEO) outputs:**
-- [ ] Premise challenge with specific premises named (not just "premises accepted")
-- [ ] All applicable review sections have findings OR explicit "examined X, nothing flagged"
-- [ ] Error & Rescue Registry table produced (or noted N/A with reason)
-- [ ] Failure Modes Registry table produced (or noted N/A with reason)
-- [ ] "NOT in scope" section written
-- [ ] "What already exists" section written
-- [ ] Dream state delta written
-- [ ] Completion Summary produced
-- [ ] Dual voices ran (Codex + Claude subagent, or noted unavailable)
-- [ ] CEO consensus table produced
+**フェーズ 1 (CEO) の出力:**
+- [ ] 名前付きの特定の前提条件を含む前提条件チャレンジ (単に「前提条件が受け入れられた」だけではありません)
+- [ ] 該当するすべてのレビュー セクションに所見または明示的な「X を検査したが、何もフラグが立てられなかった」がある
+- [ ] エラー & レスキュー レジストリ テーブルが生成されました (または理由付きで N/A と表示されました)
+- [ ] 障害モード レジストリ テーブルが生成されました (または理由とともに N/A と表示されました)
+- [ ] 「範囲外」セクションが書かれています
+- [ ] 「すでに存在するもの」セクションの書き込み
+- [ ] 夢状態デルタが書き込まれました
+- [ ] 完了概要を作成しました
+- [ ] デュアルボイスが実行されました (Codex + Claude サブエージェント、または使用不可と表示されました)
+- [ ] CEO コンセンサステーブルを作成
 
-**Phase 2 (Design) outputs — only if UI scope detected:**
-- [ ] All 7 dimensions evaluated with scores
-- [ ] Issues identified and auto-decided
-- [ ] Dual voices ran (or noted unavailable/skipped with phase)
-- [ ] Design litmus scorecard produced
+**フェーズ 2 (デザイン) 出力 — UI スコープが検出された場合のみ:**
+- [ ] 7 つの次元すべてがスコアで評価されます
+- [ ] 問題が特定され、自動決定されました
+- [ ] デュアルボイスが実行されました (または、使用不可/フェーズでスキップされたと表示されました)
+- [ ] リトマス試験紙のデザインを制作
 
-**Phase 3 (Eng) outputs:**
-- [ ] Scope challenge with actual code analysis (not just "scope is fine")
-- [ ] Architecture ASCII diagram produced
-- [ ] Test diagram mapping codepaths to test coverage
-- [ ] Test plan artifact written to disk at ~/.gstack/projects/$SLUG/
-- [ ] "NOT in scope" section written
-- [ ] "What already exists" section written
-- [ ] Failure modes registry with critical gap assessment
-- [ ] Completion Summary produced
-- [ ] Dual voices ran (Codex + Claude subagent, or noted unavailable)
-- [ ] Eng consensus table produced
+**フェーズ 3 (英語) 出力:**
+- [ ] 実際のコード分析によるスコープチャレンジ (「スコープは問題ありません」というだけではありません)
+- [ ] アーキテクチャ ASCII 図が生成されました
+- [ ] コードパスをテスト カバレッジにマッピングするテスト図
+- [ ] テスト計画アーティファクトが ~/.gstack/projects/$SLUG/ のディスクに書き込まれます
+- [ ] 「範囲外」セクションが書かれています
+- [ ] 「すでに存在するもの」セクションの書き込み
+- [ ] クリティカルギャップ評価を含む故障モードレジストリ
+- [ ] 完了概要を作成しました
+- [ ] デュアル音声が実行されました (Codex + Claude サブエージェント、または使用不可と表示されました)
+- [ ] 英国のコンセンサステーブルが作成されました
 
-**Phase 3.5 (DX) outputs — only if DX scope detected:**
-- [ ] All 8 DX dimensions evaluated with scores
-- [ ] Developer journey map produced
-- [ ] Developer empathy narrative written
-- [ ] TTHW assessment with target
-- [ ] DX Implementation Checklist produced
-- [ ] Dual voices ran (or noted unavailable/skipped with phase)
-- [ ] DX consensus table produced
+**フェーズ 3.5 (DX) 出力 — DX スコープが検出された場合のみ:**
+- [ ] 8 つの DX 次元すべてをスコアで評価
+- [ ] 開発者ジャーニーマップを作成しました
+- [ ] 開発者の共感の物語が書かれました
+- [ ] ターゲットを使用した TTHW 評価
+- [ ] DX導入チェックリストを作成
+- [ ] デュアルボイスが実行されました (または、使用不可/フェーズでスキップされたと表示されました)
+- [ ] DXコンセンサステーブルを作成
 
-**Cross-phase:**
-- [ ] Cross-phase themes section written
+**クロスフェーズ:**
+- [ ] クロスフェーズテーマのセクションを執筆
 
-**Audit trail:**
-- [ ] Decision Audit Trail has at least one row per auto-decision (not empty)
+**監査証跡:**
+- [ ] 決定監査証跡には、自動決定ごとに少なくとも 1 行あります (空ではありません)。
 
-If ANY checkbox above is missing, go back and produce the missing output. Max 2
-attempts — if still missing after retrying twice, proceed to the gate with a warning
-noting which items are incomplete. Do not loop indefinitely.
+上記のチェックボックスのいずれかが欠落している場合は、戻って欠落している出力を生成します。最大2
+試行 — 2 回再試行してもまだ見つからない場合は、警告とともにゲートに進みます
+どの項目が不完全であるかに注目します。無限にループしないでください。
 
 ---
 
-## Phase 4: Final Approval Gate
+## フェーズ 4: 最終承認ゲート
 
-**STOP here and present the final state to the user.**
+**ここで停止し、最終状態をユーザーに提示します。**
 
-Present as a message, then use AskUserQuestion:
+メッセージとして提示し、AskUserQuestion を使用します。
 
 ```
 ## /autoplan Review Complete
@@ -757,34 +757,34 @@ I recommend [X] — [principle]. But [Y] is also viable:
 [Items auto-deferred with reasons]
 ```
 
-**Cognitive load management:**
-- 0 user challenges: skip "User Challenges" section
-- 0 taste decisions: skip "Your Choices" section
-- 1-7 taste decisions: flat list
-- 8+: group by phase. Add warning: "This plan had unusually high ambiguity ([N] taste decisions). Review carefully."
+**認知負荷管理:**
+- ユーザー チャレンジが 0 件: 「ユーザー チャレンジ」セクションをスキップします
+- 味に関する決定はありません: 「あなたの選択」セクションをスキップしてください
+- 1 ～ 7 の味の決定: フラット リスト
+- 8+: フェーズごとにグループ化します。 「この計画には異常に高い曖昧性がありました ([N] 好みの決定)。慎重に検討してください。」という警告を追加します。
 
-AskUserQuestion options:
-- A) Approve as-is (accept all recommendations)
-- B) Approve with overrides (specify which taste decisions to change)
-- B2) Approve with user challenge responses (accept or reject each challenge)
-- C) Interrogate (ask about any specific decision)
-- D) Revise (the plan itself needs changes)
-- E) Reject (start over)
+「ユーザーに質問する」オプション:
+- A) 現状のまま承認する (すべての推奨事項を受け入れる)
+- B) オーバーライドによる承認 (変更するテイストの決定を指定)
+- B2) ユーザーのチャレンジ応答による承認 (各チャレンジを受け入れるか拒否する)
+- C) 尋問する（特定の決定について尋ねる）
+- D) 見直し（計画自体の変更が必要）
+- E) 拒否 (やり直し)
 
-**Option handling:**
-- A: mark APPROVED, write review logs, suggest /ship
-- B: ask which overrides, apply, re-present gate
-- C: answer freeform, re-present gate
-- D: make changes, re-run affected phases (scope→1B, design→2, test plan→3, arch→3). Max 3 cycles.
-- E: start over
+**オプションの取り扱い:**
+- A: 承認済みのマークを付け、レビュー ログを書き込み、提案/発送します
+- B: どのオーバーライドを尋ね、適用し、ゲートを再提示します
+- C: 自由形式で回答し、ゲートを再提示します
+- D: 変更を加え、影響を受けるフェーズを再実行します (スコープ→ 1B、設計→ 2、テスト計画→ 3、アーチ→ 3)。最大3サイクル。
+- E: 最初からやり直す
 
 ---
 
-## Completion: Write Review Logs
+## 完了: レビュー ログの書き込み
 
-On approval, write 3 separate review log entries so /ship's dashboard recognizes them.
-Replace TIMESTAMP, STATUS, and N with actual values from each review phase.
-STATUS is "clean" if no unresolved issues, "issues_open" otherwise.
+承認時に、/ship のダッシュボードが認識できるように、3 つの個別のレビュー ログ エントリを書き込みます。
+TIMESTAMP、STATUS、N を各レビュー フェーズの実際の値に置き換えます。
+STATUS は、未解決の問題がない場合は「clean」、それ以外の場合は「issues_open」になります。
 
 ```bash
 COMMIT=$(git rev-parse --short HEAD 2>/dev/null)
@@ -795,45 +795,45 @@ TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 ~/.claude/skills/gstack/bin/gstack-review-log '{"skill":"plan-eng-review","timestamp":"'"$TIMESTAMP"'","status":"STATUS","unresolved":N,"critical_gaps":N,"issues_found":N,"mode":"FULL_REVIEW","via":"autoplan","commit":"'"$COMMIT"'"}'
 ```
 
-If Phase 2 ran (UI scope):
+フェーズ 2 が実行された場合 (UI スコープ):
 ```bash
 ~/.claude/skills/gstack/bin/gstack-review-log '{"skill":"plan-design-review","timestamp":"'"$TIMESTAMP"'","status":"STATUS","unresolved":N,"via":"autoplan","commit":"'"$COMMIT"'"}'
 ```
 
-If Phase 3.5 ran (DX scope):
+フェーズ 3.5 が実行された場合 (DX スコープ):
 ```bash
 ~/.claude/skills/gstack/bin/gstack-review-log '{"skill":"plan-devex-review","timestamp":"'"$TIMESTAMP"'","status":"STATUS","initial_score":N,"overall_score":N,"product_type":"TYPE","tthw_current":"TTHW","tthw_target":"TARGET","unresolved":N,"via":"autoplan","commit":"'"$COMMIT"'"}'
 ```
 
-Dual voice logs (one per phase that ran):
+デュアル音声ログ (実行されたフェーズごとに 1 つ):
 ```bash
 ~/.claude/skills/gstack/bin/gstack-review-log '{"skill":"autoplan-voices","timestamp":"'"$TIMESTAMP"'","status":"STATUS","source":"SOURCE","phase":"ceo","via":"autoplan","consensus_confirmed":N,"consensus_disagree":N,"commit":"'"$COMMIT"'"}'
 
 ~/.claude/skills/gstack/bin/gstack-review-log '{"skill":"autoplan-voices","timestamp":"'"$TIMESTAMP"'","status":"STATUS","source":"SOURCE","phase":"eng","via":"autoplan","consensus_confirmed":N,"consensus_disagree":N,"commit":"'"$COMMIT"'"}'
 ```
 
-If Phase 2 ran (UI scope), also log:
+フェーズ 2 が実行された場合 (UI スコープ)、次のログも記録されます。
 ```bash
 ~/.claude/skills/gstack/bin/gstack-review-log '{"skill":"autoplan-voices","timestamp":"'"$TIMESTAMP"'","status":"STATUS","source":"SOURCE","phase":"design","via":"autoplan","consensus_confirmed":N,"consensus_disagree":N,"commit":"'"$COMMIT"'"}'
 ```
 
-If Phase 3.5 ran (DX scope), also log:
+フェーズ 3.5 が実行された場合 (DX スコープ)、次のログも記録されます。
 ```bash
 ~/.claude/skills/gstack/bin/gstack-review-log '{"skill":"autoplan-voices","timestamp":"'"$TIMESTAMP"'","status":"STATUS","source":"SOURCE","phase":"dx","via":"autoplan","consensus_confirmed":N,"consensus_disagree":N,"commit":"'"$COMMIT"'"}'
 ```
 
-SOURCE = "codex+subagent", "codex-only", "subagent-only", or "unavailable".
-Replace N values with actual consensus counts from the tables.
+SOURCE = "コーデックス+サブエージェント"、"コーデックスのみ"、"サブエージェントのみ"、または "利用不可"。
+N 値をテーブルの実際のコンセンサス数に置き換えます。
 
-Suggest next step: `/ship` when ready to create the PR.
+PR を作成する準備ができたら、次のステップ: `/ship` を提案します。
 
 ---
 
-## Important Rules
+## 重要なルール
 
-- **Never abort.** The user chose /autoplan. Respect that choice. Surface all taste decisions, never redirect to interactive review.
-- **Two gates.** The non-auto-decided AskUserQuestions are: (1) premise confirmation in Phase 1, and (2) User Challenges — when both models agree the user's stated direction should change. Everything else is auto-decided using the 6 principles.
-- **Log every decision.** No silent auto-decisions. Every choice gets a row in the audit trail.
-- **Full depth means full depth.** Do not compress or skip sections from the loaded skill files (except the skip list in Phase 0). "Full depth" means: read the code the section asks you to read, produce the outputs the section requires, identify every issue, and decide each one. A one-sentence summary of a section is not "full depth" — it is a skip. If you catch yourself writing fewer than 3 sentences for any review section, you are likely compressing.
-- **Artifacts are deliverables.** Test plan artifact, failure modes registry, error/rescue table, ASCII diagrams — these must exist on disk or in the plan file when the review completes. If they don't exist, the review is incomplete.
-- **Sequential order.** CEO → Design → Eng → DX. Each phase builds on the last.
+- **決して中止しないでください。** ユーザーは /autoplan を選択しました。その選択を尊重してください。すべての味の決定を表面化し、決して対話型レビューにリダイレクトしないでください。
+- **2 つのゲート。** 自動決定されない AskUserQuestions は次のとおりです: (1) フェーズ 1 の前提条件の確認、および (2) ユーザーの課題 — 両方のモデルが同意した場合、ユーザーの指定された方向が変更される必要があります。それ以外はすべて 6 原則に基づいて自動的に決定されます。
+- **すべての決定を記録します。** サイレント自動決定はありません。すべての選択が監査証跡に行として記録されます。
+- **完全な深さは完全な深さを意味します。** ロードされたスキル ファイルのセクションを圧縮したりスキップしたりしないでください (フェーズ 0 のスキップ リストを除く)。 「徹底的に」とは、セクションで読むように求められているコードを読み、セクションで必要な出力を生成し、すべての問題を特定し、それぞれを決定することを意味します。セクションの 1 文の要約は「完全な内容」ではなく、スキップです。どのレビューセクションでも 3 文未満しか書いていないことに気付いた場合は、圧縮している可能性があります。
+- **アーティファクトは成果物です。** テスト計画アーティファクト、障害モード レジストリ、エラー/レスキュー テーブル、ASCII 図 - これらは、レビューの完了時にディスク上または計画ファイル内に存在する必要があります。存在しない場合、レビューは不完全です。
+- **順番。** CEO → デザイン → エンジニア → DX。各フェーズは最後のフェーズに基づいて構築されます。

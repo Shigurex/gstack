@@ -1,115 +1,115 @@
-# gstack
+# gスタック
 
-> "I don't think I've typed like a line of code probably since December, basically, which is an extremely large change." — [Andrej Karpathy](https://fortune.com/2026/03/21/andrej-karpathy-openai-cofounder-ai-agents-coding-state-of-psychosis-openclaw/), No Priors podcast, March 2026
+> 「おそらく 12 月以来、コード行を入力していないと思います。これは非常に大きな変化です。」 — [Andrej Karpathy](https://fortune.com/2026/03/21/andrej-karpathy-openai-cofounder-ai-agents-coding-state-of-psychosis-openclaw/)、事前なしポッドキャスト、2026 年 3 月
 
-When I heard Karpathy say this, I wanted to find out how. How does one person ship like a team of twenty? Peter Steinberger built [OpenClaw](https://github.com/openclaw/openclaw) — 247K GitHub stars — essentially solo with AI agents. The revolution is here. A single builder with the right tooling can move faster than a traditional team.
+カルパシーがこのように言ったのを聞いたとき、私はその方法を知りたいと思いました。 1 人が 20 人のチームのように出荷するにはどうすればよいでしょうか? Peter Steinberger は、[OpenClaw](https://github.com/openclaw/openclaw) — 247,000 GitHub スター — 基本的に AI エージェントと単独で構築しました。革命がここにあります。適切なツールを備えた 1 人のビルダーは、従来のチームよりも迅速に作業を進めることができます。
 
-I'm [Garry Tan](https://x.com/garrytan), President & CEO of [Y Combinator](https://www.ycombinator.com/). I've worked with thousands of startups — Coinbase, Instacart, Rippling — when they were one or two people in a garage. Before YC, I was one of the first eng/PM/designers at Palantir, cofounded Posterous (sold to Twitter), and built Bookface, YC's internal social network.
+私は [Garry Tan](https://x.com/garrytan)、[Y Combinator](https://www.ycombinator.com/) の社長兼 CEO です。私は、コインベース、インスタカート、リップリングといった何千ものスタートアップと仕事をしてきましたが、彼らがまだガレージに 1 人か 2 人だった頃です。 YC に入社する前は、Palantir の最初のエンジニア/PM/デザイナーの 1 人で、Posterous (Twitter に売却) を共同設立し、YC の社内ソーシャル ネットワークである Bookface を構築しました。
 
-**gstack is my answer.** I've been building products for twenty years, and right now I'm shipping more code than I ever have. In the last 60 days: **600,000+ lines of production code** (35% tests), **10,000-20,000 lines per day**, part-time, while running YC full-time. Here's my last `/retro` across 3 projects: **140,751 lines added, 362 commits, ~115k net LOC** in one week.
+**gstack が私の答えです。** 私は 20 年間製品を構築してきましたが、現在、これまでよりも多くのコードを出荷しています。過去 60 日間: **600,000 行を超える運用コード** (35% のテスト)、**1 日あたり 10,000 ～ 20,000 行**、パートタイム、YC をフルタイムで実行。 3 つのプロジェクトにわたる最後の `/retro` は次のとおりです。** 1 週間で追加された 140,751 行、362 件のコミット、正味 LOC は約 115,000** です。
 
-**2026 — 1,237 contributions and counting:**
+**2026 — 1,237 件の寄付があり、今後も増加中:**
 
-![GitHub contributions 2026 — 1,237 contributions, massive acceleration in Jan-Mar](docs/images/github-2026.png)
+![2026 年の GitHub コントリビュート — 1,237 件のコントリビュート、1 月から 3 月にかけて大幅に加速](docs/images/github-2026.png)
 
-**2013 — when I built Bookface at YC (772 contributions):**
+**2013 — YC で Bookface を構築したとき (772 件の貢献):**
 
-![GitHub contributions 2013 — 772 contributions building Bookface at YC](docs/images/github-2013.png)
+![GitHub 貢献 2013 — YC で Bookface を構築する 772 件の貢献](docs/images/github-2013.png)
 
-Same person. Different era. The difference is the tooling.
+同じ人です。時代が違う。違いはツールです。
 
-**gstack is how I do it.** It turns Claude Code into a virtual engineering team — a CEO who rethinks the product, an eng manager who locks architecture, a designer who catches AI slop, a reviewer who finds production bugs, a QA lead who opens a real browser, a security officer who runs OWASP + STRIDE audits, and a release engineer who ships the PR. Twenty-three specialists and eight power tools, all slash commands, all Markdown, all free, MIT license.
+**gstack が私のやり方です。** これにより、Claude Code が仮想エンジニアリング チームに変わります。つまり、製品を再考する CEO、アーキテクチャをロックするエンジニア マネージャー、AI のスロップをキャッチするデザイナー、本番環境のバグを見つけるレビュー担当者、実際のブラウザを開く QA リーダー、OWASP + STRIDE 監査を実行するセキュリティ担当者、PR を出荷するリリース エンジニアです。 23 人のスペシャリストと 8 つの電動ツール、すべてスラッシュ コマンド、すべて Markdown、すべて無料、MIT ライセンス。
 
-This is my open source software factory. I use it every day. I'm sharing it because these tools should be available to everyone.
+ここは私のオープンソース ソフトウェア工場です。毎日使っています。これらのツールは誰でも利用できるはずなので、これを共有します。
 
-Fork it. Improve it. Make it yours. And if you want to hate on free open source software — you're welcome to, but I'd rather you just try it first.
+フォークしてください。改善してください。それをあなたのものにしてください。無料のオープンソース ソフトウェアが嫌いなら、それは歓迎ですが、まずは試してみてほしいと思います。
 
-**Who this is for:**
-- **Founders and CEOs** — especially technical ones who still want to ship
-- **First-time Claude Code users** — structured roles instead of a blank prompt
-- **Tech leads and staff engineers** — rigorous review, QA, and release automation on every PR
+**対象者:**
+- **創設者および CEO** — 特にまだ出荷を希望している技術者
+- **クロード コードを初めて使用するユーザー** — 空のプロンプトではなく構造化されたロール
+- **テクニカル リードとスタッフ エンジニア** - すべての PR に対する厳格なレビュー、QA、リリースの自動化
 
-## Quick start
+## クイックスタート
 
-1. Install gstack (30 seconds — see below)
-2. Run `/office-hours` — describe what you're building
-3. Run `/plan-ceo-review` on any feature idea
-4. Run `/review` on any branch with changes
-5. Run `/qa` on your staging URL
-6. Stop there. You'll know if this is for you.
+1. gstack をインストールします (30 秒 — 以下を参照)
+2. `/office-hours` を実行します — 構築しているものを説明します
+3. 機能アイデアに対して `/plan-ceo-review` を実行します
+4. 変更を加えたブランチで `/review` を実行します
+5. ステージング URL で `/qa` を実行します
+6. そこで停止します。これがあなたに向いているかどうかがわかります。
 
-## Install — 30 seconds
+## インストール — 30 秒
 
-**Requirements:** [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Git](https://git-scm.com/), [Bun](https://bun.sh/) v1.0+, [Node.js](https://nodejs.org/) (Windows only)
+**要件:** [クロード コード](https://docs.anthropic.com/en/docs/claude-code)、[Git](https://git-scm.com/)、[Bun](https://bun.sh/) v1.0+、[Node.js](https://nodejs.org/) (Windows のみ)
 
-### Step 1: Install on your machine
+### ステップ 1: マシンにインストールする
 
-Open Claude Code and paste this. Claude does the rest.
+クロードコードを開いてこれを貼り付けます。残りはクロードがやってくれます。
 
-> Install gstack: run **`git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/.claude/skills/gstack && cd ~/.claude/skills/gstack && ./setup`** then add a "gstack" section to CLAUDE.md that says to use the /browse skill from gstack for all web browsing, never use mcp\_\_claude-in-chrome\_\_\* tools, and lists the available skills: /office-hours, /plan-ceo-review, /plan-eng-review, /plan-design-review, /design-consultation, /design-shotgun, /design-html, /review, /ship, /land-and-deploy, /canary, /benchmark, /browse, /connect-chrome, /qa, /qa-only, /design-review, /setup-browser-cookies, /setup-deploy, /retro, /investigate, /document-release, /codex, /cso, /autoplan, /plan-devex-review, /devex-review, /careful, /freeze, /guard, /unfreeze, /gstack-upgrade, /learn. Then ask the user if they also want to add gstack to the current project so teammates get it.
+> gstack をインストールします: **`git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/.claude/skills/gstack && cd ~/.claude/skills/gstack && ./setup`** を実行し、CLAUDE.md に「gstack」セクションを追加します。このセクションでは、すべての Web ブラウジングに gstack の /browse スキルを使用し、mcp\_\_claude-in-chrome\_\_\* ツールを決して使用しないように指示し、利用可能なスキルのリストを示します: /office-hours、/plan-ceo-review、/plan-eng-review、/plan-design-review、 /design-consultation、/design-shotgun、/design-html、/review、/ship、/land-and-deploy、/canary、/benchmark、/browse、/connect-chrome、/qa、/qa-only、/design-review、/setup-browser-cookies、/setup-deploy、/retro、/investigate、/document-release、/codex、/cso、/autoplan、 /plan-devex-review、/devex-review、/careful、/freeze、/guard、/unfreeze、/gstack-upgrade、/learn。次に、チームメイトがそれを取得できるように、現在のプロジェクトに gstack も追加するかどうかをユーザーに尋ねます。
 
-### Step 2: Add to your repo so teammates get it (optional)
+### ステップ 2: チームメイトが入手できるようにリポジトリに追加します (オプション)
 
-> Add gstack to this project: run **`cp -Rf ~/.claude/skills/gstack .claude/skills/gstack && rm -rf .claude/skills/gstack/.git && cd .claude/skills/gstack && ./setup`** then add a "gstack" section to this project's CLAUDE.md that says to use the /browse skill from gstack for all web browsing, never use mcp\_\_claude-in-chrome\_\_\* tools, lists the available skills: /office-hours, /plan-ceo-review, /plan-eng-review, /plan-design-review, /design-consultation, /design-shotgun, /design-html, /review, /ship, /land-and-deploy, /canary, /benchmark, /browse, /connect-chrome, /qa, /qa-only, /design-review, /setup-browser-cookies, /setup-deploy, /retro, /investigate, /document-release, /codex, /cso, /autoplan, /plan-devex-review, /devex-review, /careful, /freeze, /guard, /unfreeze, /gstack-upgrade, /learn, and tells Claude that if gstack skills aren't working, run `cd .claude/skills/gstack && ./setup` to build the binary and register skills.
+> このプロジェクトに gstack を追加します。**`cp -Rf ~/.claude/skills/gstack .claude/skills/gstack && rm -rf .claude/skills/gstack/.git && cd .claude/skills/gstack && ./setup`** を実行してから、このプロジェクトの CLAUDE.md に「gstack」セクションを追加します。このセクションでは、すべての Web ブラウジングに gstack の /browse スキルを使用し、mcp\_\_claude-in-chrome\_\_\* ツールを決して使用しないように指示し、利用可能なスキルのリストを示します: /office-hours、/plan-ceo-review、/plan-eng-review、 /plan-design-review、/design-consultation、/design-shotgun、/design-html、/review、/ship、/land-and-deploy、/canary、/benchmark、/browse、/connect-chrome、/qa、/qa-only、/design-review、/setup-browser-cookies、/setup-deploy、/retro、/investigate、/document-release、/codex、 /cso、/autoplan、/plan-devex-review、/devex-review、/careful、/freeze、/guard、/unfreeze、/gstack-upgrade、/learn に、gstack スキルが機能しない場合は、`cd .claude/skills/gstack && ./setup` を実行してバイナリをビルドし、スキルを登録するようにクロードに指示します。
 
-Real files get committed to your repo (not a submodule), so `git clone` just works. Everything lives inside `.claude/`. Nothing touches your PATH or runs in the background.
+実際のファイルは (サブモジュールではなく) リポジトリにコミットされるため、`git clone` はそのまま機能します。すべては `.claude/` の中に存在します。 PATH に影響を与えるものや、バックグラウンドで実行されるものは何もありません。
 
-> **Contributing or need full history?** The commands above use `--depth 1` for a fast install. If you plan to contribute or need full git history, do a full clone instead:
+> **貢献しますか、それとも完全な履歴が必要ですか?** 上記のコマンドは、高速インストールのために `--depth 1` を使用します。貢献する予定がある場合、または完全な Git 履歴が必要な場合は、代わりに完全なクローンを実行してください。
 > ```bash
 > git clone https://github.com/garrytan/gstack.git ~/.claude/skills/gstack
 > ```
 
-### Codex, Gemini CLI, or Cursor
+### Codex、Gemini CLI、またはカーソル
 
-gstack works on any agent that supports the [SKILL.md standard](https://github.com/anthropics/claude-code). Skills live in `.agents/skills/` and are discovered automatically.
+gstack は [SKILL.md 標準](https://github.com/anthropics/claude-code) をサポートするエージェント上で動作します。スキルは `.agents/skills/` に存在し、自動的に検出されます。
 
-Install to one repo:
+1 つのリポジトリにインストールします。
 
 ```bash
 git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git .agents/skills/gstack
 cd .agents/skills/gstack && ./setup --host codex
 ```
 
-When setup runs from `.agents/skills/gstack`, it installs the generated Codex skills next to it in the same repo and does not write to `~/.codex/skills`.
+セットアップが `.agents/skills/gstack` から実行されると、生成された Codex スキルが同じリポジトリ内のその隣にインストールされ、`~/.codex/skills` には書き込まれません。
 
-Install once for your user account:
+ユーザー アカウントに対して 1 回インストールします。
 
 ```bash
 git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/gstack
 cd ~/gstack && ./setup --host codex
 ```
 
-`setup --host codex` creates the runtime root at `~/.codex/skills/gstack` and
-links the generated Codex skills at the top level. This avoids duplicate skill
-discovery from the source repo checkout.
+`setup --host codex` は `~/.codex/skills/gstack` にランタイム ルートを作成し、
+生成された Codex スキルをトップレベルにリンクします。これによりスキルの重複を避けることができます
+ソース リポジトリのチェックアウトからの検出。
 
-Or let setup auto-detect which agents you have installed:
+または、インストールしたエージェントをセットアップで自動検出させます。
 
 ```bash
 git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/gstack
 cd ~/gstack && ./setup --host auto
 ```
 
-For Codex-compatible hosts, setup now supports both repo-local installs from `.agents/skills/gstack` and user-global installs from `~/.codex/skills/gstack`. All 31 skills work across all supported agents. Hook-based safety skills (careful, freeze, guard) use inline safety advisory prose on non-Claude hosts.
+Codex 互換ホストの場合、セットアップでは、`.agents/skills/gstack` からのリポローカル インストールと、`~/.codex/skills/gstack` からのユーザー グローバル インストールの両方がサポートされるようになりました。 31 のスキルはすべて、サポートされているすべてのエージェントで機能します。フックベースの安全スキル (注意、凍結、ガード) は、非クロード ホストでインラインの安全勧告散文を使用します。
 
-### Factory Droid
+### ファクトリー・ドロイド
 
-gstack works with [Factory Droid](https://factory.ai). Skills install to `.factory/skills/` and are discovered automatically. Sensitive skills (ship, land-and-deploy, guard) use `disable-model-invocation: true` so Droids don't auto-invoke them.
+gstack は [Factory Droid](https://factory.ai) で動作します。スキルは `.factory/skills/` にインストールされ、自動的に検出されます。機密性の高いスキル (船、着陸と配備、警備) は `disable-model-invocation: true` を使用するため、ドロイドがそれらを自動的に呼び出すことはありません。
 
 ```bash
 git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/gstack
 cd ~/gstack && ./setup --host factory
 ```
 
-Skills install to `~/.factory/skills/gstack-*/`. Restart `droid` to rescan skills, then type `/qa` to get started.
+スキルは`~/.factory/skills/gstack-*/`にインストールされます。 `droid` を再起動してスキルを再スキャンし、「`/qa`」と入力して開始します。
 
-### Voice input (AquaVoice, Whisper, etc.)
+### 音声入力 (AquaVoice、Whisper など)
 
-gstack skills have voice-friendly trigger phrases. Say what you want naturally —
-"run a security check", "test the website", "do an engineering review" — and the
-right skill activates. You don't need to remember slash command names or acronyms.
+gstack スキルには音声対応のトリガー フレーズがあります。言いたいことを自然に言う —
+「セキュリティ チェックを実行する」、「Web サイトをテストする」、「エンジニアリング レビューを行う」、そして
+右のスキルが発動します。スラッシュ コマンドの名前や頭字語を覚える必要はありません。
 
-## See it work
+## 動作する様子を見てください
 
 ```
 You:    I want to build a daily briefing app for my calendar.
@@ -150,156 +150,154 @@ You:    /ship
         Tests: 42 → 51 (+9 new). PR: github.com/you/app/pull/42
 ```
 
-You said "daily briefing app." The agent said "you're building a chief of staff AI" — because it listened to your pain, not your feature request. Eight commands, end to end. That is not a copilot. That is a team.
+「毎日のブリーフィングアプリ」って言いましたね。エージェントは、「あなたは首席補佐官 AI を構築しているのです」と言いました。それは、機能の要望ではなく、あなたの悩みに耳を傾けたからです。 8 つのコマンドをエンドツーエンドで実行します。あれは副操縦士ではありません。それがチームです。
 
-## The sprint
+## スプリント
 
-gstack is a process, not a collection of tools. The skills run in the order a sprint runs:
+gstack はプロセスであり、ツールのコレクションではありません。スキルはスプリントの実行順序で実行されます。
 
-**Think → Plan → Build → Review → Test → Ship → Reflect**
+**考える → 計画 → 構築 → レビュー → テスト → 出荷 → 反映 **
 
-Each skill feeds into the next. `/office-hours` writes a design doc that `/plan-ceo-review` reads. `/plan-eng-review` writes a test plan that `/qa` picks up. `/review` catches bugs that `/ship` verifies are fixed. Nothing falls through the cracks because every step knows what came before it.
+それぞれのスキルが次のスキルに反映されます。 `/office-hours` は、`/plan-ceo-review` が読み取る設計ドキュメントを書き込みます。 `/plan-eng-review` は、`/qa` が選択するテスト計画を作成します。 `/review` は、`/ship` が修正されたことを確認したバグを検出します。すべてのステップがその前に何が起こったかを知っているため、亀裂から落ちるものは何もありません。
 
-| Skill | Your specialist | What they do |
-|-------|----------------|--------------|
-| `/office-hours` | **YC Office Hours** | Start here. Six forcing questions that reframe your product before you write code. Pushes back on your framing, challenges premises, generates implementation alternatives. Design doc feeds into every downstream skill. |
-| `/plan-ceo-review` | **CEO / Founder** | Rethink the problem. Find the 10-star product hiding inside the request. Four modes: Expansion, Selective Expansion, Hold Scope, Reduction. |
-| `/plan-eng-review` | **Eng Manager** | Lock in architecture, data flow, diagrams, edge cases, and tests. Forces hidden assumptions into the open. |
-| `/plan-design-review` | **Senior Designer** | Rates each design dimension 0-10, explains what a 10 looks like, then edits the plan to get there. AI Slop detection. Interactive — one AskUserQuestion per design choice. |
-| `/plan-devex-review` | **Developer Experience Lead** | Evaluates plans through Addy Osmani's DX framework: zero friction, learn by doing, fight uncertainty. Rates 8 DX dimensions 0-10 with a DX Scorecard. Use for developer-facing products — APIs, CLIs, SDKs, libraries, platforms, docs. |
-| `/design-consultation` | **Design Partner** | Build a complete design system from scratch. Researches the landscape, proposes creative risks, generates realistic product mockups. |
-| `/review` | **Staff Engineer** | Find the bugs that pass CI but blow up in production. Auto-fixes the obvious ones. Flags completeness gaps. |
-| `/investigate` | **Debugger** | Systematic root-cause debugging. Iron Law: no fixes without investigation. Traces data flow, tests hypotheses, stops after 3 failed fixes. |
-| `/design-review` | **Designer Who Codes** | Same audit as /plan-design-review, then fixes what it finds. Atomic commits, before/after screenshots. |
-| `/devex-review` | **DX Tester** | Live developer experience audit. Actually tests your onboarding: navigates docs, tries the getting started flow, times TTHW, screenshots errors. Compares against `/plan-devex-review` scores — the boomerang that shows if your plan matched reality. |
-| `/design-shotgun` | **Design Explorer** | Generate multiple AI design variants, open a comparison board in your browser, and iterate until you approve a direction. Taste memory biases toward your preferences. |
-| `/design-html` | **Design Engineer** | Generates production-quality HTML with Pretext for computed text layout. Works with approved mockups, CEO plans, design reviews, or from scratch. Text reflows on resize, heights adjust to content. Smart API routing picks the right Pretext patterns per design type. Framework detection for React/Svelte/Vue. |
-| `/qa` | **QA Lead** | Test your app, find bugs, fix them with atomic commits, re-verify. Auto-generates regression tests for every fix. |
-| `/qa-only` | **QA Reporter** | Same methodology as /qa but report only. Pure bug report without code changes. |
-| `/cso` | **Chief Security Officer** | OWASP Top 10 + STRIDE threat model. Zero-noise: 17 false positive exclusions, 8/10+ confidence gate, independent finding verification. Each finding includes a concrete exploit scenario. |
-| `/ship` | **Release Engineer** | Sync main, run tests, audit coverage, push, open PR. Bootstraps test frameworks if you don't have one. |
-| `/land-and-deploy` | **Release Engineer** | Merge the PR, wait for CI and deploy, verify production health. One command from "approved" to "verified in production." |
-| `/canary` | **SRE** | Post-deploy monitoring loop. Watches for console errors, performance regressions, and page failures. |
-| `/benchmark` | **Performance Engineer** | Baseline page load times, Core Web Vitals, and resource sizes. Compare before/after on every PR. |
-| `/document-release` | **Technical Writer** | Update all project docs to match what you just shipped. Catches stale READMEs automatically. |
-| `/retro` | **Eng Manager** | Team-aware weekly retro. Per-person breakdowns, shipping streaks, test health trends, growth opportunities. `/retro global` runs across all your projects and AI tools (Claude Code, Codex, Gemini). |
-| `/browse` | **QA Engineer** | Give the agent eyes. Real Chromium browser, real clicks, real screenshots. ~100ms per command. `$B connect` launches your real Chrome as a headed window — watch every action live. |
-| `/setup-browser-cookies` | **Session Manager** | Import cookies from your real browser (Chrome, Arc, Brave, Edge) into the headless session. Test authenticated pages. |
-| `/autoplan` | **Review Pipeline** | One command, fully reviewed plan. Runs CEO → design → eng review automatically with encoded decision principles. Surfaces only taste decisions for your approval. |
-| `/learn` | **Memory** | Manage what gstack learned across sessions. Review, search, prune, and export project-specific patterns, pitfalls, and preferences. Learnings compound across sessions so gstack gets smarter on your codebase over time. |
+|スキル |あなたのスペシャリスト |彼らがやっていること |
+|------|----------------|--------------|
+| `/office-hours` | **YC オフィスアワー** |ここから始めましょう。コードを書く前に製品を再構築するための 6 つの強制的な質問。枠組みを押し戻し、前提条件に挑戦し、実装の代替案を生成します。設計ドキュメントはすべての下流スキルにフィードされます。 |
+| `/plan-ceo-review` | **CEO / 創設者** |問題を再考してください。リクエスト内に隠れている 10 つ星の製品を見つけてください。 4 つのモード: 拡張、選択的拡張、ホールド スコープ、縮小。 |
+| `/plan-eng-review` | **エンジニアマネージャー** |アーキテクチャ、データ フロー、図、エッジ ケース、テストをロックします。隠された仮定を強制的に明らかにします。 |
+| `/plan-design-review` | **シニアデザイナー** |各設計次元を 0 ～ 10 で評価し、10 がどのようなものかを説明し、そこに到達するための計画を編集します。 AI スロップ検出。インタラクティブ — デザインの選択ごとに 1 つの AskUserQuestion。 |
+| `/plan-devex-review` | **開発者エクスペリエンス リード** |アディ・オスマニの DX フレームワークを通じて計画を評価します。摩擦をゼロにし、実践して学び、不確実性と闘います。 DX スコアカードを使用して、8 つの DX ディメンション 0 ～ 10 を評価します。開発者向け製品 (API、CLI、SDK、ライブラリ、プラットフォーム、ドキュメント) に使用します。 |
+| `/design-consultation` | **デザインパートナー** |完全なデザイン システムをゼロから構築します。景観を調査し、創造的なリスクを提案し、現実的な製品モックアップを生成します。 |
+| `/review` | **スタッフ エンジニア** | CI は通過しても実稼働環境で爆発するバグを見つけます。明らかなものを自動修正します。完全性のギャップにフラグを立てます。 |
+| `/investigate` | **デバッガー** |体系的な根本原因のデバッグ。鉄の法則: 調査なくして修正はありません。データ フローをトレースし、仮説をテストし、修正が 3 回失敗すると停止します。 |
+| `/design-review` | **コーディングを行うデザイナー** | /plan-design-review と同じ監査を行い、見つかったものを修正します。アトミックコミット、前後のスクリーンショット。 || `/devex-review` | **DXテスター** |ライブ開発者エクスペリエンス監査。実際にオンボーディングをテストします。ドキュメントに移動し、開始フローを試し、TTHW を計測し、エラーのスクリーンショットを撮ります。 `/plan-devex-review` スコアと比較します。これは、計画が現実と一致しているかどうかを示すブーメランです。 |
+| `/design-shotgun` | **デザイン エクスプローラー** |複数の AI 設計バリアントを生成し、ブラウザーで比較ボードを開き、方向性を承認するまで繰り返します。味の記憶は自分の好みに偏ります。 |
+| `/design-html` | **設計エンジニア** |計算されたテキスト レイアウトのプレテキストを使用して、本番品質の HTML を生成します。承認されたモックアップ、CEO プラン、設計レビューを使用したり、ゼロから作業したりできます。サイズ変更時にテキストがリフローされ、高さがコンテンツに合わせて調整されます。スマート API ルーティングは、設計タイプごとに適切なプレテキスト パターンを選択します。 React/Svelte/Vue のフレームワーク検出。 |
+| `/qa` | **QA リード** |アプリをテストし、バグを見つけ、アトミックコミットで修正し、再検証します。すべての修正に対して回帰テストを自動生成します。 |
+| `/qa-only` | **QA レポーター** | /qa と同じ方法論ですが、レポートのみです。コード変更のない純粋なバグレポート。 |
+| `/cso` | **最高セキュリティ責任者** | OWASP トップ 10 + STRIDE 脅威モデル。ゼロノイズ: 17 個の誤検知除外、8/10+ の信頼度ゲート、独立した所見検証。それぞれの発見には、具体的な悪用シナリオが含まれています。 |
+| `/ship` | **リリース エンジニア** |メインを同期し、テストを実行し、カバレッジを監査し、プッシュし、PR を開きます。テスト フレームワークがない場合は、ブートストラップします。 |
+| `/land-and-deploy` | **リリース エンジニア** | PR をマージし、CI を待ってデプロイし、本番環境の健全性を確認します。 「承認済み」から「本番環境で検証済み」までは 1 つのコマンドで完了します。 |
+| `/canary` | **SRE** |デプロイ後の監視ループ。コンソールのエラー、パフォーマンスの低下、ページのエラーを監視します。 |
+| `/benchmark` | **パフォーマンス エンジニア** |ベースラインのページ読み込み時間、Core Web Vitals、およびリソース サイズ。すべての PR の前後を比較します。 || `/document-release` | **テクニカル ライター** |すべてのプロジェクト ドキュメントを、出荷したばかりのものと一致するように更新します。古い README を自動的に検出します。 |
+| `/retro` | **エンジニアマネージャー** |チームを意識した週刊レトロ。個人ごとの内訳、連続出荷数、テストの健全性傾向、成長の機会。 `/retro global` は、すべてのプロジェクトと AI ツール (Claude Code、Codex、Gemini) で実行されます。 |
+| `/browse` | **QA エンジニア** |エージェントに目を向けてください。本物の Chromium ブラウザ、本物のクリック、本物のスクリーンショット。コマンドごとに最大 100 ミリ秒。 `$B connect` は実際の Chrome を見出し付きウィンドウとして起動します。すべてのアクションをライブで監視します。 |
+| `/setup-browser-cookies` | **セッションマネージャー** |実際のブラウザ (Chrome、Arc、Brave、Edge) からヘッドレス セッションに Cookie をインポートします。認証されたページをテストします。 |
+| `/autoplan` | **パイプラインのレビュー** | 1 つのコマンドで、完全に検討された計画。エンコードされた意思決定原則を使用して、CEO → 設計 → 技術レビューを自動的に実行します。表面はあなたの承認を得るための味見の決定のみを行います。 |
+| `/learn` | **メモリ** | gstack がセッション間で学習した内容を管理します。プロジェクト固有のパターン、落とし穴、設定を確認、検索、整理し、エクスポートします。学習はセッション間で複合的に行われるため、時間の経過とともに gstack がコードベースでより賢くなっていきます。 |
 
-### Which review should I use?
+### どのレビューを使用すればよいですか?
 
-| Building for... | Plan stage (before code) | Live audit (after shipping) |
+| ...のための構築 |計画段階 (コードの前) |ライブ監査 (出荷後) |
 |-----------------|--------------------------|----------------------------|
-| **End users** (UI, web app, mobile) | `/plan-design-review` | `/design-review` |
-| **Developers** (API, CLI, SDK, docs) | `/plan-devex-review` | `/devex-review` |
-| **Architecture** (data flow, perf, tests) | `/plan-eng-review` | `/review` |
-| **All of the above** | `/autoplan` (runs CEO → design → eng → DX, auto-detects which apply) | — |
+| **エンド ユーザー** (UI、Web アプリ、モバイル) | `/plan-design-review` | `/design-review` |
+| **開発者** (API、CLI、SDK、ドキュメント) | `/plan-devex-review` | `/devex-review` |
+| **アーキテクチャ** (データ フロー、パフォーマンス、テスト) | `/plan-eng-review` | `/review` |
+| **上記のすべて** | `/autoplan` (CEO → デザイン → エンジニアリング → DX を実行、該当するものを自動検出) | — |
 
-### Power tools
+### 電動工具
 
-| Skill | What it does |
-|-------|-------------|
-| `/codex` | **Second Opinion** — independent code review from OpenAI Codex CLI. Three modes: review (pass/fail gate), adversarial challenge, and open consultation. Cross-model analysis when both `/review` and `/codex` have run. |
-| `/careful` | **Safety Guardrails** — warns before destructive commands (rm -rf, DROP TABLE, force-push). Say "be careful" to activate. Override any warning. |
-| `/freeze` | **Edit Lock** — restrict file edits to one directory. Prevents accidental changes outside scope while debugging. |
-| `/guard` | **Full Safety** — `/careful` + `/freeze` in one command. Maximum safety for prod work. |
-| `/unfreeze` | **Unlock** — remove the `/freeze` boundary. |
-| `/connect-chrome` | **Chrome Controller** — launch Chrome with the Side Panel extension. Watch every action live, inspect CSS on any element, clean up pages, and take screenshots. Each tab gets its own agent. |
-| `/setup-deploy` | **Deploy Configurator** — one-time setup for `/land-and-deploy`. Detects your platform, production URL, and deploy commands. |
-| `/gstack-upgrade` | **Self-Updater** — upgrade gstack to latest. Detects global vs vendored install, syncs both, shows what changed. |
+|スキル |何をするのか |
+|------|-----------|
+| `/codex` | **セカンドオピニオン** — OpenAI Codex CLI からの独立したコードレビュー。 3 つのモード: レビュー (合格/不合格ゲート)、敵対的チャレンジ、オープン コンサルテーション。 `/review` と `/codex` の両方が実行されている場合のクロスモデル分析。 |
+| `/careful` | **安全ガードレール** — 破壊的なコマンド (rm -rf、DROP TABLE、force-push) の前に警告します。 「気をつけて」と言って起動します。警告をオーバーライドします。 |
+| `/freeze` | **編集ロック** — ファイルの編集を 1 つのディレクトリに制限します。デバッグ中にスコープ外で誤って変更が行われることを防ぎます。 |
+| `/guard` | **完全な安全性** — 1 つのコマンドで `/careful` + `/freeze` を実行します。製品作業における最大限の安全性。 |
+| `/unfreeze` | **ロック解除** — `/freeze` 境界を削除します。 |
+| `/connect-chrome` | **Chrome コントローラ** — サイド パネル拡張機能を使用して Chrome を起動します。すべてのアクションをライブで監視し、要素の CSS を検査し、ページをクリーンアップし、スクリーンショットを撮ります。各タブには独自のエージェントが割り当てられます。 |
+| `/setup-deploy` | **コンフィギュレーターの展開** — `/land-and-deploy` の 1 回限りのセットアップ。プラットフォーム、本番 URL を検出し、コマンドをデプロイします。 |
+| `/gstack-upgrade` | **セルフアップデータ** — gstack を最新にアップグレードします。グローバル インストールとベンダー インストールを検出し、両方を同期し、何が変更されたかを表示します。 |
 
-**[Deep dives with examples and philosophy for every skill →](docs/skills.md)**
+**[各スキルの例と哲学を詳しく解説 →](docs/skills.md)**
 
-## Parallel sprints
+## 並行スプリント
 
-gstack works well with one sprint. It gets interesting with ten running at once.
+gstack は 1 つのスプリントでうまく動作します。 10台同時に走ると面白くなります。
 
-**Design is at the heart.** `/design-consultation` builds your design system from scratch, researches the space, proposes creative risks, and writes `DESIGN.md`. `/design-shotgun` generates multiple visual variants and opens a comparison board so you can pick a direction. `/design-html` takes that approved mockup and generates production-quality HTML with Pretext, where text actually reflows on resize instead of breaking with hardcoded heights. Then `/design-review` and `/plan-eng-review` read what you chose. Design decisions flow through the whole system.
+**デザインが中心です。** `/design-consultation` はデザイン システムをゼロから構築し、空間を調査し、創造的なリスクを提案し、`DESIGN.md` を作成します。 `/design-shotgun` は複数のビジュアル バリアントを生成し、比較ボードを開くので、方向を選択できます。 `/design-html` は、承認されたモックアップを取得し、Pretext を使用して製品品質の HTML を生成します。テキストは、ハードコーディングされた高さで中断されるのではなく、サイズ変更時に実際にリフローされます。次に、`/design-review` と `/plan-eng-review` が選択した内容を読み取ります。設計上の決定はシステム全体を通って行われます。
 
-**`/qa` was a massive unlock.** It let me go from 6 to 12 parallel workers. Claude Code saying *"I SEE THE ISSUE"* and then actually fixing it, generating a regression test, and verifying the fix — that changed how I work. The agent has eyes now.
+**`/qa` は大規模なロック解除でした。** これにより、並列ワーカーが 6 人から 12 人になりました。クロード コードは *「問題がわかりました」* と言ってから、実際に問題を修正し、回帰テストを生成し、修正を検証することで、私の仕事のやり方が変わりました。エージェントには目がある。
 
-**Smart review routing.** Just like at a well-run startup: CEO doesn't have to look at infra bug fixes, design review isn't needed for backend changes. gstack tracks what reviews are run, figures out what's appropriate, and just does the smart thing. The Review Readiness Dashboard tells you where you stand before you ship.
+**スマートなレビュー ルーティング。** 経営が順調なスタートアップと同じように、CEO はインフラのバグ修正を検討する必要がなく、バックエンドの変更に設計レビューを行う必要もありません。 gstack は実行されたレビューを追跡し、何が適切かを判断し、賢明なことを実行します。レビュー準備ダッシュボードは、出荷前に現在の状況を示します。
 
-**Test everything.** `/ship` bootstraps test frameworks from scratch if your project doesn't have one. Every `/ship` run produces a coverage audit. Every `/qa` bug fix generates a regression test. 100% test coverage is the goal — tests make vibe coding safe instead of yolo coding.
+**すべてをテストします。** `/ship` プロジェクトにテスト フレームワークがない場合、テスト フレームワークを最初からブートストラップします。 `/ship` を実行するたびにカバレッジ監査が生成されます。 `/qa` バグ修正ごとに回帰テストが生成されます。 100% のテスト カバレッジが目標です。テストにより、yolo コーディングではなく、vibe コーディングが安全になります。
 
-**`/document-release` is the engineer you never had.** It reads every doc file in your project, cross-references the diff, and updates everything that drifted. README, ARCHITECTURE, CONTRIBUTING, CLAUDE.md, TODOS — all kept current automatically. And now `/ship` auto-invokes it — docs stay current without an extra command.
+**`/document-release` は、これまでになかったエンジニアです。** プロジェクト内のすべての doc ファイルを読み取り、差分を相互参照し、ドリフトしたものをすべて更新します。 README、ARCHITECTURE、CONTRIBUTING、CLAUDE.md、TODOS — すべてが自動的に最新の状態に保たれます。そして今では、`/ship` がそれを自動的に呼び出します。追加のコマンドを必要とせずに、ドキュメントは最新の状態に保たれます。
 
-**Real browser mode.** `$B connect` launches your actual Chrome as a headed window controlled by Playwright. You watch Claude click, fill, and navigate in real time — same window, same screen. A subtle green shimmer at the top edge tells you which Chrome window gstack controls. All existing browse commands work unchanged. `$B disconnect` returns to headless. A Chrome extension Side Panel shows a live activity feed of every command and a chat sidebar where you can direct Claude. This is co-presence — Claude isn't remote-controlling a hidden browser, it's sitting next to you in the same cockpit.
+**リアル ブラウザ モード。** `$B connect` は、Playwright によって制御されるヘッダー ウィンドウとして実際の Chrome を起動します。同じウィンドウ、同じ画面で、クロードがクリック、入力、ナビゲートする様子をリアルタイムで見ることができます。上端の微妙な緑色の輝きは、どの Chrome ウィンドウの gstack が制御しているかを示します。既存の参照コマンドはすべて変更されずに機能します。 `$B disconnect` はヘッドレスに戻ります。 Chrome 拡張機能のサイド パネルには、すべてのコマンドのライブ アクティビティ フィードと、クロードに指示できるチャット サイドバーが表示されます。これは共存です。クロードは隠しブラウザを遠隔操作しているのではなく、同じコックピットであなたの隣に座っています。
 
-**Sidebar agent — your AI browser assistant.** Type natural language instructions in the Chrome side panel and a child Claude instance executes them. "Navigate to the settings page and screenshot it." "Fill out this form with test data." "Go through every item in this list and extract the prices." Each task gets up to 5 minutes. The sidebar agent runs in an isolated session, so it won't interfere with your main Claude Code window. It's like having a second pair of hands in the browser.
+**サイドバー エージェント — AI ブラウザ アシスタント。** Chrome サイド パネルに自然言語命令を入力すると、子 Claude インスタンスがその命令を実行します。 「設定ページに移動し、スクリーンショットを撮ります。」 「このフォームにテストデータを記入してください。」 「このリストのすべての商品を調べて、価格を抽出します。」各タスクの所要時間は最大 5 分です。サイドバー エージェントは分離されたセッションで実行されるため、メインのクロード コード ウィンドウに干渉しません。ブラウザーにもう 1 つの手が加わったようなものです。
 
-**Personal automation.** The sidebar agent isn't just for dev workflows. Example: "Browse my kid's school parent portal and add all the other parents' names, phone numbers, and photos to my Google Contacts." Two ways to get authenticated: (1) log in once in the headed browser — your session persists, or (2) run `/setup-browser-cookies` to import cookies from your real Chrome. Once authenticated, Claude navigates the directory, extracts the data, and creates the contacts.
+**個人的な自動化。** サイドバー エージェントは開発ワークフロー専用ではありません。例: 「子供の学校の保護者ポータルを参照し、他のすべての保護者の名前、電話番号、写真を Google コンタクトに追加します。」認証を受けるには 2 つの方法があります: (1) 先頭のブラウザに 1 回ログインします。セッションは継続します。または、(2) `/setup-browser-cookies` を実行して実際の Chrome から Cookie をインポートします。認証されると、クロードはディレクトリに移動し、データを抽出し、連絡先を作成します。
 
-**Browser handoff when the AI gets stuck.** Hit a CAPTCHA, auth wall, or MFA prompt? `$B handoff` opens a visible Chrome at the exact same page with all your cookies and tabs intact. Solve the problem, tell Claude you're done, `$B resume` picks up right where it left off. The agent even suggests it automatically after 3 consecutive failures.
+**AI がスタックした場合のブラウザのハンドオフ。** CAPTCHA、認証ウォール、または MFA プロンプトにヒットしましたか? `$B handoff` は、Cookie とタブがすべてそのままの状態で、まったく同じページに表示される Chrome を開きます。問題を解決して、完了したとクロードに伝えます。`$B resume` は中断したところから再開します。エージェントは、3 回連続して失敗した後でも、自動的にそれを提案します。
 
-**Multi-AI second opinion.** `/codex` gets an independent review from OpenAI's Codex CLI — a completely different AI looking at the same diff. Three modes: code review with a pass/fail gate, adversarial challenge that actively tries to break your code, and open consultation with session continuity. When both `/review` (Claude) and `/codex` (OpenAI) have reviewed the same branch, you get a cross-model analysis showing which findings overlap and which are unique to each.
+**マルチ AI のセカンドオピニオン。** `/codex` は、OpenAI の Codex CLI から独立したレビューを受けています。これは、同じ差分を参照するまったく異なる AI です。 3 つのモード: パス/フェイル ゲートを使用したコード レビュー、積極的にコードを破ろうとする敵対的チャレンジ、セッション継続性を備えたオープン コンサルテーション。 `/review` (Claude) と `/codex` (OpenAI) の両方が同じブランチをレビューすると、どの調査結果が重複し、どの調査結果がそれぞれに固有であるかを示すクロスモデル分析が得られます。
 
-**Safety guardrails on demand.** Say "be careful" and `/careful` warns before any destructive command — rm -rf, DROP TABLE, force-push, git reset --hard. `/freeze` locks edits to one directory while debugging so Claude can't accidentally "fix" unrelated code. `/guard` activates both. `/investigate` auto-freezes to the module being investigated.
+**オンデマンドの安全ガードレール** 「注意してください」と言うと、破壊的なコマンド (rm -rf、DROP TABLE、force-push、git restart --hard) の前に `/careful` が警告します。 `/freeze` は、クロードが無関係なコードを誤って「修正」できないように、デバッグ中に編集を 1 つのディレクトリにロックします。 `/guard` は両方を有効にします。 `/investigate` は調査対象のモジュールを自動的にフリーズします。
 
-**Proactive skill suggestions.** gstack notices what stage you're in — brainstorming, reviewing, debugging, testing — and suggests the right skill. Don't like it? Say "stop suggesting" and it remembers across sessions.
+**プロアクティブなスキルの提案。** gstack は、ブレインストーミング、レビュー、デバッグ、テストなど、ユーザーがどの段階にいるかを認識し、適切なスキルを提案します。気に入らないですか？ 「提案をやめて」と言えば、セッション全体にわたって記憶されます。
 
-## 10-15 parallel sprints
+## 10～15 回の並行スプリント
 
-gstack is powerful with one sprint. It is transformative with ten running at once.
+gstack は 1 回のスプリントで強力です。 10台同時に走ると変幻自在です。
 
-[Conductor](https://conductor.build) runs multiple Claude Code sessions in parallel — each in its own isolated workspace. One session running `/office-hours` on a new idea, another doing `/review` on a PR, a third implementing a feature, a fourth running `/qa` on staging, and six more on other branches. All at the same time. I regularly run 10-15 parallel sprints — that's the practical max right now.
+[Conductor](https://conductor.build) は複数のクロード コード セッションを並行して実行します - それぞれが独自の分離されたワークスペースで行われます。 1 つのセッションは新しいアイデアで `/office-hours` を実行し、別のセッションは PR で `/review` を実行し、3 番目のセッションは機能を実装し、4 番目のセッションはステージングで `/qa` を実行し、さらに 6 つは他のブランチで実行されます。すべて同時に。私は定期的に 10 ～ 15 の並行スプリントを実行しています。これが現時点での実質的な最大値です。
 
-The sprint structure is what makes parallelism work. Without a process, ten agents is ten sources of chaos. With a process — think, plan, build, review, test, ship — each agent knows exactly what to do and when to stop. You manage them the way a CEO manages a team: check in on the decisions that matter, let the rest run.
+スプリント構造は並列処理を機能させるものです。プロセスがなければ、10 人のエージェントは 10 の混乱の原因となります。プロセス (思考、計画、構築、レビュー、テスト、出荷) により、各エージェントは何をすべきか、いつ停止すべきかを正確に把握しています。 CEO がチームを管理するのと同じように、チームを管理します。重要な決定を確認し、残りはそのまま実行します。
 
 ---
 
-Free, MIT licensed, open source. No premium tier, no waitlist.
+無料、MIT ライセンスのオープンソース。プレミアム層も待機リストもありません。
 
-I open sourced how I build software. You can fork it and make it your own.
+ソフトウェアの構築方法をオープンソース化しました。フォークして自分のものにすることができます。
 
-> **We're hiring.** Want to ship 10K+ LOC/day and help harden gstack?
-> Come work at YC — [ycombinator.com/software](https://ycombinator.com/software)
-> Extremely competitive salary and equity. San Francisco, Dogpatch District.
+> **人材を募集しています。** 1 日あたり 10,000 以上の LOC を出荷して、gstack の強化を支援したいですか?
+> YC で働きましょう — [ycombinator.com/software](https://ycombinator.com/software)
+> 非常に競争力のある給与と資本。サンフランシスコ、ドッグパッチ地区。
 
-## Docs
+## ドキュメント
 
-| Doc | What it covers |
-|-----|---------------|
-| [Skill Deep Dives](docs/skills.md) | Philosophy, examples, and workflow for every skill (includes Greptile integration) |
-| [Builder Ethos](ETHOS.md) | Builder philosophy: Boil the Lake, Search Before Building, three layers of knowledge |
-| [Architecture](ARCHITECTURE.md) | Design decisions and system internals |
-| [Browser Reference](BROWSER.md) | Full command reference for `/browse` |
-| [Contributing](CONTRIBUTING.md) | Dev setup, testing, contributor mode, and dev mode |
-| [Changelog](CHANGELOG.md) | What's new in every version |
+|ドクター |内容 |
+|-----|--------------|
+| [スキルの詳細](docs/skills.md) |あらゆるスキルの哲学、例、ワークフロー (Greptile の統合を含む) |
+| [ビルダーの理念](ETHOS.md) |建築家の哲学: 湖を沸騰させる、建築する前に検索する、3 つの知識層 |
+| [アーキテクチャ](ARCHITECTURE.md) |設計上の決定とシステム内部 |
+| [ブラウザリファレンス](BROWSER.md) | `/browse` の完全なコマンド リファレンス |
+| [寄稿](CONTRIBUTING.md) |開発セットアップ、テスト、共同作成者モード、および開発モード |
+| [変更ログ](CHANGELOG.md) |各バージョンの新機能 |
 
-## Privacy & Telemetry
+## プライバシーとテレメトリー
 
-gstack includes **opt-in** usage telemetry to help improve the project. Here's exactly what happens:
+gstack には、プロジェクトの改善に役立つ **オプトイン** 使用状況テレメトリが含まれています。まさに次のことが起こります。
 
-- **Default is off.** Nothing is sent anywhere unless you explicitly say yes.
-- **On first run,** gstack asks if you want to share anonymous usage data. You can say no.
-- **What's sent (if you opt in):** skill name, duration, success/fail, gstack version, OS. That's it.
-- **What's never sent:** code, file paths, repo names, branch names, prompts, or any user-generated content.
-- **Change anytime:** `gstack-config set telemetry off` disables everything instantly.
+- **デフォルトはオフです。** 明示的に「はい」と言わない限り、どこにも何も送信されません。
+- **最初の実行時に**、gstack は匿名の使用状況データを共有するかどうかを尋ねます。ノーと言えます。
+- **送信内容 (オプトインした場合):** スキル名、期間、成功/失敗、gstack バージョン、OS。それでおしまい。
+- **決して送信されないもの:** コード、ファイル パス、リポジトリ名、ブランチ名、プロンプト、またはユーザーが生成したコンテンツ。
+- **いつでも変更可能:** `gstack-config set telemetry off` はすべてを即座に無効にします。
 
-Data is stored in [Supabase](https://supabase.com) (open source Firebase alternative). The schema is in [`supabase/migrations/`](supabase/migrations/) — you can verify exactly what's collected. The Supabase publishable key in the repo is a public key (like a Firebase API key) — row-level security policies deny all direct access. Telemetry flows through validated edge functions that enforce schema checks, event type allowlists, and field length limits.
+データは [Supabase](https://supabase.com) (オープンソースの Firebase 代替) に保存されます。スキーマは [`supabase/migrations/`](supabase/migrations/) にあります。収集された内容を正確に確認できます。リポジトリ内の Supabase 公開可能キーは公開キー (Firebase API キーと同様) です。行レベルのセキュリティ ポリシーではすべての直接アクセスが拒否されます。テレメトリは、スキーマ チェック、イベント タイプのホワイトリスト、フィールド長の制限を強制する検証済みのエッジ機能を経由して流れます。
 
-**Local analytics are always available.** Run `gstack-analytics` to see your personal usage dashboard from the local JSONL file — no remote data needed.
+**ローカル分析はいつでも利用できます。** `gstack-analytics` を実行すると、ローカル JSONL ファイルから個人の使用状況ダッシュボードが表示されます。リモート データは必要ありません。
 
-## Troubleshooting
+## トラブルシューティング
 
-**Skill not showing up?** `cd ~/.claude/skills/gstack && ./setup`
+**スキルが表示されませんか?** `cd ~/.claude/skills/gstack && ./setup`
 
-**`/browse` fails?** `cd ~/.claude/skills/gstack && bun install && bun run build`
+**`/browse` は失敗しますか?** `cd ~/.claude/skills/gstack && bun install && bun run build`
 
-**Stale install?** Run `/gstack-upgrade` — or set `auto_upgrade: true` in `~/.gstack/config.yaml`
+**インストールが古いですか?** `/gstack-upgrade` を実行するか、`~/.gstack/config.yaml` で `auto_upgrade: true` を設定してください
 
-**Want shorter commands?** `cd ~/.claude/skills/gstack && ./setup --no-prefix` — switches from `/gstack-qa` to `/qa`. Your choice is remembered for future upgrades.
+**短いコマンドが必要ですか?** `cd ~/.claude/skills/gstack && ./setup --no-prefix` — `/gstack-qa` から `/qa` に切り替えます。選択は将来のアップグレードのために記憶されます。
 
-**Want namespaced commands?** `cd ~/.claude/skills/gstack && ./setup --prefix` — switches from `/qa` to `/gstack-qa`. Useful if you run other skill packs alongside gstack.
+**名前空間コマンドが必要ですか?** `cd ~/.claude/skills/gstack && ./setup --prefix` — `/qa` から `/gstack-qa` に切り替えます。 gstack と一緒に他のスキル パックを実行する場合に便利です。
 
-**Codex says "Skipped loading skill(s) due to invalid SKILL.md"?** Your Codex skill descriptions are stale. Fix: `cd ~/.codex/skills/gstack && git pull && ./setup --host codex` — or for repo-local installs: `cd "$(readlink -f .agents/skills/gstack)" && git pull && ./setup --host codex`
+**コーデックスに「SKILL.md が無効なため、スキルの読み込みがスキップされました」と表示されますか?** コーデックスのスキルの説明が古くなっています。修正: `cd ~/.codex/skills/gstack && git pull && ./setup --host codex` — またはリポジトリローカルインストールの場合: `cd "$(readlink -f .agents/skills/gstack)" && git pull && ./setup --host codex`
 
-**Windows users:** gstack works on Windows 11 via Git Bash or WSL. Node.js is required in addition to Bun — Bun has a known bug with Playwright's pipe transport on Windows ([bun#4253](https://github.com/oven-sh/bun/issues/4253)). The browse server automatically falls back to Node.js. Make sure both `bun` and `node` are on your PATH.
+**Windows ユーザー:** gstack は、Git Bash または WSL 経由で Wi​​ndows 11 上で動作します。 Bun に加えて Node.js が必要です — Bun には、Windows 上の Playwright のパイプ トランスポートに関する既知のバグがあります ([bun#4253](https://github.com/oven-sh/bun/issues/4253))。ブラウズ サーバーは自動的に Node.js にフォールバックします。 `bun` と `node` の両方が PATH 上にあることを確認してください。
 
-**Claude says it can't see the skills?** Make sure your project's `CLAUDE.md` has a gstack section. Add this:
+**クロードはスキルが表示されないと言いますか?** プロジェクトの `CLAUDE.md` に gstack セクションがあることを確認してください。これを追加します:
 
 ```
 ## gstack
@@ -311,6 +309,6 @@ Available skills: /office-hours, /plan-ceo-review, /plan-eng-review, /plan-desig
 /cso, /autoplan, /careful, /freeze, /guard, /unfreeze, /gstack-upgrade, /learn.
 ```
 
-## License
+## ライセンス
 
-MIT. Free forever. Go build something.
+マサチューセッツ工科大学。永久無料。何かを作りに行ってください。

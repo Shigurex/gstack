@@ -1,35 +1,35 @@
-# Slate Host Integration — Research & Design Doc
+# スレート ホストの統合 — Research & Design Doc
 
-**Date:** 2026-04-02
-**Branch:** garrytan/slate-agent-support
-**Status:** Research complete, blocked on host config refactor
-**Supersedes:** None
+**日付:** 2026-04-02
+**ブランチ:** garrytan/slate-agent-support
+**ステータス:** 研究は完了しましたが、ホスト構成リファクタリングでブロックされました
+**代替品:** なし
 
-## What is Slate
+## スレートとは
 
-Slate is a proprietary coding agent CLI from Random Labs.
-Install: `npm i -g @randomlabs/slate` or `brew install anthropic/tap/slate`.
-License: Proprietary. 85MB compiled Bun binary (arm64/x64, darwin/linux/windows).
-npm package: `@randomlabs/slate@1.0.25` (thin 8.8KB launcher + platform-specific optional deps).
+Slate は、Random Labs が提供する独自のコーディング エージェント CLI です。
+インストール: `npm i -g @randomlabs/slate` または `brew install anthropic/tap/slate`。
+ライセンス: プロプライエタリ。 85MB のコンパイル済み Bun バイナリ (arm64/x64、darwin/linux/windows)。
+npm パッケージ: `@randomlabs/slate@1.0.25` (薄型 8.8KB ランチャー + プラットフォーム固有のオプションの deps)。
 
-Multi-model: dynamically selects Claude Sonnet/Opus/Haiku, plus other models.
-Built for "swarm orchestration" with extended multi-hour sessions.
+マルチモデル: Claude Sonnet/Opus/Haiku とその他のモデルを動的に選択します。
+複数時間にわたる長時間のセッションによる「群オーケストレーション」用に構築されています。
 
-## Slate is an OpenCode fork
+## Slate は OpenCode のフォークです
 
-**Confirmed via binary strings analysis** of the 85MB Mach-O arm64 binary:
+**85MB Mach-O arm64 バイナリのバイナリ文字列分析によって確認**:
 
-- Internal name: `name: "opencode"` (literal string in binary)
-- All `OPENCODE_*` env vars present alongside `SLATE_*` equivalents
-- Shares OpenCode's tool/skill architecture, LSP integration, terminal management
-- Own branding, API endpoints (`api.randomlabs.ai`, `agent-worker-prod.randomlabs.workers.dev`), and config paths
+- 内部名: `name: "opencode"` (バイナリのリテラル文字列)
+- すべての `OPENCODE_*` 環境変数は、同等の `SLATE_*` と一緒に存在します
+- OpenCode のツール/スキル アーキテクチャ、LSP 統合、端末管理を共有します。
+- 独自のブランディング、API エンドポイント (`api.randomlabs.ai`、`agent-worker-prod.randomlabs.workers.dev`)、および構成パス
 
-This matters for integration: OpenCode conventions mostly apply, but Slate adds
-its own paths and env vars on top.
+これは統合にとって重要です。OpenCode の規約はほとんど適用されますが、Slate では追加が加えられます。
+独自のパスと環境変数がその上にあります。
 
-## Skill Discovery (confirmed from binary)
+## Skill Discovery (バイナリから確認)
 
-Slate scans ALL four directory families for skills. Error messages in binary confirm:
+スレートは、スキルについて 4 つのディレクトリ ファミリすべてをスキャンします。バイナリのエラー メッセージは次のことを確認します。
 
 ```
 "failed .slate directory scan for skills"
@@ -38,42 +38,42 @@ Slate scans ALL four directory families for skills. Error messages in binary con
 "failed .opencode directory scan for skills"
 ```
 
-**Discovery paths (priority order from Slate docs):**
+**検出パス (スレート ドキュメントの優先順位):**
 
-1. `.slate/skills/<name>/SKILL.md` — project-level, highest priority
-2. `~/.slate/skills/<name>/SKILL.md` — global
-3. `.opencode/skills/`, `.agents/skills/` — compatibility fallback
-4. `.claude/skills/` — Claude Code compatibility fallback (lowest)
-5. Custom paths via `slate.json`
+1. `.slate/skills/<name>/SKILL.md` — プロジェクトレベル、最高の優先度
+2. `~/.slate/skills/<name>/SKILL.md` — グローバル
+3. `.opencode/skills/`、`.agents/skills/` — 互換性フォールバック
+4. `.claude/skills/` — クロードコード互換性フォールバック (最低)
+5. `slate.json` 経由のカスタム パス
 
-**Glob patterns:** `**/SKILL.md` and `{skill,skills}/**/SKILL.md`
+**グロブ パターン:** `**/SKILL.md` および `{skill,skills}/**/SKILL.md`
 
-**Commands:** Same directory structure but under `commands/` subdirs:
-`/.slate/commands/`, `/.claude/commands/`, `/.agents/commands/`, `/.opencode/commands/`
+**コマンド:** 同じディレクトリ構造ですが、`commands/` サブディレクトリの下にあります:
+`/.slate/commands/`、`/.claude/commands/`、`/.agents/commands/`、`/.opencode/commands/`
 
-**Skill frontmatter:** YAML with `name` and `description` fields (per Slate docs).
-No documented length limits on either field.
+**スキルのフロントマター:** `name` フィールドと `description` フィールドを含む YAML (スレート ドキュメントごと)。
+どちらのフィールドにも長さの制限は文書化されていません。
 
-## Project Instructions
+## プロジェクトの指示
 
-Slate reads both `CLAUDE.md` and `AGENTS.md` for project instructions.
-Both literal strings confirmed in binary. No changes needed to existing
-gstack projects... CLAUDE.md works as-is.
+スレートは、プロジェクトの指示として `CLAUDE.md` と `AGENTS.md` の両方を読み取ります。
+両方のリテラル文字列がバイナリで確認されました。既存のものを変更する必要はありません
+gstack プロジェクト... CLAUDE.md はそのまま動作します。
 
-## Configuration
+＃＃ 構成
 
-**Config file:** `slate.json` / `slate.jsonc` (NOT opencode.json)
+**設定ファイル:** `slate.json` / `slate.jsonc` (opencode.json ではありません)
 
-**Config options (from Slate docs):**
-- `privacy` (boolean) — disables telemetry/logging
-- Permissions: `allow`, `ask`, `deny` per tool (`read`, `edit`, `bash`, `grep`, `webfetch`, `websearch`, `*`)
-- Model slots: `models.main`, `models.subagent`, `models.search`, `models.reasoning`
-- MCP servers: local or remote with custom commands and headers
-- Custom commands: `/commands` with templates
+**設定オプション (スレートドキュメントより):**
+- `privacy` (ブール値) — テレメトリ/ロギングを無効にします
+- 権限: ツールごとに `allow`、`ask`、`deny` (`read`、`edit`、`bash`、`grep`、 `webfetch`、`websearch`、`*`)
+- モデルスロット: `models.main`、`models.subagent`、`models.search`、`models.reasoning`
+- MCP サーバー: カスタム コマンドとヘッダーを備えたローカルまたはリモート
+- カスタムコマンド: `/commands` テンプレート付き
 
-The setup script should NOT create `slate.json`. Users configure their own permissions.
+セットアップ スクリプトは `slate.json` を作成しないでください。ユーザーは独自の権限を構成します。
 
-## CLI Flags (Headless Mode)
+## CLI フラグ (ヘッドレス モード)
 
 ```
 --stream-json / --output-format stream-json  — JSONL output, "compatible with Anthropic Claude Code SDK"
@@ -84,16 +84,16 @@ The setup script should NOT create `slate.json`. Users configure their own permi
 --output-format text                         — plain text output (default)
 ```
 
-**Stream-JSON format:** Slate docs claim "compatible with Anthropic Claude Code SDK."
-Not yet empirically verified. Given OpenCode heritage, likely matches Claude Code's
-NDJSON event schema (type: "assistant", type: "tool_result", type: "result").
+**ストリーム-JSON 形式:** スレートのドキュメントでは、「Anthropic Claude Code SDK と互換性がある」と主張しています。
+まだ実証的に検証されていません。 OpenCode の伝統を考慮すると、おそらく Claude Code のものと一致します。
+NDJSON イベント スキーマ (タイプ: "assistant"、タイプ: "tool_result"、タイプ: "result")。
 
-**Need to verify:** Run `slate -q "hello" --stream-json` with valid credits and
-capture actual JSONL events before building the session runner parser.
+**確認が必要です:** 有効なクレジットを使用して `slate -q "hello" --stream-json` を実行し、
+セッション ランナー パーサーを構築する前に、実際の JSONL イベントをキャプチャします。
 
-## Environment Variables (from binary strings)
 
-### Slate-specific
+
+### スレート固有
 ```
 SLATE_API_KEY                              — API key
 SLATE_AGENT                                — agent selection
@@ -141,7 +141,7 @@ SLATE_TEST_HOME                           — test home directory
 SLATE_TOKEN_DIR                           — token storage directory
 ```
 
-### OpenCode legacy (still functional)
+### OpenCode レガシー (まだ機能)
 ```
 OPENCODE_DISABLE_LSP_DOWNLOAD
 OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER
@@ -155,18 +155,18 @@ OPENCODE_LIBC
 OPENCODE_TERMINAL
 ```
 
-### Critical env vars for gstack integration
+### gstack 統合のための重要な環境変数
 
-**`SLATE_DISABLE_CLAUDE_CODE_SKILLS`** — When set, `.claude/skills/` loading is disabled.
-This makes publishing to `.slate/skills/` load-bearing, not just an optimization.
-Without native `.slate/` publishing, gstack skills vanish when this flag is set.
+**`SLATE_DISABLE_CLAUDE_CODE_SKILLS`** — 設定すると、`.claude/skills/` の読み込みが無効になります。
+これにより、`.slate/skills/` への公開が単なる最適化ではなく、負荷に耐えるようになります。
+ネイティブ `.slate/` を公開しないと、このフラグが設定されると gstack スキルが失われます。
 
-**`SLATE_TEST_HOME`** — Useful for E2E tests. Can redirect Slate's home directory
-to an isolated temp directory, similar to how Codex tests use a temp HOME.
+**`SLATE_TEST_HOME`** — E2E テストに役立ちます。スレートのホームディレクトリをリダイレクトできる
+Codex テストが一時 HOME を使用する方法と同様に、分離された一時ディレクトリにコピーされます。
 
-**`SLATE_DANGEROUSLY_SKIP_PERMISSIONS`** — Required for headless E2E tests.
+**`SLATE_DANGEROUSLY_SKIP_PERMISSIONS`** — ヘッドレス E2E テストに必要です。
 
-## Model References (from binary)
+## モデル参照 (バイナリから)
 
 ```
 anthropic/claude-sonnet-4.6
@@ -178,7 +178,7 @@ google/nano-banana
 randomlabs/fast-default-alpha
 ```
 
-## API Endpoints (from binary)
+## API エンドポイント (バイナリから)
 
 ```
 https://api.randomlabs.ai                          — main API
@@ -190,9 +190,9 @@ https://docs.randomlabs.ai                         — documentation
 https://randomlabs.ai/config.json                  — remote config
 ```
 
-Brew tap: `anthropic/tap/slate` (notable: under Anthropic's tap, not Random Labs)
+醸造タップ: `anthropic/tap/slate` (注目すべき点: Random Labs ではなく Anthropic のタップの下)
 
-## npm Package Structure
+## npm パッケージ構造
 
 ```
 @randomlabs/slate (8.8 kB, thin launcher)
@@ -215,58 +215,58 @@ Platform packages (85MB each):
 └── @randomlabs/slate-windows-x64-baseline
 ```
 
-Binary override: `SLATE_BIN_PATH` env var skips all discovery, runs the specified binary directly.
+バイナリ オーバーライド: `SLATE_BIN_PATH` 環境変数はすべての検出をスキップし、指定されたバイナリを直接実行します。
 
-## What Already Works Today
+## 現在すでに機能しているもの
 
-gstack skills already work in Slate via the `.claude/skills/` fallback path.
-No changes needed for basic functionality. Users who install gstack for Claude Code
-and also use Slate will find their skills available in both agents.
+gstack スキルは、`.claude/skills/` フォールバック パスを介してスレートですでに機能しています。
+基本的な機能に変更は必要ありません。クロードコード用に gstack をインストールするユーザー
+また、Slate を使用すると、両方のエージェントで利用可能なスキルが見つかります。
 
-## What First-Class Support Adds
+## ファーストクラスのサポートが追加するもの
 
-1. **Reliability** — `.slate/skills/` is Slate's highest-priority path. Immune to
-   `SLATE_DISABLE_CLAUDE_CODE_SKILLS`.
-2. **Optimized frontmatter** — Strip Claude-specific fields (allowed-tools, hooks, version)
-   that Slate doesn't use. Keep only `name` and `description`.
-3. **Setup script** — Auto-detect `slate` binary, install skills to `~/.slate/skills/`.
-4. **E2E tests** — Verify skills work when invoked by Slate directly.
+1. **信頼性** — `.slate/skills/` は、Slate の最も優先度の高いパスです。に対する免疫
+   `SLATE_DISABLE_CLAUDE_CODE_SKILLS`。
+2. **最適化されたフロントマター** — クロード固有のフィールド (許可されたツール、フック、バージョン) を削除します。
+   スレートは使用しません。 `name` と `description` のみを保持してください。
+3. **セットアップ スクリプト** — `slate` バイナリを自動検出し、スキルを `~/.slate/skills/` にインストールします。
+4. **E2E テスト** — スレートによって直接呼び出された場合にスキルが機能することを確認します。
 
-## Blocked On: Host Config Refactor
+## ブロックされています: ホスト構成のリファクタリング
 
-Codex's outside voice review identified that adding Slate as a 4th host (after Claude,
-Codex, Factory) is "host explosion for a path alias." The current architecture has:
+Codex の外部の声によるレビューでは、Slate を 4 番目のホスト (Claude に続いて) として追加することが特定されました。
+Codex、Factory) は、「パス エイリアスのホスト爆発」です。現在のアーキテクチャには次のものがあります。
 
-- Hard-coded host names in `type Host = 'claude' | 'codex' | 'factory'`
-- Per-host branches in `transformFrontmatter()` with near-duplicate logic
-- Per-host config in `EXTERNAL_HOST_CONFIG` with similar patterns
-- Per-host functions in the setup script (`create_codex_runtime_root`, `link_codex_skill_dirs`)
-- Host names duplicated in `bin/gstack-platform-detect`, `bin/gstack-uninstall`, `bin/dev-setup`
+- `type Host = 'claude' | 'codex' | 'factory'` のハードコーディングされたホスト名
+- ほぼ重複したロジックを使用した `transformFrontmatter()` のホストごとのブランチ
+- 同様のパターンを使用した `EXTERNAL_HOST_CONFIG` のホストごとの構成
+- セットアップ スクリプトのホストごとの関数 (`create_codex_runtime_root`、`link_codex_skill_dirs`)
+・`bin/gstack-platform-detect`、`bin/gstack-uninstall`、`bin/dev-setup`でホスト名が重複している
 
-Adding Slate means copying all of these patterns again. A refactor to make hosts
-data-driven (config objects instead of if/else branches) would make Slate integration
-trivial AND make future hosts (any new OpenCode fork, any new agent) zero-effort.
+スレートを追加するということは、これらのパターンをすべて再度コピーすることを意味します。ホストを作成するためのリファクタリング
+データ駆動型 (if/else ブランチの代わりに構成オブジェクト) によりスレート統合が行われます。
+簡単であり、将来のホスト (新しい OpenCode フォーク、新しいエージェント) の労力はゼロになります。
 
-### Missing from the plan (identified by Codex)
+### 計画に欠落しています (Codex によって特定)
 
-- `lib/worktree.ts` only copies `.agents/`, not `.slate/` — E2E tests in worktrees won't
-  have Slate skills
-- `bin/gstack-uninstall` doesn't know about `.slate/`
-- `bin/dev-setup` doesn't wire `.slate/` for contributor dev mode
-- `bin/gstack-platform-detect` doesn't detect Slate
-- E2E tests should set `SLATE_DISABLE_CLAUDE_CODE_SKILLS=1` to prove `.slate/` path
-  actually works (not just falling back to `.claude/`)
+- `lib/worktree.ts` は `.slate/` ではなく、`.agents/` のみをコピーします — ワークツリー内の E2E テストは実行されません
+  スレートスキルを持っている
+- `bin/gstack-uninstall` は `.slate/` について知りません
+- `bin/dev-setup` は `.slate/` をコントリビューター開発モードに接続しません
+- `bin/gstack-platform-detect` はスレートを検出しません
+- E2E テストでは、`.slate/` パスを証明するために `SLATE_DISABLE_CLAUDE_CODE_SKILLS=1` を設定する必要があります
+  実際に動作します (`.claude/` にフォールバックするだけではありません)
 
-## Session Runner Design (for later)
+## セッション ランナーのデザイン (後で使用)
 
-When the JSONL format is verified, the session runner should:
+JSONL 形式が検証されたら、セッション ランナーは次のことを行う必要があります。
 
-- Spawn: `slate -q "<prompt>" --stream-json --dangerously-skip-permissions -w <dir>`
-- Parse: Claude Code SDK-compatible NDJSON (assumed, needs verification)
-- Skills: Install to `.slate/skills/` in test fixture (not `.claude/skills/`)
-- Auth: Use `SLATE_API_KEY` or existing `~/.slate/` credentials
-- Isolation: Use `SLATE_TEST_HOME` for home directory isolation
-- Timeout: 300s default (same as Codex)
+- スポーン: `slate -q "<prompt>" --stream-json --dangerously-skip-permissions -w <dir>`
+- 解析: Claude Code SDK 互換の NDJSON (想定、要検証)
+- スキル: テストフィクスチャの `.slate/skills/` にインストールします (`.claude/skills/` ではありません)
+- 認証: `SLATE_API_KEY` または既存の `~/.slate/` 資格情報を使用します。
+- 分離: ホームディレクトリの分離には `SLATE_TEST_HOME` を使用します
+- タイムアウト: デフォルトは 300 秒 (Codex と同じ)
 
 ```typescript
 export interface SlateResult {
@@ -281,10 +281,10 @@ export interface SlateResult {
 }
 ```
 
-## Docs References
+## ドキュメントの参照
 
-- Slate docs: https://docs.randomlabs.ai
-- Quickstart: https://docs.randomlabs.ai/en/getting-started/quickstart
-- Skills: https://docs.randomlabs.ai/en/using-slate/skills
-- Configuration: https://docs.randomlabs.ai/en/using-slate/configuration
-- Hotkeys: https://docs.randomlabs.ai/en/using-slate/hotkey_reference
+- スレート ドキュメント: https://docs.randomlabs.ai
+- クイックスタート: https://docs.randomlabs.ai/en/getting-started/quickstart
+- スキル: https://docs.randomlabs.ai/en/using-slate/skills
+- 構成: https://docs.randomlabs.ai/en/using-slate/configuration
+- ホットキー: https://docs.randomlabs.ai/en/using-slate/hotkey_reference

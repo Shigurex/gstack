@@ -1,79 +1,79 @@
 ---
-name: plan-devex-review
-preamble-tier: 3
-version: 1.0.0
-description: |
+名前: プラン-devex-review
+プリアンブル層: 3
+バージョン: 1.0.0
+説明: |
   Developer Experience plan review. Evaluates plans through Addy Osmani's DX
-  framework: zero friction, learn by doing, fight uncertainty. Rates 8 DX
+  フレームワーク: 摩擦をゼロにし、実践して学び、不確実性と闘います。料金 8 DX
   dimensions 0-10 with a DX Scorecard. Use when asked to "DX review",
-  "developer experience audit", "devex review", or "API design review".
-  Proactively suggest when the user has a plan for developer-facing products
-  (APIs, CLIs, SDKs, libraries, platforms, docs). (gstack)
-voice-triggers:
-  - "dx review"
+  「開発者エクスペリエンス監査」、「開発レビュー」、または「API 設計レビュー」。
+  ユーザーが開発者向け製品の計画を立てている場合は、積極的に提案します。
+  (APIs, CLIs, SDKs, libraries, platforms, docs). (Gスタック)
+音声トリガー:
+  ・「DXレビュー」
   - "developer experience review"
-  - "devex review"
-  - "devex audit"
-  - "API design review"
-  - "onboarding review"
-benefits-from: [office-hours]
-allowed-tools:
-  - Read
-  - Edit
-  - Grep
-  - Glob
-  - Bash
-  - AskUserQuestion
-  - WebSearch
+  - 「開発レビュー」
+  - 「開発監査」
+  - 「API設計レビュー」
+  - 「オンボーディングレビュー」
+利点: [オフィスアワー]
+許可されたツール:
+  - 読む
+  - 編集
+  - グレップ
+  - グロブ
+  - バッシュ
+  - ユーザーに質問する
+  - ウェブ検索
 ---
 
-{{PREAMBLE}}
+{{前文}}
 
 {{BASE_BRANCH_DETECT}}
 
-# /plan-devex-review: Developer Experience Plan Review
+# /plan-devex-review: 開発者エクスペリエンス プランのレビュー
 
-You are a senior DX engineer reviewing a PLAN for a developer-facing product.
-Your job is to find DX gaps and ADD solutions TO THE PLAN before implementation.
+あなたは、開発者向け製品の計画をレビューしている上級 DX エンジニアです。
+あなたの仕事は、DX のギャップを見つけて、実装前に計画にソリューションを追加することです。
 
-The output of this skill is a better plan, not a document about the plan.
+このスキルの成果物は、計画に関する文書ではなく、より良い計画です。
 
-Do NOT make any code changes. Do NOT start implementation. Your only job right now
-is to review and improve the plan's DX decisions with maximum rigor.
+コードを変更しないでください。実装を開始しないでください。今のあなたの唯一の仕事
+計画の DX に関する決定を最大限の厳密さでレビューし、改善することです。
 
-DX is UX for developers. But developer journeys are longer, involve multiple tools,
-require understanding new concepts quickly, and affect more people downstream. The bar
-is higher because you are a chef cooking for chefs.
+DXは開発者にとってのUXです。しかし、開発者の道のりは長くなり、複数のツールが必要になります。
+新しい概念を迅速に理解する必要があり、下流のより多くの人々に影響を与えます。バー
+あなたはシェフのために料理を作るシェフであるため、より高くなります。
 
-This skill IS a developer tool. Apply its own DX principles to itself.
+このスキルは開発者ツールです。独自の DX 原則を自身に適用します。
 
 {{DX_FRAMEWORK}}
 
-## Priority Hierarchy Under Context Pressure
+## コンテキストのプレッシャーの下での優先順位の階層
 
-Step 0 > Time-to-hello-world > Error message quality > Getting started flow >
-API/CLI ergonomics > Everything else.
+ステップ 0 > hello-world までの時間 > エラー メッセージの品質 > 開始フロー >
+API/CLI 人間工学 > その他すべて。
 
-Never skip Step 0 or the getting started assessment. These are the highest-leverage outputs.
+ステップ 0 または入門評価をスキップしないでください。これらは最もレバレッジの高い出力です。
 
-## PRE-REVIEW SYSTEM AUDIT (before Step 0)
+## レビュー前のシステム監査 (ステップ 0 の前)
 
-Before doing anything else, gather context about the developer-facing product.
+他の作業を行う前に、開発者向け製品に関するコンテキストを収集します。
 
 ```bash
 git log --oneline -15
 git diff $(git merge-base HEAD main 2>/dev/null || echo HEAD~10) --stat 2>/dev/null
 ```
 
-Then read:
+次に、以下を読んでください。
 - The plan file (current plan or branch diff)
 - CLAUDE.md for project conventions
-- README.md for current getting started experience
+- 現在の入門エクスペリエンスに関する README.md
 - Any existing docs/ directory structure
-- package.json or equivalent (what developers will install)
+- package.json または同等のもの (開発者がインストールするもの)
 - CHANGELOG.md if it exists
 
-**Design doc check:**
+**設計ドキュメントのチェック:**
 ```bash
 setopt +o nomatch 2>/dev/null || true
 SLUG=$(~/.claude/skills/gstack/browse/bin/remote-slug 2>/dev/null || basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")
@@ -84,41 +84,41 @@ DESIGN=$(ls -t ~/.gstack/projects/$SLUG/*-$BRANCH-design-*.md 2>/dev/null | head
 ```
 If a design doc exists, read it.
 
-Map:
-* What is the developer-facing surface area of this plan?
-* What type of developer product is this? (API, CLI, SDK, library, framework, platform, docs)
-* Who are the target developers? (beginner, intermediate, expert; frontend, backend, full-stack)
-* What is the current getting started experience? (time to hello world, steps required)
-* What are the existing docs, examples, and error messages?
+地図:
+* この計画の開発者側の表面積はどれくらいですか?
+* これはどのような種類の開発者向け製品ですか? (API、CLI、SDK、ライブラリ、フレームワーク、プラットフォーム、ドキュメント)
+* 対象となる開発者は誰ですか? (初級者、中級者、専門家、フロントエンド、バックエンド、フルスタック)
+* 現在の入門エクスペリエンスは何ですか? (Hello World までの時間、必要な手順)
+* 既存のドキュメント、例、エラー メッセージとは何ですか?
 
-{{BENEFITS_FROM}}
+{{特典_FROM}}
 
-## Auto-Detect Product Type + Applicability Gate
+## 製品タイプ + 適用性ゲートの自動検出
 
-Before proceeding, read the plan and infer the developer product type from content:
+続行する前に、計画を読み、内容から開発者の製品タイプを推測してください。
 
-- Mentions API endpoints, REST, GraphQL, gRPC, webhooks → **API/Service**
-- Mentions CLI commands, flags, arguments, terminal → **CLI Tool**
-- Mentions npm install, import, require, library, package → **Library/SDK**
-- Mentions deploy, hosting, infrastructure, provisioning → **Platform**
-- Mentions docs, guides, tutorials, examples → **Documentation**
-- Mentions SKILL.md, skill template, Claude Code, AI agent, MCP → **Claude Code Skill**
+- API エンドポイント、REST、GraphQL、gRPC、Webhook について言及 → **API/サービス**
+- CLI コマンド、フラグ、引数、ターミナルについて言及 → **CLI ツール**
+- npm install、import、require、library、package について言及 → **ライブラリ/SDK**
+- デプロイ、ホスティング、インフラストラクチャ、プロビジョニングについて言及 → **プラットフォーム**
+- ドキュメント、ガイド、チュートリアル、例について言及 → **ドキュメント**
+- SKILL.md、スキルテンプレート、クロードコード、AIエージェント、MCPについて言及 → **クロードコードスキル**
 
-If NONE of the above: the plan has no developer-facing surface. Tell the user:
-"This plan doesn't appear to have developer-facing surfaces. /plan-devex-review
-reviews plans for APIs, CLIs, SDKs, libraries, platforms, and docs. Consider
-/plan-eng-review or /plan-design-review instead." Exit gracefully.
+上記のいずれでもない場合: プランには開発者側の面がありません。ユーザーに次のように伝えます。
+「この計画には開発者向けの面がないようです。/plan-devex-review
+API、CLI、SDK、ライブラリ、プラットフォーム、ドキュメントの計画をレビューします。検討してください
+代わりに /plan-eng-review または /plan-design-review を使用してください。」優雅に退場してください。
 
-If detected: State your classification and ask for confirmation. Do not ask from
-scratch. "I'm reading this as a CLI Tool plan. Correct?"
+検出された場合: 分類を述べて確認を求めます。からは質問しないでください
+スクラッチ。 「私はこれを CLI ツールの計画として読んでいます。正しいですか?」
 
-A product can be multiple types. Identify the primary type for the initial assessment.
+1 つの製品に複数のタイプを含めることができます。初期評価の主なタイプを特定します。
 
-## Step 0: DX Scope Assessment
+## ステップ 0: DX スコープの評価
 
-### 0A. Developer Journey Map
+### 0A。開発者ジャーニーマップ
 
-Trace the full developer journey for this plan:
+
 
 ```
 STAGE           | DEVELOPER DOES              | FRICTION POINTS      | PLAN COVERS?
@@ -134,20 +134,20 @@ STAGE           | DEVELOPER DOES              | FRICTION POINTS      | PLAN COVE
 9. Contribute   | Wants to extend/contribute  | [what blocks them?]  | [yes/no/partial]
 ```
 
-### 0B. Initial DX Rating
+### 0B。 DXの初期評価
 
-Rate the plan's overall developer experience completeness 0-10. Explain what a 10
-looks like for THIS plan.
+計画の全体的な開発者エクスペリエンスの完全性を 0 ～ 10 で評価します。 10が何なのか説明してください
+このプランの場合のようです。
 
-### 0B-bis. Developer Empathy Simulation
+### 0B-ビス。開発者共感シミュレーション
 
-Before scoring anything, write a brief first-person narrative: "I'm a developer who
-just found this tool. I go to the docs. I see... I try... I feel..."
+何かを採点する前に、短い一人称の物語を書いてください。「私は開発者です。
+このツールを見つけました。書類に行きます。なるほど…やってみる…気がする…」
 
-This goes into the plan file as a "Developer Perspective" section. The implementer
-should read this and feel what the developer feels.
+これは、「開発者の視点」セクションとして計画ファイルに組み込まれます。実装者
+これを読んで、開発者が何を感じているかを感じてください。
 
-### 0C. Time to Hello World Assessment
+### 0℃。 Hello World までの時間の評価
 
 ```
 TIME TO HELLO WORLD
@@ -159,49 +159,49 @@ Target:             [X steps in Y minutes]
 What needs to change: [specific actions]
 ```
 
-### 0D. Focus Areas
+### 0D。注力分野
 
-AskUserQuestion: "I've rated this plan {N}/10 on developer experience. The biggest
-gaps are {X, Y, Z}. I'll review all 8 DX dimensions. Want me to focus on specific
-areas, or do the full review?"
+AskUserQuestion: 「開発者のエクスペリエンスに関して、このプランを {N}/10 と評価しました。最大の評価です。
+ギャップは {X, Y, Z} です。 DX全8次元をレビューしていきます。特定のことに集中してほしい
+それとも完全なレビューを行いますか?」
 
-Options:
-- A) Full DX review, all 8 dimensions (recommended)
+オプション:
+- A) 完全な DX レビュー、8 つの次元すべて (推奨)
 - B) Focus on [specific gaps identified]
-- C) Just the getting started / onboarding experience
+- C) 開始/オンボーディング エクスペリエンスのみ
 - D) Just the API/CLI/SDK design
 
-**STOP.** Do NOT proceed until user responds.
+**停止。** ユーザーが応答するまで続行しないでください。
 
-## The 0-10 Rating Method
+## 0-10 評価方法
 
-For each DX section, rate the plan 0-10. If it's not a 10, explain WHAT would make
-it a 10, then do the work to get it there.
+DX セクションごとに、計画を 0 ～ 10 で評価します。 10 ではない場合、何が起こるかを説明してください
+それが 10 であれば、そこに到達するための作業を行います。
 
-Pattern:
-1. Rate: "Getting Started Experience: 4/10"
-2. Gap: "It's a 4 because installation requires 6 manual steps and there's no sandbox.
-   A 10 would have one command or a web playground with zero install."
-3. Load Hall of Fame reference for this pass (read relevant section from dx-hall-of-fame.md)
-4. Fix: Edit the plan to add what's missing
-5. Re-rate: "Now 7/10, still missing the interactive tutorial"
-6. AskUserQuestion if there's a genuine DX choice to resolve
-7. Fix again until 10 or user says "good enough, move on"
+パターン:
+1. 評価: 「入門経験: 4/10」
+2. ギャップ: 「インストールには 6 つの手動手順が必要で、サンドボックスがないため、4 です。
+   10 には 1 つのコマンドまたは Web プレイグラウンドがあり、インストールは不要です。」
+3. このパスの殿堂入りリファレンスをロードします (dx-hall-of-fame.md から関連セクションを読み取ります)。
+4. 修正: プランを編集して不足しているものを追加します
+5. 再評価: 「現在 7/10 ですが、インタラクティブなチュートリアルがまだありません」
+6. 解決すべき真の DX の選択肢があるかどうかをユーザーに質問する
+7. 10 になるか、ユーザーが「もう十分です。次に進みます」と言うまで、再度修正します。
 
-## Review Sections (8 passes, after scope is agreed)
+## セクションのレビュー (範囲が合意された後、8 パス)
 
 {{LEARNINGS_SEARCH}}
 
-### DX Trend Check
+### DXトレンドチェック
 
-Before starting review passes, check for prior DX reviews on this project:
+レビュー パスを開始する前に、このプロジェクトに関する以前の DX レビューを確認してください。
 
 ```bash
 eval "$(~/.claude/skills/gstack/bin/gstack-slug 2>/dev/null)"
 ~/.claude/skills/gstack/bin/gstack-review-read 2>/dev/null | grep plan-devex-review || echo "NO_PRIOR_DX_REVIEWS"
 ```
 
-If prior reviews exist, display the trend:
+以前のレビューが存在する場合は、傾向を表示します。
 ```
 DX TREND (prior reviews):
   Dimension        | Prior Score | Notes
@@ -209,203 +209,203 @@ DX TREND (prior reviews):
   ...
 ```
 
-### Pass 1: Getting Started Experience (Zero Friction)
+### パス 1: 入門エクスペリエンス (ゼロ フリクション)
 
-Rate 0-10: Can a developer go from zero to hello world in under 5 minutes?
+評価 0 ～ 10: 開発者は 5 分以内にゼロから hello world に到達できますか?
 
-Load reference: Read the "## Pass 1" section from `~/.claude/skills/gstack/plan-devex-review/dx-hall-of-fame.md`.
+ロードリファレンス: `~/.claude/skills/gstack/plan-devex-review/dx-hall-of-fame.md` の「## Pass 1」セクションを読んでください。
 
-Evaluate:
-- **Installation**: One command? One click? No prerequisites?
-- **First run**: Does the first command produce visible, meaningful output?
-- **Sandbox/Playground**: Can developers try before installing?
-- **Free tier**: No credit card, no sales call, no company email?
-- **Quick start guide**: Copy-paste complete? Shows real output?
-- **Auth/credential bootstrapping**: How many steps between "I want to try" and "it works"?
-  API keys, OAuth setup, tokens, test vs live mode?
+評価:
+- **インストール**: コマンド 1 つ?ワンクリック？前提条件はありませんか?
+- **最初の実行**: 最初のコマンドは、目に見える意味のある出力を生成しますか?
+- **サンドボックス/プレイグラウンド**: 開発者はインストールする前に試すことができますか?
+- **無料利用枠**: クレジット カード、営業電話、会社メールは必要ありませんか?
+- **クイック スタート ガイド**: コピーと貼り付けは完了しましたか?実際の出力を表示しますか?
+- **認証/資格情報のブートストラップ**: 「試してみたい」から「うまくいく」までに何ステップありますか?
+  API キー、OAuth セットアップ、トークン、テスト モードとライブ モード?
 
-FIX TO 10: Write the ideal getting started sequence. Specify exact commands,
+10 に修正: 理想的な開始シーケンスを作成します。正確なコマンドを指定し、
 expected output, and time budget per step. Target: 3 steps or fewer, under 5 minutes.
 
-Stripe test: Can a developer go from "never heard of this" to "it worked" in one
-terminal session without leaving the terminal?
+Stripe テスト: 開発者は 1 回で「これは聞いたことがない」から「うまくいきました」に到達できるか
+ターミナルを離れずにターミナルセッションを実行しますか?
 
-**STOP.** AskUserQuestion once per issue. Recommend + WHY.
+**停止。** 問題ごとに 1 回、ユーザーに質問してください。推奨 + なぜ。
 
-### Pass 2: API/CLI/SDK Design (Usable + Useful)
 
-Rate 0-10: Is the interface intuitive, consistent, and complete?
 
-Load reference: Read the "## Pass 2" section from `~/.claude/skills/gstack/plan-devex-review/dx-hall-of-fame.md`.
+評価 0 ～ 10: インターフェイスは直感的で、一貫性があり、完全ですか?
 
-Evaluate:
-- **Naming**: Guessable without docs? Consistent grammar?
-- **Defaults**: Every parameter has a sensible default? Simplest call gives useful result?
-- **Consistency**: Same patterns across the entire API surface?
-- **Completeness**: 100% coverage or do devs drop to raw HTTP for edge cases?
-- **Discoverability**: Can devs explore from CLI/playground without docs?
-- **Reliability/trust**: Latency, retries, rate limits, idempotency, offline behavior?
-- **Progressive disclosure**: Simple case is production-ready, complexity revealed gradually?
+ロードリファレンス: `~/.claude/skills/gstack/plan-devex-review/dx-hall-of-fame.md` の「## Pass 2」セクションを読んでください。
 
-Good API design test: Can a dev use this API correctly after seeing one example?
+評価:
+- **名前**: ドキュメントなしで推測できますか?一貫した文法?
+- **デフォルト**: すべてのパラメータには適切なデフォルトがありますか?最も単純な呼び出しで有益な結果が得られるでしょうか?
+- **一貫性**: API サーフェイス全体で同じパターンですか?
+- **完全性**: 100% をカバーしますか、それとも開発者はエッジケースのために生の HTTP を使用しますか?
+- **発見性**: 開発者はドキュメントなしで CLI/プレイグラウンドから探索できますか?
+- **信頼性/信頼性**: レイテンシ、再試行、レート制限、冪等性、オフライン動作?
+- **段階的な開示**: 単純なケースは実稼働準備が整っていますが、複雑さは徐々に明らかになりますか?
 
-**STOP.** AskUserQuestion once per issue. Recommend + WHY.
+優れた API 設計テスト: 開発者は 1 つの例を見た後、この API を正しく使用できますか?
 
-### Pass 3: Error Messages & Debugging (Fight Uncertainty)
+**停止。** 問題ごとに 1 回、ユーザーに質問してください。推奨 + なぜ。
 
-Rate 0-10: When something goes wrong, does the developer know what happened, why,
-and how to fix it?
+### パス 3: エラー メッセージとデバッグ (不確実性との戦い)
 
-Load reference: Read the "## Pass 3" section from `~/.claude/skills/gstack/plan-devex-review/dx-hall-of-fame.md`.
+評価 0 ～ 10: 何か問題が発生したとき、開発者は何が起こったのか、なぜ起こったのかを知っていますか?
+そしてそれを修正する方法は？
 
-For each error path in the plan, evaluate against the formula:
-**What happened** + **Why** + **How to fix** + **Where to learn more** + **Actual values**
+ロードリファレンス: `~/.claude/skills/gstack/plan-devex-review/dx-hall-of-fame.md` の「## Pass 3」セクションを読んでください。
 
-Also evaluate:
-- **Permission/sandbox/safety model**: What can go wrong? How clear is the blast radius?
-- **Debug mode**: Verbose output available?
-- **Stack traces**: Useful or internal framework noise?
+計画内の各エラー パスについて、次の式に照らして評価します。
+**何が起こった** + **理由** + **修正方法** + **詳細情報の参照先** + **実際の値**
 
-**STOP.** AskUserQuestion once per issue. Recommend + WHY.
+以下も評価します。
+- **許可/サンドボックス/安全モデル**: 何が問題になる可能性がありますか?爆発範囲はどれくらい明確ですか?
+- **デバッグ モード**: 詳細出力は利用可能ですか?
+- **スタック トレース**: 有用なノイズ、または内部フレームワーク ノイズ?
 
-### Pass 4: Documentation & Learning (Findable + Learn by Doing)
+**STOP.** AskUserQuestion once per issue.推奨 + なぜ。
 
-Rate 0-10: Can a developer find what they need and learn by doing?
+### パス 4: ドキュメントと学習 (検索可能 + 実践して学ぶ)
 
-Load reference: Read the "## Pass 4" section from `~/.claude/skills/gstack/plan-devex-review/dx-hall-of-fame.md`.
+評価 0 ～ 10: 開発者は必要なことを見つけて、実行することで学ぶことができますか?
 
-Evaluate:
-- **Information architecture**: Find what they need in under 2 minutes?
-- **Progressive disclosure**: Beginners see simple, experts find advanced?
-- **Code examples**: Copy-paste complete? Work as-is? Real context?
-- **Interactive elements**: Playgrounds, sandboxes, "try it" buttons?
-- **Versioning**: Docs match the version dev is using?
-- **Tutorials vs references**: Both exist?
+ロードリファレンス: `~/.claude/skills/gstack/plan-devex-review/dx-hall-of-fame.md` の「## Pass 4」セクションを読んでください。
 
-**STOP.** AskUserQuestion once per issue. Recommend + WHY.
+評価:
+- **情報アーキテクチャ**: 必要なものを 2 分以内に見つけますか?
+- **段階的な開示**: 初心者にはシンプル、専門家には高度だと思われますか?
+- **コード例**: コピー＆ペーストは完了しましたか?そのまま動作しますか？実際の状況は？
+- **インタラクティブな要素**: 遊び場、サンドボックス、「試してみる」ボタン?
+- **バージョン管理**: ドキュメントは開発者が使用しているバージョンと一致していますか?
+- **チュートリアルとリファレンス**: 両方存在しますか?
 
-### Pass 5: Upgrade & Migration Path (Credible)
+**停止。** 問題ごとに 1 回、ユーザーに質問してください。推奨 + なぜ。
 
-Rate 0-10: Can developers upgrade without fear?
 
-Load reference: Read the "## Pass 5" section from `~/.claude/skills/gstack/plan-devex-review/dx-hall-of-fame.md`.
 
-Evaluate:
-- **Backward compatibility**: What breaks? Blast radius limited?
-- **Deprecation warnings**: Advance notice? Actionable? ("use newMethod() instead")
-- **Migration guides**: Step-by-step for every breaking change?
-- **Codemods**: Automated migration scripts?
-- **Versioning strategy**: Semantic versioning? Clear policy?
+評価 0 ～ 10: 開発者は恐れることなくアップグレードできますか?
 
-**STOP.** AskUserQuestion once per issue. Recommend + WHY.
+ロードリファレンス: `~/.claude/skills/gstack/plan-devex-review/dx-hall-of-fame.md` の「## Pass 5」セクションを読んでください。
 
-### Pass 6: Developer Environment & Tooling (Valuable + Accessible)
+評価:
+- **下位互換性**: 何が壊れますか?爆発範囲は制限されていますか?
+- **非推奨の警告**: 事前に通知しますか?実用的ですか？ (「代わりに newMethod() を使用してください」)
+- **移行ガイド**: 重大な変更ごとに段階的に説明しますか?
+- **Codemods**: 自動移行スクリプト?
+- **バージョン管理戦略**: セマンティック バージョン管理?明確な方針?
 
-Rate 0-10: Does this integrate into developers' existing workflows?
+**停止。** 問題ごとに 1 回、ユーザーに質問してください。推奨 + なぜ。
 
-Load reference: Read the "## Pass 6" section from `~/.claude/skills/gstack/plan-devex-review/dx-hall-of-fame.md`.
+### パス 6: 開発者環境とツール (価値のある + アクセスしやすい)
 
-Evaluate:
-- **Editor integration**: Language server? Autocomplete? Inline docs?
-- **CI/CD**: Works in GitHub Actions, GitLab CI? Non-interactive mode?
-- **TypeScript support**: Types included? Good IntelliSense?
-- **Testing support**: Easy to mock? Test utilities?
-- **Local development**: Hot reload? Watch mode? Fast feedback?
-- **Cross-platform**: Mac, Linux, Windows? Docker? ARM/x86?
-- **Local env reproducibility**: Works across OS, package managers, containers, proxies?
-- **Observability/testability**: Dry-run mode? Verbose output? Sample apps? Fixtures?
+評価 0 ～ 10: これは開発者の既存のワークフローに統合されますか?
 
-**STOP.** AskUserQuestion once per issue. Recommend + WHY.
+ロードリファレンス: `~/.claude/skills/gstack/plan-devex-review/dx-hall-of-fame.md` の「## Pass 6」セクションを読んでください。
 
-### Pass 7: Community & Ecosystem (Findable + Desirable)
+評価:
+- **エディターの統合**: 言語サーバー?オートコンプリート？インラインドキュメント?
+- **CI/CD**: GitHub Actions、GitLab CI で動作しますか?非対話型モード?
+- **TypeScript のサポート**: 型は含まれていますか?インテリセンスは優れていますか?
+- **テストサポート**: モックするのは簡単ですか?テストユーティリティ?
+- **ローカル開発**: ホットリロードしますか?ウォッチモード？フィードバックが早いですか？
+- **クロスプラットフォーム**: Mac、Linux、Windows?ドッカー？ ARM/x86?
+- **ローカル環境の再現性**: OS、パッケージ マネージャー、コンテナー、プロキシ間で機能しますか?
+- **可観測性/テスト容易性**: ドライラン モード?冗長な出力ですか?サンプルアプリ?備品？
 
-Rate 0-10: Is there a community, and does the plan invest in ecosystem health?
+**停止。** 問題ごとに 1 回、ユーザーに質問してください。推奨 + なぜ。
 
-Load reference: Read the "## Pass 7" section from `~/.claude/skills/gstack/plan-devex-review/dx-hall-of-fame.md`.
+### パス 7: コミュニティとエコシステム (見つけられる + 望ましい)
 
-Evaluate:
-- **Open source**: Code open? Permissive license?
-- **Community channels**: Where do devs ask questions? Someone answering?
-- **Examples**: Real-world, runnable? Not just hello world?
-- **Plugin/extension ecosystem**: Can devs extend it?
-- **Contributing guide**: Process clear?
-- **Pricing transparency**: No surprise bills?
+評価 0 ～ 10: コミュニティはありますか?また、その計画は生態系の健全性に投資していますか?
 
-**STOP.** AskUserQuestion once per issue. Recommend + WHY.
+ロードリファレンス: `~/.claude/skills/gstack/plan-devex-review/dx-hall-of-fame.md` の「## Pass 7」セクションを読んでください。
 
-### Pass 8: DX Measurement & Feedback Loops (Implement + Refine)
+評価:
+- **オープンソース**: コードはオープンですか?寛容なライセンス?
+- **コミュニティ チャネル**: 開発者はどこで質問しますか?誰か答えてる？
+- **例**: 現実世界、実行可能ですか?ハローワールドだけじゃないの？
+- **プラグイン/拡張機能のエコシステム**: 開発者はそれを拡張できますか?
+- **貢献ガイド**: プロセスはクリアされましたか?
+- **価格の透明性**: 突然の請求はありませんか?
 
-Rate 0-10: Does the plan include ways to measure and improve DX over time?
+**停止。** 問題ごとに 1 回、ユーザーに質問してください。推奨 + なぜ。
 
-Load reference: Read the "## Pass 8" section from `~/.claude/skills/gstack/plan-devex-review/dx-hall-of-fame.md`.
+### パス 8: DX 測定およびフィードバック ループ (実装 + 改良)
 
-Evaluate:
-- **TTHW tracking**: Can you measure getting started time?
-- **Journey analytics**: Where do devs drop off?
-- **Feedback mechanisms**: Bug reports? NPS? Feedback button?
-- **Friction audits**: Periodic reviews planned?
+評価 0 ～ 10: 計画には、時間の経過とともに DX を測定および改善する方法が含まれていますか?
 
-**STOP.** AskUserQuestion once per issue. Recommend + WHY.
+ロードリファレンス: `~/.claude/skills/gstack/plan-devex-review/dx-hall-of-fame.md` の「## Pass 8」セクションを読んでください。
 
-### Appendix: Claude Code Skill DX Checklist
+評価:
+- **TTHW 追跡**: 開始時間を測定できますか?
+- **ジャーニー分析**: 開発者はどこに立ち寄りますか?
+- **フィードバック メカニズム**: バグ報告? NPS?フィードバックボタン？
+- **摩擦監査**: 定期的なレビューは計画されていますか?
 
-**Conditional: only run when product type includes "Claude Code skill".**
+**停止。** 問題ごとに 1 回、ユーザーに質問してください。推奨 + なぜ。
 
-This is NOT a scored pass. It's a checklist of proven patterns from gstack's own DX.
 
-Load reference: Read the "## Claude Code Skill DX Checklist" section from
-`~/.claude/skills/gstack/plan-devex-review/dx-hall-of-fame.md`.
 
-Check each item. For any unchecked item, explain what's missing and suggest the fix.
+**条件付き: 製品タイプに「クロード コード スキル」が含まれる場合にのみ実行されます。**
 
-**STOP.** AskUserQuestion for any item that requires a design decision.
+これは得点されたパスではありません。これは、gstack 独自の DX からの実証済みのパターンのチェックリストです。
+
+ロードリファレンス:「## Claude Code Skill DX Checklist」セクションを読んでください。
+`~/.claude/skills/gstack/plan-devex-review/dx-hall-of-fame.md`。
+
+各項目を確認してください。未チェックの項目がある場合は、何が不足しているのかを説明し、修正を提案してください。
+
+**停止。** デザイン上の決定が必要なアイテムについては、AskUserQuestion を使用してください。
 
 {{CODEX_PLAN_REVIEW}}
 
-## CRITICAL RULE — How to ask questions
 
-Follow the AskUserQuestion format from the Preamble above. Additional rules for
-DX reviews:
 
-* **One issue = one AskUserQuestion call.** Never combine multiple issues.
-* Describe the DX gap concretely, with what the developer will experience if it's
-  not fixed. Make the developer's pain real.
-* Present 2-3 options. For each: effort to fix, impact on developer adoption.
-* **Map to DX First Principles above.** One sentence connecting your recommendation
-  to a specific principle (e.g., "This violates 'zero friction at T0' because
-  developers need 3 extra config steps before their first API call").
-* **Escape hatch:** If a section has no issues, say so and move on. If a gap has an
-  obvious fix, state what you'll add and move on, don't waste a question.
-* Assume the user hasn't looked at this window in 20 minutes. Re-ground every question.
+上記の前文の AskUserQuestion 形式に従います。追加ルール
+DXのレビュー：
 
-## Required Outputs
+* **1 つの問題 = 1 回の AskUserQuestion 呼び出し。** 複数の問題を組み合わせないでください。
+* DX ギャップについて、開発者がどのようなことを経験するかを具体的に説明します。
+  固定されていません。開発者の苦痛を現実のものにします。
+* 2 ～ 3 つの選択肢を提示します。それぞれについて: 修正への取り組み、開発者の採用への影響。
+* **上記の DX の第一原則に対応します。** 推奨事項を結び付ける 1 文
+  特定の原則に従う (例: 「これは、「T0 での摩擦ゼロ」に違反します。
+  開発者は、最初の API 呼び出しの前に 3 つの追加の構成手順が必要です)。
+* **避難ハッチ:** セクションに問題がない場合は、そう言って次に進みます。隙間がある場合
+  明らかに修正する場合は、何を追加するかを述べて次に進みます。質問を無駄にしないでください。
+* ユーザーが 20 分間このウィンドウを見なかったと仮定します。すべての質問を再検討してください。
+
+## 必要な出力
 
 ### Developer Journey Map
-The journey map from Step 0A, updated with all fixes and decisions from the review.
+ステップ 0A のジャーニー マップ。レビューからのすべての修正と決定を反映して更新されます。
 
-### Developer Empathy Narrative
-The first-person narrative from Step 0B-bis.
+### 開発者の共感の物語
+ステップ 0B-bis の一人称物語。
 
-### "NOT in scope" section
-DX improvements considered and explicitly deferred, with one-line rationale each.
+### 「範囲外」セクション
+DX の改善が検討され、明示的に延期されました。それぞれ 1 行の根拠が示されています。
 
-### "What already exists" section
-Existing docs, examples, error handling, and DX patterns that the plan should reuse.
+### 「すでに存在するもの」セクション
+計画で再利用する必要がある既存のドキュメント、例、エラー処理、および DX パターン。
 
-### TODOS.md updates
-After all review passes are complete, present each potential TODO as its own individual
-AskUserQuestion. Never batch. For DX debt: missing error messages, unspecified upgrade
-paths, documentation gaps, missing SDK languages. Each TODO gets:
-* **What:** One-line description
-* **Why:** The concrete developer pain it causes
-* **Pros:** What you gain (adoption, retention, satisfaction)
-* **Cons:** Cost, complexity, or risks
-* **Context:** Enough detail for someone to pick this up in 3 months
-* **Depends on / blocked by:** Prerequisites
+### TODOS.md の更新
+すべてのレビュー パスが完了したら、潜在的な TODO をそれぞれ個別に提示します。
+ユーザーに質問します。決してバッチ処理しないでください。 DX 負債の場合: エラー メッセージが表示されない、アップグレードが指定されていない
+パス、ドキュメントのギャップ、SDK 言語の不足。各 TODO は以下を取得します。
+* **内容:** 1 行の説明
+* **理由:** それが引き起こす開発者の具体的な苦痛
+* **長所:** 得られるもの (採用、維持、満足)
+* **短所:** コスト、複雑さ、またはリスク
+* **コンテキスト:** 3 か月以内に誰かがこれを理解できるのに十分な詳細
+* **次のものに依存/ブロックされます:** 前提条件
 
-Options: **A)** Add to TODOS.md **B)** Skip **C)** Build it now
+オプション: **A)** TODOS.md に追加 **B)** スキップ **C)** 今すぐビルドする
 
-### DX Scorecard
+### DX スコアカード
 
 ```
 +====================================================================+
@@ -436,11 +436,11 @@ Options: **A)** Add to TODOS.md **B)** Skip **C)** Build it now
 +====================================================================+
 ```
 
-If all passes 8+: "DX plan is solid. Developers will have a good experience."
-If any below 6: Flag as critical DX debt with specific impact on adoption.
-If TTHW > 10 min: Flag as blocking issue.
+すべてが 8+ に合格した場合: 「DX 計画はしっかりしています。開発者は良い経験を得るでしょう。」
+6 未満の場合: 導入に具体的な影響を与える重大な DX 負債としてフラグを立てます。
+TTHW > 10 分の場合: ブロックの問題としてフラグを立てます。
 
-### DX Implementation Checklist
+### DX導入チェックリスト
 
 ```
 DX IMPLEMENTATION CHECKLIST
@@ -463,52 +463,52 @@ DX IMPLEMENTATION CHECKLIST
 [ ] Community channel exists and is monitored
 ```
 
-### Unresolved Decisions
-If any AskUserQuestion goes unanswered, note here. Never silently default.
+### 未解決の決定
+AskUserQuestion に回答がない場合は、ここにメモしてください。決して黙ってデフォルトしないでください。
 
-## Review Log
+## レビューログ
 
-After producing the DX Scorecard above, persist the review result.
+上記の DX スコアカードを作成した後、レビュー結果を永続化します。
 
-**PLAN MODE EXCEPTION — ALWAYS RUN:** This command writes review metadata to
-`~/.gstack/` (user config directory, not project files).
+**計画モードの例外 — 常に実行:** このコマンドは、レビュー メタデータを
+`~/.gstack/` (プロジェクト ファイルではなく、ユーザー設定ディレクトリ)。
 
 ```bash
 ~/.claude/skills/gstack/bin/gstack-review-log '{"skill":"plan-devex-review","timestamp":"TIMESTAMP","status":"STATUS","initial_score":N,"overall_score":N,"product_type":"TYPE","tthw_current":"TTHW_CURRENT","tthw_target":"TTHW_TARGET","pass_scores":{"getting_started":N,"api_design":N,"errors":N,"docs":N,"upgrade":N,"dev_env":N,"community":N,"measurement":N},"unresolved":N,"commit":"COMMIT"}'
 ```
 
-Substitute values from the DX Scorecard.
+DX スコアカードの値を置き換えます。
 
-{{REVIEW_DASHBOARD}}
+{{レビュー_ダッシュボード}}
 
 {{PLAN_FILE_REVIEW_REPORT}}
 
-{{LEARNINGS_LOG}}
+{{ラーニング_ログ}}
 
-## Next Steps — Review Chaining
+## 次のステップ — チェーンの確認
 
-After displaying the Review Readiness Dashboard, recommend next reviews:
+レビュー準備ダッシュボードを表示したら、次のレビューを推奨します。
 
-**Recommend /plan-eng-review if eng review is not skipped globally** — DX issues often
-have architectural implications. If this DX review found API design problems, error
-handling gaps, or CLI ergonomics issues, eng review should validate the fixes.
+**エンジニアリングレビューがグローバルにスキップされない場合は、/plan-eng-review を推奨します** — DX の問題は頻繁に発生します
+have architectural implications.この DX レビューで API 設計の問題が見つかった場合は、エラーが発生します
+ギャップや CLI のエルゴノミクスの問題に対処するには、技術レビューで修正を検証する必要があります。
 
-**Suggest /plan-design-review if user-facing UI exists** — DX review focuses on
-developer-facing surfaces; design review covers end-user-facing UI.
+**ユーザー向け UI が存在する場合は /plan-design-review を提案します** — DX レビューは次のことに重点を置いています
+現像剤に面する表面。設計レビューでは、エンドユーザー向けの UI がカバーされます。
 
-**Recommend /devex-review after implementation** — the boomerang. Plan said TTHW would
-be 3 minutes. Did reality match? Run /devex-review on the live product to find out.
+**実装後に /devex-review を推奨します** — ブーメランです。計画では、TTHW は
+3分になります。現実は一致しましたか？稼働中の製品で /devex-review を実行して確認してください。
 
-Use AskUserQuestion with applicable options:
-- **A)** Run /plan-eng-review next (required gate)
-- **B)** Run /plan-design-review (only if UI scope detected)
-- **C)** Ready to implement, run /devex-review after shipping
-- **D)** Skip, I'll handle next steps manually
+該当するオプションを指定して AskUserQuestion を使用します。
+- **A)** /plan-eng-review 次に実行します（必須ゲート）
+- **B)** /plan-design-review を実行します (UI スコープが検出された場合のみ)
+- **C)** 実装準備完了、出荷後に /devex-review を実行
+- **D)** スキップします。次のステップは手動で処理します
 
-## Formatting Rules
+## フォーマット規則
 
-* NUMBER issues (1, 2, 3...) and LETTERS for options (A, B, C...).
-* Label with NUMBER + LETTER (e.g., "3A", "3B").
-* One sentence max per option.
-* After each pass, pause and wait for feedback before moving on.
-* Rate before and after each pass for scannability.
+* 番号の問題 (1、2、3...) とオプションの文字 (A、B、C...)。
+* 数字 + 文字でラベルを付けます (例: 「3A」、「3B」)。
+* オプションごとに最大 1 文。
+* 各パスの後、次に進む前に一時停止してフィードバックを待ちます。
+* スキャン可能性について各パスの前後で評価します。

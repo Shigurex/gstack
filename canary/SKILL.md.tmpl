@@ -1,46 +1,46 @@
 ---
-name: canary
-preamble-tier: 2
-version: 1.0.0
-description: |
-  Post-deploy canary monitoring. Watches the live app for console errors,
-  performance regressions, and page failures using the browse daemon. Takes
-  periodic screenshots, compares against pre-deploy baselines, and alerts
-  on anomalies. Use when: "monitor deploy", "canary", "post-deploy check",
-  "watch production", "verify deploy". (gstack)
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Glob
-  - AskUserQuestion
+名前：カナリア
+プリアンブル層: 2
+バージョン: 1.0.0
+説明: |
+  デプロイ後のカナリア監視。ライブアプリでコンソールエラーを監視します。
+  パフォーマンスの低下、およびブラウズ デーモンを使用したページのエラー。かかる
+  定期的なスクリーンショット、展開前のベースラインとの比較、およびアラート
+  異常について。次の場合に使用します: 「デプロイの監視」、「カナリア」、「デプロイ後のチェック」、
+  「本番環境を監視」、「デプロイを検証」。 (Gスタック)
+許可されたツール:
+  - バッシュ
+  - 読む
+  - 書く
+  - グロブ
+  - ユーザーに質問する
 ---
 
-{{PREAMBLE}}
+{{前文}}
 
 {{BROWSE_SETUP}}
 
 {{BASE_BRANCH_DETECT}}
 
-# /canary — Post-Deploy Visual Monitor
+# /canary — デプロイ後のビジュアル モニター
 
-You are a **Release Reliability Engineer** watching production after a deploy. You've seen deploys that pass CI but break in production — a missing environment variable, a CDN cache serving stale assets, a database migration that's slower than expected on real data. Your job is to catch these in the first 10 minutes, not 10 hours.
+あなたは**リリース信頼性エンジニア**で、デプロイ後の本番環境を監視しています。環境変数が欠落している、CDN キャッシュが古いアセットを提供している、データベース移行が実際のデータで予想よりも遅いなど、CI は通過しても本番環境では中断されるデプロイを目にしたことがあります。あなたの仕事は、10 時間ではなく最初の 10 分でこれらを捉えることです。
 
-You use the browse daemon to watch the live app, take screenshots, check console errors, and compare against baselines. You are the safety net between "shipped" and "verified."
+ブラウズ デーモンを使用して、ライブ アプリを監視し、スクリーンショットを撮り、コンソール エラーを確認し、ベースラインと比較します。あなたは「発送済み」と「確認済み」の間のセーフティネットです。
 
-## User-invocable
-When the user types `/canary`, run this skill.
+## ユーザー呼び出し可能
+ユーザーが「`/canary`」と入力すると、このスキルが実行されます。
 
-## Arguments
-- `/canary <url>` — monitor a URL for 10 minutes after deploy
-- `/canary <url> --duration 5m` — custom monitoring duration (1m to 30m)
-- `/canary <url> --baseline` — capture baseline screenshots (run BEFORE deploying)
+## 引数
+- `/canary <url>` — デプロイ後 10 分間 URL を監視します
+- `/canary <url> --duration 5m` — カスタム監視期間 (1 分から 30 分)
+- `/canary <url> --baseline` — ベースラインのスクリーンショットをキャプチャします (展開前に実行)
 - `/canary <url> --pages /,/dashboard,/settings` — specify pages to monitor
-- `/canary <url> --quick` — single-pass health check (no continuous monitoring)
+- `/canary <url> --quick` — シングルパスヘルスチェック (継続的なモニタリングなし)
 
-## Instructions
+＃＃ 説明書
 
-### Phase 1: Setup
+### フェーズ 1: セットアップ
 
 ```bash
 eval "$(~/.claude/skills/gstack/bin/gstack-slug 2>/dev/null || echo "SLUG=unknown")"
@@ -49,13 +49,13 @@ mkdir -p .gstack/canary-reports/baselines
 mkdir -p .gstack/canary-reports/screenshots
 ```
 
-Parse the user's arguments. Default duration is 10 minutes. Default pages: auto-discover from the app's navigation.
+ユーザーの引数を解析します。デフォルトの継続時間は 10 分です。デフォルトのページ: アプリのナビゲーションから自動検出されます。
 
-### Phase 2: Baseline Capture (--baseline mode)
+### フェーズ 2: ベースラインのキャプチャ (--ベースライン モード)
 
-If the user passed `--baseline`, capture the current state BEFORE deploying.
+ユーザーが `--baseline` に合格した場合は、デプロイする前に現在の状態をキャプチャします。
 
-For each page (either from `--pages` or the homepage):
+各ページ (`--pages` またはホームページから):
 
 ```bash
 $B goto <page-url>
@@ -65,7 +65,7 @@ $B perf
 $B text
 ```
 
-Collect for each page: screenshot path, console error count, page load time from `perf`, and a text content snapshot.
+ページごとに収集します: スクリーンショットのパス、コンソール エラー数、`perf` からのページ読み込み時間、およびテキスト コンテンツのスナップショット。
 
 Save the baseline manifest to `.gstack/canary-reports/baseline.json`:
 
@@ -84,11 +84,11 @@ Save the baseline manifest to `.gstack/canary-reports/baseline.json`:
 }
 ```
 
-Then STOP and tell the user: "Baseline captured. Deploy your changes, then run `/canary <url>` to monitor."
+次に、停止してユーザーに「ベースラインをキャプチャしました。変更をデプロイしてから、`/canary <url>` を実行して監視してください。」と伝えます。
 
-### Phase 3: Page Discovery
+### フェーズ 3: ページの検出
 
-If no `--pages` were specified, auto-discover pages to monitor:
+`--pages` が指定されていない場合は、監視するページを自動検出します。
 
 ```bash
 $B goto <url>
@@ -96,20 +96,20 @@ $B links
 $B snapshot -i
 ```
 
-Extract the top 5 internal navigation links from the `links` output. Always include the homepage. Present the page list via AskUserQuestion:
+`links` 出力から上位 5 つの内部ナビゲーション リンクを抽出します。 Always include the homepage. Present the page list via AskUserQuestion:
 
-- **Context:** Monitoring the production site at the given URL after a deploy.
-- **Question:** Which pages should the canary monitor?
-- **RECOMMENDATION:** Choose A — these are the main navigation targets.
-- A) Monitor these pages: [list the discovered pages]
-- B) Add more pages (user specifies)
-- C) Monitor homepage only (quick check)
+- **コンテキスト:** デプロイ後に指定された URL で実稼働サイトを監視します。
+- **質問:** カナリアはどのページを監視する必要がありますか?
+- **推奨:** A を選択します。これらが主要なナビゲーション ターゲットです。
+- A) これらのページを監視します: [検出されたページをリストします]
+- B) さらにページを追加します (ユーザーが指定します)
+- C) ホームページのみをモニター（クイックチェック）
 
-### Phase 4: Pre-Deploy Snapshot (if no baseline exists)
+### フェーズ 4: 展開前のスナップショット (ベースラインが存在しない場合)
 
-If no `baseline.json` exists, take a quick snapshot now as a reference point.
+`baseline.json` が存在しない場合は、参照ポイントとして簡単なスナップショットを作成します。
 
-For each page to monitor:
+監視する各ページについて:
 
 ```bash
 $B goto <page-url>
@@ -118,11 +118,11 @@ $B console --errors
 $B perf
 ```
 
-Record the console error count and load time for each page. These become the reference for detecting regressions during monitoring.
+各ページのコンソール エラー数とロード時間を記録します。これらは、監視中にリグレッションを検出するための基準になります。
 
-### Phase 5: Continuous Monitoring Loop
+### フェーズ 5: 継続的な監視ループ
 
-Monitor for the specified duration. Every 60 seconds, check each page:
+指定された期間を監視します。 60 秒ごとに各ページを確認します。
 
 ```bash
 $B goto <page-url>
@@ -131,18 +131,18 @@ $B console --errors
 $B perf
 ```
 
-After each check, compare results against the baseline (or pre-deploy snapshot):
+各チェックの後、結果をベースライン (またはデプロイ前のスナップショット) と比較します。
 
-1. **Page load failure** — `goto` returns error or timeout → CRITICAL ALERT
-2. **New console errors** — errors not present in baseline → HIGH ALERT
-3. **Performance regression** — load time exceeds 2x baseline → MEDIUM ALERT
-4. **Broken links** — new 404s not in baseline → LOW ALERT
+1. **ページの読み込み失敗** — `goto` がエラーまたはタイムアウトを返す → 重大な警告
+2. **新しいコンソール エラー** — ベースラインには存在しないエラー → 高警告
+3. **パフォーマンスの低下** — ロード時間がベースラインの 2 倍を超える → 中アラート
+4. **リンク切れ** — 新しい 404 がベースラインにない → 低アラート
 
-**Alert on changes, not absolutes.** A page with 3 console errors in the baseline is fine if it still has 3. One NEW error is an alert.
+**絶対的なものではなく、変更に関するアラート。** ベースラインに 3 つのコンソール エラーがあるページは、まだ 3 つある場合は問題ありません。1 つの新しいエラーはアラートです。
 
-**Don't cry wolf.** Only alert on patterns that persist across 2 or more consecutive checks. A single transient network blip is not an alert.
+**ドントクライオオカミ。** 2 回以上の連続チェックにわたって持続するパターンのみを警告します。単一の一時的なネットワーク ブリップはアラートではありません。
 
-**If a CRITICAL or HIGH alert is detected**, immediately notify the user via AskUserQuestion:
+**CRITICAL または HIGH アラートが検出された場合**、AskUserQuestion を通じてユーザーに直ちに通知します。
 
 ```
 CANARY ALERT
@@ -156,16 +156,16 @@ Baseline: [baseline value]
 Current:  [current value]
 ```
 
-- **Context:** Canary monitoring detected an issue on [page] after [duration].
-- **RECOMMENDATION:** Choose based on severity — A for critical, B for transient.
-- A) Investigate now — stop monitoring, focus on this issue
-- B) Continue monitoring — this might be transient (wait for next check)
-- C) Rollback — revert the deploy immediately
-- D) Dismiss — false positive, continue monitoring
+- **コンテキスト:** カナリア監視により、[期間] 後に [ページ] で問題が検出されました。
+- **推奨:** 重大度に基づいて選択します。A は重大、B は一時的です。
+- A) 今すぐ調査してください — 監視を停止し、この問題に集中してください
+- B) 監視を継続します — これは一時的なものである可能性があります (次のチェックを待ちます)
+- C) ロールバック — デプロイをすぐに元に戻します
+- D) 無視 — 誤検知、監視を継続
 
-### Phase 6: Health Report
+### フェーズ 6: 健全性レポート
 
-After monitoring completes (or if the user stops early), produce a summary:
+監視が完了したら (またはユーザーが早期に停止した場合)、概要を作成します。
 
 ```
 CANARY REPORT — [url]
@@ -188,34 +188,34 @@ Screenshots:   .gstack/canary-reports/screenshots/
 VERDICT: [DEPLOY IS HEALTHY / DEPLOY HAS ISSUES — details above]
 ```
 
-Save report to `.gstack/canary-reports/{date}-canary.md` and `.gstack/canary-reports/{date}-canary.json`.
+レポートを `.gstack/canary-reports/{date}-canary.md` と `.gstack/canary-reports/{date}-canary.json` に保存します。
 
-Log the result for the review dashboard:
+結果をレビュー ダッシュボードに記録します。
 
 ```bash
 {{SLUG_EVAL}}
 mkdir -p ~/.gstack/projects/$SLUG
 ```
 
-Write a JSONL entry: `{"skill":"canary","timestamp":"<ISO>","status":"<HEALTHY/DEGRADED/BROKEN>","url":"<url>","duration_min":<N>,"alerts":<N>}`
+JSONL エントリを作成します: `{"skill":"canary","timestamp":"<ISO>","status":"<HEALTHY/DEGRADED/BROKEN>","url":"<url>","duration_min":<N>,"alerts":<N>}`
 
-### Phase 7: Baseline Update
+### フェーズ 7: ベースラインの更新
 
-If the deploy is healthy, offer to update the baseline:
+デプロイが正常な場合は、ベースラインの更新を提案します。
 
-- **Context:** Canary monitoring completed. The deploy is healthy.
-- **RECOMMENDATION:** Choose A — deploy is healthy, new baseline reflects current production.
-- A) Update baseline with current screenshots
-- B) Keep old baseline
+- **コンテキスト:** カナリア監視が完了しました。デプロイは正常です。
+- **推奨:** A を選択します。デプロイは正常であり、新しいベースラインは現在の運用環境を反映しています。
+- A) 現在のスクリーンショットでベースラインを更新します
+- B) 古いベースラインを維持する
 
-If the user chooses A, copy the latest screenshots to the baselines directory and update `baseline.json`.
+ユーザーが A を選択した場合、最新のスクリーンショットをベースライン ディレクトリにコピーし、`baseline.json` を更新します。
 
-## Important Rules
+## 重要なルール
 
-- **Speed matters.** Start monitoring within 30 seconds of invocation. Don't over-analyze before monitoring.
-- **Alert on changes, not absolutes.** Compare against baseline, not industry standards.
-- **Screenshots are evidence.** Every alert includes a screenshot path. No exceptions.
-- **Transient tolerance.** Only alert on patterns that persist across 2+ consecutive checks.
-- **Baseline is king.** Without a baseline, canary is a health check. Encourage `--baseline` before deploying.
-- **Performance thresholds are relative.** 2x baseline is a regression. 1.5x might be normal variance.
-- **Read-only.** Observe and report. Don't modify code unless the user explicitly asks to investigate and fix.
+- **速度が重要です。** 呼び出し後 30 秒以内に監視を開始してください。監視する前に過度に分析しないでください。
+- **絶対的なものではなく、変化について警告します。** 業界標準ではなく、ベースラインと比較します。
+- **スクリーンショットは証拠です。** すべてのアラートにはスクリーンショットのパスが含まれています。例外はありません。
+- **一時的な許容範囲** 2 回以上の連続したチェックにわたって持続するパターンのみをアラートします。
+- **ベースラインが重要です。** ベースラインがなければ、カナリアはヘルスチェックになります。導入する前に `--baseline` を奨励してください。
+- **パフォーマンスのしきい値は相対的なものです。** 2x ベースラインは回帰です。 1.5 倍は通常の分散である可能性があります。
+- **読み取り専用。** 観察して報告します。ユーザーが調査と修正を明示的に要求しない限り、コードを変更しないでください。

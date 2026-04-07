@@ -1,51 +1,51 @@
-# Performance Specialist Review Checklist
+# パフォーマンス スペシャリストのレビュー チェックリスト
 
-Scope: When SCOPE_BACKEND=true OR SCOPE_FRONTEND=true
-Output: JSON objects, one finding per line. Schema:
-{"severity":"CRITICAL|INFORMATIONAL","confidence":N,"path":"file","line":N,"category":"performance","summary":"...","fix":"...","fingerprint":"path:line:performance","specialist":"performance"}
-If no findings: output `NO FINDINGS` and nothing else.
+スコープ: SCOPE_BACKEND=true または SCOPE_FRONTEND=true の場合
+出力: JSON オブジェクト、1 行に 1 つの結果。スキーマ:
+{"重大度":"重大|情報"、"信頼性":N、"パス":"ファイル"、"行":N、"カテゴリ":"パフォーマンス"、"概要":"..."、"修正":"..."、"フィンガープリント":"パス:行:パフォーマンス"、"スペシャリスト":"パフォーマンス"}
+検出結果がない場合: `NO FINDINGS` を出力し、それ以外は何も出力しません。
 
 ---
 
-## Categories
+## カテゴリ
 
-### N+1 Queries
-- ActiveRecord/ORM associations traversed in loops without eager loading (.includes, joinedload, include)
-- Database queries inside iteration blocks (each, map, forEach) that could be batched
-- Nested serializers that trigger lazy-loaded associations
-- GraphQL resolvers that query per-field instead of batching (check for DataLoader usage)
+### N+1 クエリ
+- ActiveRecord/ORM 関連付けは、積極的な読み込み (.includes、joinload、include) なしでループ内で走査されます。
+- バッチ処理可能な反復ブロック (each、map、forEach) 内のデータベース クエリ
+- 遅延読み込みアソシエーションをトリガーするネストされたシリアライザー
+- バッチ処理ではなくフィールドごとにクエリを実行する GraphQL リゾルバー (DataLoader の使用状況を確認)
 
 ### Missing Database Indexes
-- New WHERE clauses on columns without indexes (check migration files or schema)
+- インデックスのない列に対する新しい WHERE 句 (移行ファイルまたはスキーマを確認してください)
 - New ORDER BY on non-indexed columns
-- Composite queries (WHERE a AND b) without composite indexes
+- 複合インデックスを使用しない複合クエリ (WHERE a AND b)
 - Foreign key columns added without indexes
 
-### Algorithmic Complexity
-- O(n^2) or worse patterns: nested loops over collections, Array.find inside Array.map
-- Repeated linear searches that could use a hash/map/set lookup
-- String concatenation in loops (use join or StringBuilder)
-- Sorting or filtering large collections multiple times when once would suffice
+### アルゴリズムの複雑さ
+- O(n^2) またはそれより悪いパターン: コレクション上のネストされたループ、Array.map 内の Array.find
+- ハッシュ/マップ/セット ルックアップを使用できる繰り返しの線形検索
+- ループ内の文字列連結 (join または StringBuilder を使用)
+- 大きなコレクションの並べ替えやフィルタリングは 1 回で十分な場合でも複数回行う
 
-### Bundle Size Impact (Frontend)
-- New production dependencies that are known-heavy (moment.js, lodash full, jquery)
-- Barrel imports (import from 'library') instead of deep imports (import from 'library/specific')
-- Large static assets (images, fonts) committed without optimization
-- Missing code splitting for route-level chunks
+### バンドル サイズの影響 (フロントエンド)
+- 既知の負荷の高い新しい運用依存関係 (moment.js、lodash full、jquery)
+- ディープインポート (「ライブラリ/特定」からのインポート) ではなく、バレルインポート (「ライブラリ」からのインポート)
+- 最適化せずにコミットされた大規模な静的アセット (画像、フォント)
+- ルートレベルのチャンクのコード分割が欠落している
 
-### Rendering Performance (Frontend)
-- Fetch waterfalls: sequential API calls that could be parallel (Promise.all)
-- Unnecessary re-renders from unstable references (new objects/arrays in render)
-- Missing React.memo, useMemo, or useCallback on expensive computations
-- Layout thrashing from reading then writing DOM properties in loops
-- Missing loading="lazy" on below-fold images
+### レンダリング パフォーマンス (フロントエンド)
+- ウォーターフォールの取得: 並列可能な連続 API 呼び出し (Promise.all)
+- 不安定な参照からの不必要な再レンダリング (レンダリング内の新しいオブジェクト/配列)
+- 負荷の高い計算で React.memo、useMemo、または useCallback が欠落している
+- ループ内の DOM プロパティの読み取りと書き込みによるレイアウトのスラッシング
+- スクロールせずに見える画像にloading="lazy"がありません
 
-### Missing Pagination
-- List endpoints that return unbounded results (no LIMIT, no pagination params)
-- Database queries without LIMIT that grow with data volume
-- API responses that embed full nested objects instead of IDs with expansion
+### ページネーションがありません
+- 無制限の結果を返すエンドポイントをリストします (LIMIT なし、ページネーション パラメータなし)
+- データ量に応じて増大する、LIMIT のないデータベース クエリ
+- 拡張された ID の代わりに完全にネストされたオブジェクトを埋め込む API 応答
 
-### Blocking in Async Contexts
-- Synchronous I/O (file reads, subprocess, HTTP requests) inside async functions
-- time.sleep() / Thread.sleep() inside event-loop-based handlers
-- CPU-intensive computation blocking the main thread without worker offload
+### 非同期コンテキストでのブロック
+- 非同期関数内の同期 I/O (ファイル読み取り、サブプロセス、HTTP リクエスト)
+- イベントループベースのハンドラー内の time.sleep() / Thread.sleep()
+- CPU 負荷の高い計算がワーカー オフロードなしでメイン スレッドをブロックする

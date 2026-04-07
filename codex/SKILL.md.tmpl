@@ -1,41 +1,41 @@
 ---
-name: codex
-preamble-tier: 3
-version: 1.0.0
-description: |
-  OpenAI Codex CLI wrapper — three modes. Code review: independent diff review via
-  codex review with pass/fail gate. Challenge: adversarial mode that tries to break
-  your code. Consult: ask codex anything with session continuity for follow-ups.
-  The "200 IQ autistic developer" second opinion. Use when asked to "codex review",
-  "codex challenge", "ask codex", "second opinion", or "consult codex". (gstack)
-voice-triggers:
-  - "code x"
-  - "code ex"
-  - "get another opinion"
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Glob
-  - Grep
-  - AskUserQuestion
+名前: コーデックス
+プリアンブル層: 3
+バージョン: 1.0.0
+説明: |
+  OpenAI Codex CLI ラッパー - 3 つのモード。コードレビュー: 独立した差分レビュー
+  合格/不合格ゲートを備えたコーデックスレビュー。チャレンジ: 突破を試みる敵対モード
+  あなたのコード。相談: フォローアップのためにセッションの継続性についてコーデックスに問い合わせてください。
+  「IQ200の自閉症開発者」のセカンドオピニオン。 「コーデックスのレビュー」を依頼された場合に使用します。
+  「コーデックス チャレンジ」、「コーデックスに質問」、「セカンドオピニオン」、または「コーデックスに相談」。 (Gスタック)
+音声トリガー:
+  - 「コードX」
+  - 「コードエクス」
+  - 「別の意見を聞いてください」
+許可されたツール:
+  - バッシュ
+  - 読む
+  - 書く
+  - グロブ
+  - グレップ
+  - ユーザーに質問する
 ---
 
-{{PREAMBLE}}
+{{前文}}
 
 {{BASE_BRANCH_DETECT}}
 
-# /codex — Multi-AI Second Opinion
+# /codex — マルチ AI のセカンドオピニオン
 
-You are running the `/codex` skill. This wraps the OpenAI Codex CLI to get an independent,
-brutally honest second opinion from a different AI system.
+`/codex` スキルを実行しています。これは OpenAI Codex CLI をラップして、独立した、
+別の AI システムからの残酷なまでに正直なセカンドオピニオン。
 
-Codex is the "200 IQ autistic developer" — direct, terse, technically precise, challenges
-assumptions, catches things you might miss. Present its output faithfully, not summarized.
+Codex は「IQ 200 の自閉症開発者」です - 直接的、簡潔、技術的に正確な挑戦
+仮定し、見逃している可能性のあるものをキャッチします。その成果を要約するのではなく、忠実に提示します。
 
 ---
 
-## Step 0: Check codex binary
+## ステップ 0: コーデックス バイナリを確認する
 
 ```bash
 CODEX_BIN=$(which codex 2>/dev/null || echo "")
@@ -43,77 +43,77 @@ CODEX_BIN=$(which codex 2>/dev/null || echo "")
 ```
 
 If `NOT_FOUND`: stop and tell the user:
-"Codex CLI not found. Install it: `npm install -g @openai/codex` or see https://github.com/openai/codex"
+「Codex CLI が見つかりません。インストールします: `npm install -g @openai/codex` または、https://github.com/openai/codex" を参照してください」
 
 ---
 
-## Step 1: Detect mode
+## ステップ 1: 検出モード
 
-Parse the user's input to determine which mode to run:
+ユーザーの入力を解析して、実行するモードを決定します。
 
-1. `/codex review` or `/codex review <instructions>` — **Review mode** (Step 2A)
-2. `/codex challenge` or `/codex challenge <focus>` — **Challenge mode** (Step 2B)
-3. `/codex` with no arguments — **Auto-detect:**
-   - Check for a diff (with fallback if origin isn't available):
+1. `/codex review` または `/codex review <instructions>` — **レビューモード** (ステップ 2A)
+2. `/codex challenge` または `/codex challenge <focus>` — **チャレンジ モード** (ステップ 2B)
+3. `/codex` 引数なし — **自動検出:**
+   - 差分を確認します (オリジンが使用できない場合はフォールバックを使用します)。
      `git diff origin/<base> --stat 2>/dev/null | tail -1 || git diff <base> --stat 2>/dev/null | tail -1`
-   - If a diff exists, use AskUserQuestion:
+   - 差分が存在する場合は、AskUserQuestion を使用します。
      ```
      Codex detected changes against the base branch. What should it do?
      A) Review the diff (code review with pass/fail gate)
      B) Challenge the diff (adversarial — try to break it)
      C) Something else — I'll provide a prompt
      ```
-   - If no diff, check for plan files scoped to the current project:
+   - 差分がない場合は、現在のプロジェクトをスコープとする計画ファイルを確認します。
      `ls -t ~/.claude/plans/*.md 2>/dev/null | xargs grep -l "$(basename $(pwd))" 2>/dev/null | head -1`
-     If no project-scoped match, fall back to: `ls -t ~/.claude/plans/*.md 2>/dev/null | head -1`
-     but warn the user: "Note: this plan may be from a different project."
-   - If a plan file exists, offer to review it
-   - Otherwise, ask: "What would you like to ask Codex?"
-4. `/codex <anything else>` — **Consult mode** (Step 2C), where the remaining text is the prompt
+     プロジェクトスコープが一致しない場合は、`ls -t ~/.claude/plans/*.md 2>/dev/null | head -1` にフォールバックします。
+     ただし、ユーザーに次のように警告します。「注: この計画は別のプロジェクトのものである可能性があります。」
+   - 計画ファイルが存在する場合は、それをレビューするよう申し出ます
+   - それ以外の場合は、「Codex に何を聞きたいですか?」と尋ねます。
+4. `/codex <anything else>` — **コンサルト モード** (ステップ 2C)、残りのテキストがプロンプトです
 
-**Reasoning effort override:** If the user's input contains `--xhigh` anywhere,
-note it and remove it from the prompt text before passing to Codex. When `--xhigh`
-is present, use `model_reasoning_effort="xhigh"` for all modes regardless of the
-per-mode default below. Otherwise, use the per-mode defaults:
-- Review (2A): `high` — bounded diff input, needs thoroughness
-- Challenge (2B): `high` — adversarial but bounded by diff
-- Consult (2C): `medium` — large context, interactive, needs speed
-
----
-
-## Filesystem Boundary
-
-All prompts sent to Codex MUST be prefixed with this boundary instruction:
-
-> IMPORTANT: Do NOT read or execute any files under ~/.claude/, ~/.agents/, .claude/skills/, or agents/. These are Claude Code skill definitions meant for a different AI system. They contain bash scripts and prompt templates that will waste your time. Ignore them completely. Do NOT modify agents/openai.yaml. Stay focused on the repository code only.
-
-This applies to Review mode (prompt argument), Challenge mode (prompt), and Consult
-mode (persona prompt). Reference this section as "the filesystem boundary" below.
+**推論努力のオーバーライド:** ユーザーの入力に `--xhigh` が含まれている場合、
+それをメモし、Codex に渡す前にプロンプト テキストから削除してください。 `--xhigh` のとき
+が存在する場合は、
+以下はモードごとのデフォルトです。それ以外の場合は、モードごとのデフォルトを使用します。
+- レビュー (2A): `high` — 制限された差分入力、徹底が必要
+- チャレンジ (2B): `high` — 敵対的だが差分によって制限される
+- コンサルト (2C): `medium` — 大規模なコンテキスト、インタラクティブ、速度が必要
 
 ---
 
-## Step 2A: Review Mode
+## ファイルシステムの境界
 
-Run Codex code review against the current branch diff.
+Codex に送信されるすべてのプロンプトには、次の境界命令を先頭に付ける必要があります。
 
-1. Create temp files for output capture:
+> 重要: ~/.claude/、~/.agents/、.claude/skills/、または Agents/ にあるファイルを読み取ったり実行したりしないでください。これらは、別の AI システムを対象としたクロード コードのスキル定義です。これらには、時間を無駄にする bash スクリプトとプロンプト テンプレートが含まれています。完全に無視してください。 Agents/openai.yaml を変更しないでください。リポジトリのコードのみに注目してください。
+
+これは、レビュー モード (プロンプト引数)、チャレンジ モード (プロンプト)、およびコンサルトに適用されます。
+モード（ペルソナプロンプト）。以下では、このセクションを「ファイルシステム境界」として参照します。
+
+---
+
+## ステップ 2A: レビュー モード
+
+現在のブランチの差分に対して Codex コード レビューを実行します。
+
+1. 出力キャプチャ用の一時ファイルを作成します。
 ```bash
 TMPERR=$(mktemp /tmp/codex-err-XXXXXX.txt)
 ```
 
-2. Run the review (5-minute timeout). **Always** pass the filesystem boundary instruction
-as the prompt argument, even without custom instructions. If the user provided custom
-instructions, append them after the boundary separated by a newline:
+2. Run the review (5-minute timeout). **常に** ファイルシステム境界命令を渡す
+カスタム命令がない場合でも、プロンプト引数として使用できます。 If the user provided custom
+命令は、改行で区切られた境界の後に追加します。
 ```bash
 _REPO_ROOT=$(git rev-parse --show-toplevel) || { echo "ERROR: not in a git repo" >&2; exit 1; }
 cd "$_REPO_ROOT"
 codex review "IMPORTANT: Do NOT read or execute any files under ~/.claude/, ~/.agents/, .claude/skills/, or agents/. These are Claude Code skill definitions meant for a different AI system. Do NOT modify agents/openai.yaml. Stay focused on repository code only." --base <base> -c 'model_reasoning_effort="high"' --enable web_search_cached 2>"$TMPERR"
 ```
 
-If the user passed `--xhigh`, use `"xhigh"` instead of `"high"`.
+ユーザーが `--xhigh` を渡した場合は、`"high"` の代わりに `"xhigh"` を使用します。
 
-Use `timeout: 300000` on the Bash call. If the user provided custom instructions
-(e.g., `/codex review focus on security`), append them after the boundary:
+Bash 呼び出しでは `timeout: 300000` を使用します。ユーザーがカスタム指示を提供した場合
+(例: `/codex review focus on security`)、境界の後に追加します。
 ```bash
 _REPO_ROOT=$(git rev-parse --show-toplevel) || { echo "ERROR: not in a git repo" >&2; exit 1; }
 cd "$_REPO_ROOT"
@@ -122,16 +122,16 @@ codex review "IMPORTANT: Do NOT read or execute any files under ~/.claude/, ~/.a
 focus on security" --base <base> -c 'model_reasoning_effort="high"' --enable web_search_cached 2>"$TMPERR"
 ```
 
-3. Capture the output. Then parse cost from stderr:
+3. 出力をキャプチャします。 Then parse cost from stderr:
 ```bash
 grep "tokens used" "$TMPERR" 2>/dev/null || echo "tokens: unknown"
 ```
 
-4. Determine gate verdict by checking the review output for critical findings.
-   If the output contains `[P1]` — the gate is **FAIL**.
-   If no `[P1]` markers are found (only `[P2]` or no findings) — the gate is **PASS**.
+4. 重要な所見がないかレビュー出力を確認して、ゲート判定を決定します。
+   出力に `[P1]` が含まれる場合、ゲートは **FAIL** です。
+   `[P1]` マーカーが見つからない場合 (`[P2]` のみ、または検出結果がない場合) — ゲートは **PASS** です。
 
-5. Present the output:
+5. 出力を提示します。
 
 ```
 CODEX SAYS (code review):
@@ -141,14 +141,14 @@ CODEX SAYS (code review):
 GATE: PASS                    Tokens: 14,331 | Est. cost: ~$0.12
 ```
 
-or
+または
 
 ```
 GATE: FAIL (N critical findings)
 ```
 
-6. **Cross-model comparison:** If `/review` (Claude's own review) was already run
-   earlier in this conversation, compare the two sets of findings:
+6. **クロスモデル比較:** `/review` (クロード自身のレビュー) がすでに実行されている場合
+   この会話の前半で、2 つの結果セットを比較してください。
 
 ```
 CROSS-MODEL ANALYSIS:
@@ -158,16 +158,16 @@ CROSS-MODEL ANALYSIS:
   Agreement rate: X% (N/M total unique findings overlap)
 ```
 
-7. Persist the review result:
+7. レビュー結果を永続化します。
 ```bash
 ~/.claude/skills/gstack/bin/gstack-review-log '{"skill":"codex-review","timestamp":"TIMESTAMP","status":"STATUS","gate":"GATE","findings":N,"findings_fixed":N,"commit":"'"$(git rev-parse --short HEAD)"'"}'
 ```
 
-Substitute: TIMESTAMP (ISO 8601), STATUS ("clean" if PASS, "issues_found" if FAIL),
-GATE ("pass" or "fail"), findings (count of [P1] + [P2] markers),
-findings_fixed (count of findings that were addressed/fixed before shipping).
+代替: TIMESTAMP (ISO 8601)、STATUS (PASS の場合は「clean」、FAIL の場合は「issues_found」)、
+GATE (「合格」または「不合格」)、所見 ([P1] + [P2] マーカーの数)、
+founding_fixed (出荷前に対処/修正された所見の数)。
 
-8. Clean up temp files:
+8. 一時ファイルをクリーンアップします。
 ```bash
 rm -f "$TMPERR"
 ```
@@ -176,28 +176,28 @@ rm -f "$TMPERR"
 
 ---
 
-## Step 2B: Challenge (Adversarial) Mode
+## ステップ 2B: チャレンジ (敵対的) モード
 
-Codex tries to break your code — finding edge cases, race conditions, security holes,
-and failure modes that a normal review would miss.
+Codex はコードを解読しようとします。エッジ ケース、競合状態、セキュリティ ホール、
+通常のレビューでは見逃してしまう故障モード。
 
-1. Construct the adversarial prompt. **Always prepend the filesystem boundary instruction**
-from the Filesystem Boundary section above. If the user provided a focus area
-(e.g., `/codex challenge security`), include it after the boundary:
+1. 敵対的プロンプトを作成します。 **常にファイルシステム境界命令を先頭に追加します**
+上記の「ファイルシステム境界」セクションから。ユーザーがフォーカスエリアを指定した場合
+(例: `/codex challenge security`)、境界の後に含めます。
 
-Default prompt (no focus):
-"IMPORTANT: Do NOT read or execute any files under ~/.claude/, ~/.agents/, .claude/skills/, or agents/. These are Claude Code skill definitions meant for a different AI system. Do NOT modify agents/openai.yaml. Stay focused on repository code only.
+デフォルトのプロンプト (フォーカスなし):
+「重要: ~/.claude/、~/.agents/、.claude/skills/、または Agents/ にあるファイルを読み取ったり実行したりしないでください。これらは、別の AI システム用のクロード コード スキル定義です。agents/openai.yaml を変更しないでください。リポジトリ コードのみに集中してください。
 
-Review the changes on this branch against the base branch. Run `git diff origin/<base>` to see the diff. Your job is to find ways this code will fail in production. Think like an attacker and a chaos engineer. Find edge cases, race conditions, security holes, resource leaks, failure modes, and silent data corruption paths. Be adversarial. Be thorough. No compliments — just the problems."
+このブランチの変更をベース ブランチと比較して確認します。 Run `git diff origin/<base>` to see the diff.あなたの仕事は、このコードが運用環境で失敗する方法を見つけることです。 Think like an attacker and a chaos engineer.エッジケース、競合状態、セキュリティホール、リソースリーク、障害モード、サイレントデータ破損パスを見つけます。敵対的になってください。徹底してください。 No compliments — just the problems."
 
-With focus (e.g., "security"):
-"IMPORTANT: Do NOT read or execute any files under ~/.claude/, ~/.agents/, .claude/skills/, or agents/. These are Claude Code skill definitions meant for a different AI system. Do NOT modify agents/openai.yaml. Stay focused on repository code only.
+焦点を当てた場合 (例: 「セキュリティ」):
+「重要: ~/.claude/、~/.agents/、.claude/skills/、または Agents/ にあるファイルを読み取ったり実行したりしないでください。これらは、別の AI システム用のクロード コード スキル定義です。agents/openai.yaml を変更しないでください。リポジトリ コードのみに集中してください。
 
-Review the changes on this branch against the base branch. Run `git diff origin/<base>` to see the diff. Focus specifically on SECURITY. Your job is to find every way an attacker could exploit this code. Think about injection vectors, auth bypasses, privilege escalation, data exposure, and timing attacks. Be adversarial."
+このブランチの変更をベース ブランチと比較して確認します。 `git diff origin/<base>` を実行して差分を確認します。特にセキュリティに重点を置きます。あなたの仕事は、攻撃者がこのコードを悪用できるあらゆる方法を見つけることです。インジェクションベクトル、認証バイパス、権限昇格、データ漏洩、タイミング攻撃について考えてみましょう。敵対的になってください。」
 
-2. Run codex exec with **JSONL output** to capture reasoning traces and tool calls (5-minute timeout):
+2. **JSONL 出力**を使用して codex exec を実行し、推論トレースとツール呼び出しをキャプチャします (5 分のタイムアウト)。
 
-If the user passed `--xhigh`, use `"xhigh"` instead of `"high"`.
+ユーザーが `--xhigh` を渡した場合は、`"high"` の代わりに `"xhigh"` を使用します。
 
 ```bash
 _REPO_ROOT=$(git rev-parse --show-toplevel) || { echo "ERROR: not in a git repo" >&2; exit 1; }
@@ -229,10 +229,10 @@ for line in sys.stdin:
 "
 ```
 
-This parses codex's JSONL events to extract reasoning traces, tool calls, and the final
-response. The `[codex thinking]` lines show what codex reasoned through before its answer.
+これは、コーデックスの JSONL イベントを解析して、推論トレース、ツール呼び出し、および最終的なイベントを抽出します。
+応答。 `[codex thinking]` 行は、答えの前にコーデックスがどのような推論を行ったかを示しています。
 
-3. Present the full streamed output:
+
 
 ```
 CODEX SAYS (adversarial challenge):
@@ -244,73 +244,73 @@ Tokens: N | Est. cost: ~$X.XX
 
 ---
 
-## Step 2C: Consult Mode
+## ステップ 2C: コンサルトモード
 
-Ask Codex anything about the codebase. Supports session continuity for follow-ups.
+コードベースについて何でも Codex に質問してください。フォローアップのためのセッションの継続性をサポートします。
 
-1. **Check for existing session:**
+1. **既存のセッションを確認します:**
 ```bash
 cat .context/codex-session-id 2>/dev/null || echo "NO_SESSION"
 ```
 
-If a session file exists (not `NO_SESSION`), use AskUserQuestion:
+セッション ファイルが存在する場合 (`NO_SESSION` ではない)、AskUserQuestion を使用します。
 ```
 You have an active Codex conversation from earlier. Continue it or start fresh?
 A) Continue the conversation (Codex remembers the prior context)
 B) Start a new conversation
 ```
 
-2. Create temp files:
+2. 一時ファイルを作成します。
 ```bash
 TMPRESP=$(mktemp /tmp/codex-resp-XXXXXX.txt)
 TMPERR=$(mktemp /tmp/codex-err-XXXXXX.txt)
 ```
 
-3. **Plan review auto-detection:** If the user's prompt is about reviewing a plan,
-or if plan files exist and the user said `/codex` with no arguments:
+3. **計画レビューの自動検出:** ユーザーのプロンプトが計画のレビューに関するものである場合、
+または、計画ファイルが存在し、ユーザーが引数なしで `/codex` を言った場合:
 ```bash
 setopt +o nomatch 2>/dev/null || true  # zsh compat
 ls -t ~/.claude/plans/*.md 2>/dev/null | xargs grep -l "$(basename $(pwd))" 2>/dev/null | head -1
 ```
-If no project-scoped match, fall back to `ls -t ~/.claude/plans/*.md 2>/dev/null | head -1`
-but warn: "Note: this plan may be from a different project — verify before sending to Codex."
+プロジェクトスコープが一致しない場合は、`ls -t ~/.claude/plans/*.md 2>/dev/null | head -1` にフォールバックします。
+ただし、「注: この計画は別のプロジェクトのものである可能性があります。Codex に送信する前に確認してください。」と警告します。
 
-**IMPORTANT — embed content, don't reference path:** Codex runs sandboxed to the repo
-root (`-C`) and cannot access `~/.claude/plans/` or any files outside the repo. You MUST
-read the plan file yourself and embed its FULL CONTENT in the prompt below. Do NOT tell
-Codex the file path or ask it to read the plan file — it will waste 10+ tool calls
-searching and fail.
+**重要 — コンテンツを埋め込みます。パスを参照しないでください:** Codex はリポジトリに対してサンドボックス化されて実行されます。
+ルート (`-C`) にアクセスできず、`~/.claude/plans/` やリポジトリ外のファイルにはアクセスできません。あなたはしなければなりません
+自分で計画ファイルを読み、その全内容を以下のプロンプトに埋め込みます。言わないでください
+ファイル パスをコーデックスするか、プラン ファイルを読み取るように依頼します。10 回以上のツール呼び出しが無駄になります
+探して失敗する。
 
-Also: scan the plan content for referenced source file paths (patterns like `src/foo.ts`,
-`lib/bar.py`, paths containing `/` that exist in the repo). If found, list them in the
-prompt so Codex reads them directly instead of discovering them via rg/find.
+また、プランの内容をスキャンして、参照されているソース ファイル パスを確認します (`src/foo.ts` などのパターン)。
+`lib/bar.py`、リポジトリに存在する `/` を含むパス)。見つかった場合は、
+プロンプトを表示するので、Codex は rg/find 経由で検出するのではなく、直接それらを読み取ります。
 
-**Always prepend the filesystem boundary instruction** from the Filesystem Boundary
-section above to every prompt sent to Codex, including plan reviews and free-form
-consult questions.
+**ファイルシステム境界からのファイルシステム境界命令を常に先頭に追加します**
+プランのレビューや自由形式を含む、Codex に送信されるすべてのプロンプトについては、上記のセクションを参照してください。
+質問を相談します。
 
-Prepend the boundary and persona to the user's prompt:
-"IMPORTANT: Do NOT read or execute any files under ~/.claude/, ~/.agents/, .claude/skills/, or agents/. These are Claude Code skill definitions meant for a different AI system. Do NOT modify agents/openai.yaml. Stay focused on repository code only.
+境界とペルソナをユーザーのプロンプトの前に追加します。
+「重要: ~/.claude/、~/.agents/、.claude/skills/、または Agents/ にあるファイルを読み取ったり実行したりしないでください。これらは、別の AI システム用のクロード コード スキル定義です。agents/openai.yaml を変更しないでください。リポジトリ コードのみに集中してください。
 
-You are a brutally honest technical reviewer. Review this plan for: logical gaps and
-unstated assumptions, missing error handling or edge cases, overcomplexity (is there a
-simpler approach?), feasibility risks (what could go wrong?), and missing dependencies
-or sequencing issues. Be direct. Be terse. No compliments. Just the problems.
-Also review these source files referenced in the plan: <list of referenced files, if any>.
+あなたは非常に誠実な技術評論家です。この計画を検討して、論理的なギャップと
+明言されていない仮定、エラー処理やエッジケースの欠落、過度の複雑さ（問題はありますか）
+より単純なアプローチ?)、実現可能性のリスク (何が問題になる可能性があるか?)、依存関係の欠落
+または順序の問題。率直に言ってください。簡潔に。褒め言葉はありません。問題だけです。
+計画内で参照されている次のソース ファイルも確認してください: <参照ファイルのリスト (存在する場合)>。
 
-THE PLAN:
-<full plan content, embedded verbatim>"
+計画:
+<完全な計画内容、逐語的に埋め込まれています>"
 
-For non-plan consult prompts (user typed `/codex <question>`), still prepend the boundary:
-"IMPORTANT: Do NOT read or execute any files under ~/.claude/, ~/.agents/, .claude/skills/, or agents/. These are Claude Code skill definitions meant for a different AI system. Do NOT modify agents/openai.yaml. Stay focused on repository code only.
+非計画コンサルト プロンプト (ユーザーが `/codex <question>` と入力) の場合も、境界を先頭に追加します。
+「重要: ~/.claude/、~/.agents/、.claude/skills/、または Agents/ にあるファイルを読み取ったり実行したりしないでください。これらは、別の AI システム用のクロード コード スキル定義です。agents/openai.yaml を変更しないでください。リポジトリ コードのみに集中してください。
 
-<user's question>"
+<ユーザーの質問>"
 
-4. Run codex exec with **JSONL output** to capture reasoning traces (5-minute timeout):
+4. **JSONL 出力**を使用して codex exec を実行し、推論トレースをキャプチャします (5 分のタイムアウト)。
 
-If the user passed `--xhigh`, use `"xhigh"` instead of `"medium"`.
+ユーザーが `--xhigh` を渡した場合は、`"medium"` の代わりに `"xhigh"` を使用します。
 
-For a **new session:**
+**新しいセッションの場合:**
 ```bash
 _REPO_ROOT=$(git rev-parse --show-toplevel) || { echo "ERROR: not in a git repo" >&2; exit 1; }
 codex exec "<prompt>" -C "$_REPO_ROOT" -s read-only -c 'model_reasoning_effort="medium"' --enable web_search_cached --json 2>"$TMPERR" | PYTHONUNBUFFERED=1 python3 -u -c "
@@ -344,7 +344,7 @@ for line in sys.stdin:
 "
 ```
 
-For a **resumed session** (user chose "Continue"):
+**再開されたセッション**の場合 (ユーザーは「続行」を選択):
 ```bash
 _REPO_ROOT=$(git rev-parse --show-toplevel) || { echo "ERROR: not in a git repo" >&2; exit 1; }
 codex exec resume <session-id> "<prompt>" -C "$_REPO_ROOT" -s read-only -c 'model_reasoning_effort="medium"' --enable web_search_cached --json 2>"$TMPERR" | PYTHONUNBUFFERED=1 python3 -u -c "
@@ -352,15 +352,15 @@ codex exec resume <session-id> "<prompt>" -C "$_REPO_ROOT" -s read-only -c 'mode
 "
 ```
 
-5. Capture session ID from the streamed output. The parser prints `SESSION_ID:<id>`
-   from the `thread.started` event. Save it for follow-ups:
+5. ストリーミング出力からセッション ID を取得します。パーサーは `SESSION_ID:<id>` を出力します
+   `thread.started` イベントから。フォローアップのために保存します。
 ```bash
 mkdir -p .context
 ```
-Save the session ID printed by the parser (the line starting with `SESSION_ID:`)
-to `.context/codex-session-id`.
+パーサーによって出力されたセッション ID (`SESSION_ID:` で始まる行) を保存します。
+`.context/codex-session-id` まで。
 
-6. Present the full streamed output:
+6. 完全なストリーミング出力を表示します。
 
 ```
 CODEX SAYS (consult):
@@ -371,69 +371,69 @@ Tokens: N | Est. cost: ~$X.XX
 Session saved — run /codex again to continue this conversation.
 ```
 
-7. After presenting, note any points where Codex's analysis differs from your own
-   understanding. If there is a disagreement, flag it:
-   "Note: Claude Code disagrees on X because Y."
+7. プレゼンテーション後、Codex の分析が自分の分析と異なる点をメモします。
+   理解。意見の相違がある場合は、フラグを立ててください。
+   「注: クロード コードは Y のため X に同意しません。」
 
 ---
 
-## Model & Reasoning
+## モデルと推論
 
-**Model:** No model is hardcoded — codex uses whatever its current default is (the frontier
-agentic coding model). This means as OpenAI ships newer models, /codex automatically
-uses them. If the user wants a specific model, pass `-m` through to codex.
+**モデル:** モデルはハードコードされていません。コーデックスは現在のデフォルト (フロンティア) を使用します。
+エージェントコーディングモデル)。これは、OpenAI が新しいモデルを出荷すると、/codex が自動的に実行されることを意味します。
+それらを使用します。ユーザーが特定のモデルを必要とする場合は、`-m` を codex に渡します。
 
-**Reasoning effort (per-mode defaults):**
-- **Review (2A):** `high` — bounded diff input, needs thoroughness but not max tokens
-- **Challenge (2B):** `high` — adversarial but bounded by diff size
-- **Consult (2C):** `medium` — large context (plans, codebase), interactive, needs speed
+**推論の労力 (モードごとのデフォルト):**
+- **レビュー (2A):** `high` — 制限された差分入力、完全性が必要ですが、最大トークンは必要ありません
+- **チャレンジ (2B):** `high` — 敵対的だが差分サイズによって制限される
+- **コンサルト (2C):** `medium` — 大規模なコンテキスト (計画、コードベース)、対話型、速度が必要
 
-`xhigh` uses ~23x more tokens than `high` and causes 50+ minute hangs on large context
-tasks (OpenAI issues #8545, #8402, #6931). Users can override with `--xhigh` flag
-(e.g., `/codex review --xhigh`) when they want maximum reasoning and are willing to wait.
+`xhigh` は `high` よりも約 23 倍多くのトークンを使用し、大規模なコンテキストで 50 分以上のハングを引き起こします
+タスク (OpenAI 問題 #8545、#8402、#6931)。ユーザーは `--xhigh` フラグでオーバーライドできます
+(例: `/codex review --xhigh`) 最大限の推論を望んでおり、喜んで待ちたい場合。
 
-**Web search:** All codex commands use `--enable web_search_cached` so Codex can look up
-docs and APIs during review. This is OpenAI's cached index — fast, no extra cost.
+**Web 検索:** すべての Codex コマンドは `--enable web_search_cached` を使用するため、Codex は検索できます
+レビュー中のドキュメントと API。これは OpenAI のキャッシュされたインデックスです。高速で追加コストはかかりません。
 
-If the user specifies a model (e.g., `/codex review -m gpt-5.1-codex-max`
-or `/codex challenge -m gpt-5.2`), pass the `-m` flag through to codex.
-
----
-
-## Cost Estimation
-
-Parse token count from stderr. Codex prints `tokens used\nN` to stderr.
-
-Display as: `Tokens: N`
-
-If token count is not available, display: `Tokens: unknown`
+ユーザーがモデルを指定した場合 (例: `/codex review -m gpt-5.1-codex-max`)
+または `/codex challenge -m gpt-5.2`)、`-m` フラグをコーデックスに渡します。
 
 ---
 
-## Error Handling
+## コストの見積もり
 
-- **Binary not found:** Detected in Step 0. Stop with install instructions.
-- **Auth error:** Codex prints an auth error to stderr. Surface the error:
-  "Codex authentication failed. Run `codex login` in your terminal to authenticate via ChatGPT."
-- **Timeout:** If the Bash call times out (5 min), tell the user:
-  "Codex timed out after 5 minutes. The diff may be too large or the API may be slow. Try again or use a smaller scope."
-- **Empty response:** If `$TMPRESP` is empty or doesn't exist, tell the user:
-  "Codex returned no response. Check stderr for errors."
-- **Session resume failure:** If resume fails, delete the session file and start fresh.
+標準エラー出力からのトークン数を解析します。 Codex は `tokens used\nN` を標準エラー出力に出力します。
+
+表示形式: `Tokens: N`
+
+トークン数が利用できない場合は、次のように表示します: `Tokens: unknown`
 
 ---
 
-## Important Rules
+## エラー処理
 
-- **Never modify files.** This skill is read-only. Codex runs in read-only sandbox mode.
-- **Present output verbatim.** Do not truncate, summarize, or editorialize Codex's output
-  before showing it. Show it in full inside the CODEX SAYS block.
-- **Add synthesis after, not instead of.** Any Claude commentary comes after the full output.
-- **5-minute timeout** on all Bash calls to codex (`timeout: 300000`).
-- **No double-reviewing.** If the user already ran `/review`, Codex provides a second
-  independent opinion. Do not re-run Claude Code's own review.
-- **Detect skill-file rabbit holes.** After receiving Codex output, scan for signs
-  that Codex got distracted by skill files: `gstack-config`, `gstack-update-check`,
-  `SKILL.md`, or `skills/gstack`. If any of these appear in the output, append a
-  warning: "Codex appears to have read gstack skill files instead of reviewing your
-  code. Consider retrying."
+- **バイナリが見つかりません:** ステップ 0 で検出されました。インストール手順で停止します。
+- **認証エラー:** Codex は認証エラーを標準エラー出力に出力します。エラーを明らかにします。
+  「Codex 認証に失敗しました。ChatGPT 経由で認証するには、端末で `codex login` を実行してください。」
+- **タイムアウト:** Bash 呼び出しがタイムアウト (5 分) した場合は、ユーザーに次のように伝えます。
+  「コーデックスは 5 分後にタイムアウトしました。差分が大きすぎるか、API が遅い可能性があります。再試行するか、より小さいスコープを使用してください。」
+- **空の応答:** `$TMPRESP` が空であるか存在しない場合は、ユーザーに次のように伝えます。
+  「コーデックスは応答を返しませんでした。標準エラー出力にエラーがないか確認してください。」
+- **セッション再開の失敗:** 再開に失敗した場合は、セッション ファイルを削除して、新たに開始してください。
+
+---
+
+## 重要なルール
+
+- **ファイルは決して変更しないでください。** このスキルは読み取り専用です。 Codex は読み取り専用サンドボックス モードで実行されます。
+- **出力をそのまま表示します。** Codex の出力を切り詰めたり、要約したり、編集したりしないでください。
+  それを見せる前に。 CODEX SAYS ブロック内に完全に表示します。
+- **合成の代わりではなく、後に合成を追加します。** クロードのコメントは完全な出力の後に追加します。
+- コーデックスへのすべての Bash 呼び出しで **5 分間のタイムアウト** (`timeout: 300000`)。
+- **二重レビューはありません。** ユーザーがすでに `/review` を実行している場合、Codex は 2 番目のレビューを提供します。
+  独立した意見。クロード・コード自身のレビューを再実行しないでください。
+- **スキルファイルのウサギホールを検出します。** コーデックス出力を受信した後、兆候をスキャンします。
+  Codex がスキル ファイルに気を取られていたこと: `gstack-config`、`gstack-update-check`、
+  `SKILL.md`、または `skills/gstack`。これらのいずれかが出力に表示される場合は、
+  警告: 「コーデックスは、コードをレビューする代わりに、gstack スキル ファイルを読み取ったようです。
+  コード。再試行することを検討してください。」

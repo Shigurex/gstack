@@ -1,64 +1,64 @@
 ---
-name: gstack
-preamble-tier: 1
-version: 1.1.0
-description: |
-  Fast headless browser for QA testing and site dogfooding. Navigate pages, interact with
-  elements, verify state, diff before/after, take annotated screenshots, test responsive
-  layouts, forms, uploads, dialogs, and capture bug evidence. Use when asked to open or
-  test a site, verify a deployment, dogfood a user flow, or file a bug with screenshots. (gstack)
-allowed-tools:
-  - Bash
-  - Read
-  - AskUserQuestion
+名前: gスタック
+プリアンブル層: 1
+バージョン: 1.1.0
+説明: |
+  QA テストとサイトのドッグフーディングのための高速ヘッドレス ブラウザ。ページの移動、操作
+  要素、状態の確認、前後の差分、注釈付きスクリーンショットの取得、レスポンシブテスト
+  レイアウト、フォーム、アップロード、ダイアログ、およびバグ証拠のキャプチャ。開けるよう求められた場合に使用します。
+  サイトをテストしたり、展開を検証したり、ユーザー フローをドッグフードしたり、スクリーンショットを使用してバグを報告したりできます。 (Gスタック)
+許可されたツール:
+  - バッシュ
+  - 読む
+  - ユーザーに質問する
 
 ---
 
-{{PREAMBLE}}
+{{前文}}
 
-If `PROACTIVE` is `false`: do NOT proactively invoke or suggest other gstack skills during
-this session. Only run skills the user explicitly invokes. This preference persists across
-sessions via `gstack-config`.
+`PROACTIVE` が `false` の場合: 実行中に他の gstack スキルを積極的に呼び出したり提案したりしないでください。
+このセッション。ユーザーが明示的に呼び出すスキルのみを実行してください。この設定は次の期間にわたって持続します
+`gstack-config` 経由のセッション。
 
-If `PROACTIVE` is `true` (default): **invoke the Skill tool** when the user's request
-matches a skill's purpose. Do NOT answer directly when a skill exists for the task.
-Use the Skill tool to invoke it. The skill has specialized workflows, checklists, and
-quality gates that produce better results than answering inline.
+`PROACTIVE` が `true` (デフォルト) の場合: ユーザーのリクエストがあったときに **スキルツールを呼び出します**
+スキルの目的と一致します。タスクにスキルが存在する場合は、直接回答しないでください。
+スキルツールを使用して呼び出します。このスキルには、特殊なワークフロー、チェックリスト、および
+インラインで回答するよりも優れた結果を生み出す高品質のゲート。
 
-**Routing rules — when you see these patterns, INVOKE the skill via the Skill tool:**
-- User describes a new idea, asks "is this worth building", wants to brainstorm → invoke `/office-hours`
-- User asks about strategy, scope, ambition, "think bigger" → invoke `/plan-ceo-review`
-- User asks to review architecture, lock in the plan → invoke `/plan-eng-review`
-- User asks about design system, brand, visual identity → invoke `/design-consultation`
-- User asks to review design of a plan → invoke `/plan-design-review`
-- User wants all reviews done automatically → invoke `/autoplan`
-- User reports a bug, error, broken behavior, asks "why is this broken" → invoke `/investigate`
-- User asks to test the site, find bugs, QA → invoke `/qa`
-- User asks to review code, check the diff, pre-landing review → invoke `/review`
-- User asks about visual polish, design audit of a live site → invoke `/design-review`
-- User asks to ship, deploy, push, create a PR → invoke `/ship`
-- User asks to update docs after shipping → invoke `/document-release`
-- User asks for a weekly retro, what did we ship → invoke `/retro`
-- User asks for a second opinion, codex review → invoke `/codex`
-- User asks for safety mode, careful mode → invoke `/careful` or `/guard`
-- User asks to restrict edits to a directory → invoke `/freeze` or `/unfreeze`
-- User asks to upgrade gstack → invoke `/gstack-upgrade`
+**ルーティング ルール — これらのパターンが表示された場合は、スキル ツールを介してスキルを呼び出します。**
+- ユーザーが新しいアイデアについて説明し、「これは構築する価値があるか」と尋ね、ブレインストーミングを希望している → `/office-hours` を呼び出す
+- ユーザーが戦略、範囲、野心について質問し、「もっと大きく考えてください」→ `/plan-ceo-review` を呼び出します
+- ユーザーはアーキテクチャを確認し、計画を確定するよう要求します。 → `/plan-eng-review` を呼び出します
+- ユーザーがデザインシステム、ブランド、ビジュアルアイデンティティについて質問 → `/design-consultation` を呼び出す
+- ユーザーが計画の設計をレビューするよう要求 → `/plan-design-review` を呼び出します
+- ユーザーはすべてのレビューを自動的に実行することを望んでいます → `/autoplan` を呼び出します
+- ユーザーがバグ、エラー、壊れた動作を報告し、「なぜこれが壊れているのか」と尋ねる → `/investigate` を呼び出す
+- ユーザーはサイトのテスト、バグの発見、QA → `/qa` の呼び出しを要求します
+- ユーザーはコードをレビューし、差分を確認し、着陸前レビューを要求します → `/review` を呼び出します
+- ユーザーがビジュアルの磨き方、ライブサイトのデザイン監査について質問 → `/design-review` を呼び出す
+- ユーザーが PR の配布、デプロイ、プッシュ、作成を要求 → `/ship` を呼び出す
+- ユーザーが出荷後にドキュメントを更新するよう要求する → `/document-release` を呼び出す
+- ユーザーが毎週のレトロを要求しました。何を出荷しましたか → `/retro` を呼び出します
+- ユーザーがセカンドオピニオンを求め、コーデックスレビュー → `/codex` を呼び出します
+- ユーザーが安全モード、慎重モードを要求 → `/careful` または `/guard` を呼び出します
+- ユーザーがディレクトリへの編集を制限するよう要求 → `/freeze` または `/unfreeze` を呼び出します
+- ユーザーが gstack のアップグレードを要求 → `/gstack-upgrade` を呼び出す
 
-**Do NOT answer the user's question directly when a matching skill exists.** The skill
-provides a structured, multi-step workflow that is always better than an ad-hoc answer.
-Invoke the skill first. If no skill matches, answer directly as usual.
+**一致するスキルが存在する場合は、ユーザーの質問に直接答えないでください。** スキル
+は、その場限りの答えよりも常に優れた、構造化された複数ステップのワークフローを提供します。
+まずはスキルを発動します。一致するスキルがない場合は、通常どおり直接回答してください。
 
-If the user opts out of suggestions, run `gstack-config set proactive false`.
-If they opt back in, run `gstack-config set proactive true`.
+ユーザーが提案をオプトアウトした場合は、`gstack-config set proactive false` を実行します。
+再びオプトインする場合は、`gstack-config set proactive true` を実行します。
 
-# gstack browse: QA Testing & Dogfooding
+# gstack 参照: QA テストとドッグフーディング
 
-Persistent headless Chromium. First call auto-starts (~3s), then ~100-200ms per command.
-Auto-shuts down after 30 min idle. State persists between calls (cookies, tabs, sessions).
+Persistent headless Chromium.最初に自動開始を呼び出し (約 3 秒)、次にコマンドごとに約 100 ～ 200 ミリ秒を呼び出します。
+Auto-shuts down after 30 min idle.状態は呼び出し間 (Cookie、タブ、セッション) に維持されます。
 
 {{BROWSE_SETUP}}
 
-## IMPORTANT
+＃＃ 重要
 
 - Use the compiled binary via Bash: `$B <command>`
 - NEVER use `mcp__claude-in-chrome__*` tools. They are slow and unreliable.
@@ -66,12 +66,12 @@ Auto-shuts down after 30 min idle. State persists between calls (cookies, tabs, 
 - Dialogs (alert/confirm/prompt) are auto-accepted by default — no browser lockup.
 - **Show screenshots:** After `$B screenshot`, `$B snapshot -a -o`, or `$B responsive`, always use the Read tool on the output PNG(s) so the user can see them. Without this, screenshots are invisible.
 
-## QA Workflows
+## QA ワークフロー
 
-> **Credential safety:** Use environment variables for test credentials.
-> Set them before running: `export TEST_EMAIL="..." TEST_PASSWORD="..."`
+> **認証情報の安全性:** テスト認証情報に環境変数を使用します。
+> 実行前に設定します: `export TEST_EMAIL="..." TEST_PASSWORD="..."`
 
-### Test a user flow (login, signup, checkout, etc.)
+### ユーザー フロー (ログイン、サインアップ、チェックアウトなど) をテストする
 
 ```bash
 # 1. Go to the page
@@ -91,7 +91,7 @@ $B is visible ".dashboard"  # assert the dashboard appeared
 $B screenshot /tmp/after-login.png
 ```
 
-### Verify a deployment / check prod
+### デプロイメントの検証/本番環境のチェック
 
 ```bash
 $B goto https://yourapp.com
@@ -103,7 +103,7 @@ $B is visible ".hero-section"    # key elements present?
 $B screenshot /tmp/prod-check.png
 ```
 
-### Dogfood a feature end-to-end
+### Dogfood のエンドツーエンド機能
 
 ```bash
 # Navigate to the feature
@@ -129,7 +129,7 @@ $B is checked "#agree-checkbox"
 $B console
 ```
 
-### Test responsive layouts
+### レスポンシブ レイアウトをテストする
 
 ```bash
 # Quick: 3 screenshots at mobile/tablet/desktop
@@ -154,7 +154,7 @@ $B screenshot --clip 0,0,800,600 /tmp/above-fold.png
 $B screenshot --viewport /tmp/viewport.png
 ```
 
-### Test file upload
+### テストファイルのアップロード
 
 ```bash
 $B goto https://app.example.com/upload
@@ -164,7 +164,7 @@ $B is visible ".upload-success"
 $B screenshot /tmp/upload-result.png
 ```
 
-### Test forms with validation
+### 検証付きのテストフォーム
 
 ```bash
 $B goto https://app.example.com/form
@@ -181,7 +181,7 @@ $B click @e10
 $B snapshot -D                       # diff shows errors gone, success state
 ```
 
-### Test dialogs (delete confirmations, prompts)
+### テストダイアログ (削除確認、プロンプト)
 
 ```bash
 # Set up dialog handling BEFORE triggering
@@ -195,7 +195,7 @@ $B dialog-accept "my answer"  # accept with text
 $B click "#rename-button"     # triggers prompt
 ```
 
-### Test authenticated pages (import real browser cookies)
+### 認証されたページをテストする (実際のブラウザーの Cookie をインポートする)
 
 ```bash
 # Import cookies from your real browser (opens interactive picker)
@@ -210,16 +210,16 @@ $B snapshot -i
 $B screenshot /tmp/github-profile.png
 ```
 
-> **Cookie safety:** `cookie-import-browser` transfers real session data.
-> Only import cookies from browsers you control.
+> **Cookie の安全性:** `cookie-import-browser` は実際のセッション データを転送します。
+> 自分が制御するブラウザからのみ Cookie をインポートします。
 
-### Compare two pages / environments
+### 2 つのページ/環境を比較する
 
 ```bash
 $B diff https://staging.app.com https://prod.app.com
 ```
 
-### Multi-step chain (efficient for long flows)
+
 
 ```bash
 echo '[
@@ -233,7 +233,7 @@ echo '[
 ]' | $B chain
 ```
 
-## Quick Assertion Patterns
+
 
 ```bash
 # Element exists and is visible
@@ -265,21 +265,21 @@ $B attrs "#logo"    # returns all attributes as JSON
 $B css ".button" "background-color"
 ```
 
-## Snapshot System
+## スナップショット システム
 
 {{SNAPSHOT_FLAGS}}
 
-## Command Reference
+## コマンドリファレンス
 
 {{COMMAND_REFERENCE}}
 
-## Tips
+## ヒント
 
-1. **Navigate once, query many times.** `goto` loads the page; then `text`, `js`, `screenshot` all hit the loaded page instantly.
-2. **Use `snapshot -i` first.** See all interactive elements, then click/fill by ref. No CSS selector guessing.
-3. **Use `snapshot -D` to verify.** Baseline → action → diff. See exactly what changed.
-4. **Use `is` for assertions.** `is visible .modal` is faster and more reliable than parsing page text.
-5. **Use `snapshot -a` for evidence.** Annotated screenshots are great for bug reports.
-6. **Use `snapshot -C` for tricky UIs.** Finds clickable divs that the accessibility tree misses.
-7. **Check `console` after actions.** Catch JS errors that don't surface visually.
-8. **Use `chain` for long flows.** Single command, no per-step CLI overhead.
+1. **一度移動すれば、何度もクエリを実行できます。** `goto` がページを読み込みます。 then `text`, `js`, `screenshot` all hit the loaded page instantly.
+2. **最初に `snapshot -i` を使用します。** すべてのインタラクティブな要素を表示してから、参照をクリックして入力します。 No CSS selector guessing.
+3. **`snapshot -D` を使用して確認します。** ベースライン → アクション → 差分。 See exactly what changed.
+4. **アサーションには `is` を使用します。** `is visible .modal` は、ページ テキストを解析するよりも高速で信頼性が高くなります。
+5. **証拠として`snapshot -a`を使用します。** 注釈付きのスクリーンショットはバグレポートに最適です。
+6. **トリッキーな UI には `snapshot -C` を使用します。** アクセシビリティ ツリーが見逃しているクリック可能な div を見つけます。
+7. **アクション後に `console` を確認します。** 視覚的に表れない JS エラーを見つけます。
+8. **長いフローには `chain` を使用します。** 単一コマンドで、ステップごとの CLI オーバーヘッドはありません。

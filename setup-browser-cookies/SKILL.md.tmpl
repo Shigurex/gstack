@@ -1,42 +1,42 @@
 ---
 name: setup-browser-cookies
-preamble-tier: 1
-version: 1.0.0
-description: |
+プリアンブル層: 1
+バージョン: 1.0.0
+説明: |
   Import cookies from your real Chromium browser into the headless browse session.
-  Opens an interactive picker UI where you select which cookie domains to import.
+  インタラクティブなピッカー UI が開き、インポートする Cookie ドメインを選択します。
   Use before QA testing authenticated pages. Use when asked to "import cookies",
-  "login to the site", or "authenticate the browser". (gstack)
-allowed-tools:
-  - Bash
-  - Read
-  - AskUserQuestion
+  「サイトへのログイン」または「ブラウザの認証」。 (Gスタック)
+許可されたツール:
+  - バッシュ
+  - 読む
+  - ユーザーに質問する
 ---
 
-{{PREAMBLE}}
+{{前文}}
 
-# Setup Browser Cookies
+# ブラウザの Cookie をセットアップする
 
-Import logged-in sessions from your real Chromium browser into the headless browse session.
+実際の Chromium ブラウザからヘッドレス ブラウズ セッションにログイン セッションをインポートします。
 
-## CDP mode check
+## CDP モードのチェック
 
-First, check if browse is already connected to the user's real browser:
+まず、ブラウザがユーザーの実際のブラウザにすでに接続されているかどうかを確認します。
 ```bash
 $B status 2>/dev/null | grep -q "Mode: cdp" && echo "CDP_MODE=true" || echo "CDP_MODE=false"
 ```
-If `CDP_MODE=true`: tell the user "Not needed — you're connected to your real browser via CDP. Your cookies and sessions are already available." and stop. No cookie import needed.
+`CDP_MODE=true` の場合: ユーザーに「必要ありません。CDP 経由で実際のブラウザに接続しています。Cookie とセッションはすでに利用可能です。」と伝えます。そしてやめてください。 Cookie のインポートは必要ありません。
 
-## How it works
+## 仕組み
 
-1. Find the browse binary
-2. Run `cookie-import-browser` to detect installed browsers and open the picker UI
-3. User selects which cookie domains to import in their browser
-4. Cookies are decrypted and loaded into the Playwright session
+1. ブラウズバイナリを見つけます
+2. `cookie-import-browser` を実行して、インストールされているブラウザを検出し、ピッカー UI を開きます
+3. ユーザーはブラウザにインポートする Cookie ドメインを選択します
+4. Cookie が復号化され、Playwright セッションにロードされます。
 
-## Steps
+## ステップ
 
-### 1. Find the browse binary
+### 1. ブラウズバイナリを見つけます
 
 {{BROWSE_SETUP}}
 
@@ -46,39 +46,39 @@ If `CDP_MODE=true`: tell the user "Not needed — you're connected to your real 
 $B cookie-import-browser
 ```
 
-This auto-detects installed Chromium browsers and opens
-an interactive picker UI in your default browser where you can:
-- Switch between installed browsers
-- Search domains
-- Click "+" to import a domain's cookies
-- Click trash to remove imported cookies
+これにより、インストールされている Chromium ブラウザが自動検出され、開きます。
+デフォルトのブラウザーのインタラクティブなピッカー UI では、次のことができます。
+- インストールされているブラウザを切り替える
+- ドメインの検索
+- 「+」をクリックしてドメインの Cookie をインポートします
+- ゴミ箱をクリックしてインポートされた Cookie を削除します
 
-Tell the user: **"Cookie picker opened — select the domains you want to import in your browser, then tell me when you're done."**
+ユーザーに次のように伝えます: **「Cookie ピッカーが開きました — ブラウザでインポートするドメインを選択して、完了したら教えてください。」**
 
-### 3. Direct import (alternative)
+### 3. 直接インポート (代替)
 
-If the user specifies a domain directly (e.g., `/setup-browser-cookies github.com`), skip the UI:
+ユーザーがドメインを直接指定した場合 (例: `/setup-browser-cookies github.com`)、UI をスキップします。
 
 ```bash
 $B cookie-import-browser comet --domain github.com
 ```
 
-Replace `comet` with the appropriate browser if specified.
+`comet` を指定されている場合は、適切なブラウザに置き換えます。
 
-### 4. Verify
+### 4. 確認する
 
-After the user confirms they're done:
+ユーザーが完了を確認したら、次のようにします。
 
 ```bash
 $B cookies
 ```
 
-Show the user a summary of imported cookies (domain counts).
+インポートされた Cookie の概要 (ドメイン数) をユーザーに表示します。
 
-## Notes
+## 注意事項
 
-- On macOS, the first import per browser may trigger a Keychain dialog — click "Allow" / "Always Allow"
-- On Linux, `v11` cookies may require `secret-tool`/libsecret access; `v10` cookies use Chromium's standard fallback key
-- Cookie picker is served on the same port as the browse server (no extra process)
-- Only domain names and cookie counts are shown in the UI — no cookie values are exposed
-- The browse session persists cookies between commands, so imported cookies work immediately
+- macOS では、ブラウザごとの最初のインポートでキーチェーン ダイアログがトリガーされる場合があります。[許可] / [常に許可] をクリックします。
+- Linux では、`v11` Cookie には `secret-tool`/libsecret アクセスが必要な場合があります。 `v10` Cookie は Chromium の標準フォールバック キーを使用します
+- Cookie ピッカーはブラウズ サーバーと同じポートで提供されます (追加のプロセスはありません)
+- ドメイン名と Cookie 数のみが UI に表示され、Cookie 値は公開されません
+- ブラウズ セッションではコマンド間で Cookie が保持されるため、インポートされた Cookie はすぐに機能します

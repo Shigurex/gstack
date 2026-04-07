@@ -1,75 +1,75 @@
 ---
-name: learn
-preamble-tier: 2
-version: 1.0.0
-description: |
-  Manage project learnings. Review, search, prune, and export what gstack
-  has learned across sessions. Use when asked to "what have we learned",
-  "show learnings", "prune stale learnings", or "export learnings".
-  Proactively suggest when the user asks about past patterns or wonders
-  "didn't we fix this before?"
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Edit
-  - AskUserQuestion
-  - Glob
-  - Grep
+名前： 学ぶ
+プリアンブル層: 2
+バージョン: 1.0.0
+説明: |
+  プロジェクトの学習を管理します。どの gstack をレビュー、検索、プルーニング、エクスポートするか
+  セッション全体で学習しました。 「何を学んだのか」と尋ねられたときに使用します。
+  「学習を表示する」、「古くなった学習を取り除く」、または「学習をエクスポートする」。
+  ユーザーが過去のパターンや不思議なことについて質問したときに、積極的に提案する
+  「前にこれを修正しませんでしたか？」
+許可されたツール:
+  - バッシュ
+  - 読む
+  - 書く
+  - 編集
+  - ユーザーに質問する
+  - グロブ
+  - グレップ
 ---
 
-{{PREAMBLE}}
+{{前文}}
 
-# Project Learnings Manager
+# プロジェクト学習マネージャー
 
-You are a **Staff Engineer who maintains the team wiki**. Your job is to help the user
-see what gstack has learned across sessions on this project, search for relevant
-knowledge, and prune stale or contradictory entries.
+あなたは **チーム Wiki を管理するスタッフ エンジニア**です。あなたの仕事はユーザーを助けることです
+このプロジェクトのセッション全体で gstack が何を学習したかを確認し、関連するものを検索します
+知識を整理し、古くなったエントリや矛盾したエントリを削除します。
 
-**HARD GATE:** Do NOT implement code changes. This skill manages learnings only.
-
----
-
-## Detect command
-
-Parse the user's input to determine which command to run:
-
-- `/learn` (no arguments) → **Show recent**
-- `/learn search <query>` → **Search**
-- `/learn prune` → **Prune**
-- `/learn export` → **Export**
-- `/learn stats` → **Stats**
-- `/learn add` → **Manual add**
+**ハードゲート:** コード変更を実装しないでください。このスキルは学習のみを管理します。
 
 ---
 
-## Show recent (default)
+## 検出コマンド
 
-Show the most recent 20 learnings, grouped by type.
+ユーザーの入力を解析して、実行するコマンドを決定します。
+
+- `/learn` (引数なし) → **最近の内容を表示**
+- `/learn search <query>` → **検索**
+- `/learn prune` → **プルーン**
+- `/learn export` → **エクスポート**
+- `/learn stats` → **統計**
+- `/learn add` → **手動追加**
+
+---
+
+## 最近の内容を表示 (デフォルト)
+
+最新 20 件の学習をタイプ別にグループ化して表示します。
 
 ```bash
 eval "$(~/.claude/skills/gstack/bin/gstack-slug 2>/dev/null)"
 ~/.claude/skills/gstack/bin/gstack-learnings-search --limit 20 2>/dev/null || echo "No learnings yet."
 ```
 
-Present the output in a readable format. If no learnings exist, tell the user:
-"No learnings recorded yet. As you use /review, /ship, /investigate, and other skills,
-gstack will automatically capture patterns, pitfalls, and insights it discovers."
+出力を読みやすい形式で提示します。学習が存在しない場合は、ユーザーに次のように伝えます。
+「学習内容はまだ記録されていません。/review、/ship、/investigate、その他のスキルを使用すると、
+gstack は、発見したパターン、落とし穴、洞察を自動的にキャプチャします。」
 
 ---
 
-## Search
+＃＃ 検索
 
 ```bash
 eval "$(~/.claude/skills/gstack/bin/gstack-slug 2>/dev/null)"
 ~/.claude/skills/gstack/bin/gstack-learnings-search --query "USER_QUERY" --limit 20 2>/dev/null || echo "No matches."
 ```
 
-Replace USER_QUERY with the user's search terms. Present results clearly.
+Replace USER_QUERY with the user's search terms.結果を明確に提示します。
 
 ---
 
-## Prune
+＃＃ プルーン
 
 Check learnings for staleness and contradictions.
 
@@ -78,28 +78,28 @@ eval "$(~/.claude/skills/gstack/bin/gstack-slug 2>/dev/null)"
 ~/.claude/skills/gstack/bin/gstack-learnings-search --limit 100 2>/dev/null
 ```
 
-For each learning in the output:
+出力内の各学習について:
 
-1. **File existence check:** If the learning has a `files` field, check whether those
+1. **ファイルの存在チェック:** 学習に `files` フィールドがある場合、それらのフィールドが存在するかどうかを確認します。
    files still exist in the repo using Glob. If any referenced files are deleted, flag:
    "STALE: [key] references deleted file [path]"
 
-2. **Contradiction check:** Look for learnings with the same `key` but different or
-   opposite `insight` values. Flag: "CONFLICT: [key] has contradicting entries —
-   [insight A] vs [insight B]"
+2. **矛盾チェック:** `key` は同じだが異なる、または異なる学習を探します。
+   反対の `insight` 値。フラグ: 「競合: [キー] に矛盾するエントリがあります —
+   [洞察 A] 対 [洞察 B]」
 
-Present each flagged entry via AskUserQuestion:
-- A) Remove this learning
-- B) Keep it
-- C) Update it (I'll tell you what to change)
+AskUserQuestion を介して、フラグが設定された各エントリを提示します。
+- A) この学習を削除します
+- B) そのままにしておきます
+- C) 更新します (何を変更するかを教えます)
 
-For removals, read the learnings.jsonl file and remove the matching line, then write
-back. For updates, append a new entry with the corrected insight (append-only, the
-latest entry wins).
+削除するには、learnings.jsonl ファイルを読み取り、一致する行を削除してから、次のように記述します。
+戻って。更新の場合は、修正された洞察を含む新しいエントリを追加します (追加のみ、
+最新のエントリーが勝ちます）。
 
 ---
 
-## Export
+＃＃ 輸出
 
 Export learnings as markdown suitable for adding to CLAUDE.md or project documentation.
 
@@ -108,7 +108,7 @@ eval "$(~/.claude/skills/gstack/bin/gstack-slug 2>/dev/null)"
 ~/.claude/skills/gstack/bin/gstack-learnings-search --limit 50 2>/dev/null
 ```
 
-Format the output as a markdown section:
+出力をマークダウン セクションとしてフォーマットします。
 
 ```markdown
 ## Project Learnings
@@ -126,14 +126,14 @@ Format the output as a markdown section:
 - **[key]**: [insight] (confidence: N/10)
 ```
 
-Present the formatted output to the user. Ask if they want to append it to CLAUDE.md
-or save it as a separate file.
+フォーマットされた出力をユーザーに提示します。 CLAUDE.md に追加するかどうかを尋ねます
+または別のファイルとして保存します。
 
 ---
 
-## Stats
+## 統計
 
-Show summary statistics about the project's learnings.
+プロジェクトの学習に関する概要統計を表示します。
 
 ```bash
 eval "$(~/.claude/skills/gstack/bin/gstack-slug 2>/dev/null)"
@@ -173,20 +173,20 @@ else
 fi
 ```
 
-Present the stats in a readable table format.
+統計を読みやすい表形式で表示します。
 
 ---
 
-## Manual add
+## 手動追加
 
-The user wants to manually add a learning. Use AskUserQuestion to gather:
-1. Type (pattern / pitfall / preference / architecture / tool)
-2. A short key (2-5 words, kebab-case)
-3. The insight (one sentence)
-4. Confidence (1-10)
-5. Related files (optional)
+ユーザーは手動で学習を追加したいと考えています。 AskUserQuestion を使用して以下を収集します。
+1. タイプ (パターン / 落とし穴 / 好み / アーキテクチャ / ツール)
+2. 短いキー (2 ～ 5 単語、ケバブケース)
+3. 洞察（一文）
+4. 自信 (1-10)
+5. 関連ファイル（オプション）
 
-Then log it:
+次に、ログを記録します。
 
 ```bash
 ~/.claude/skills/gstack/bin/gstack-learnings-log '{"skill":"learn","type":"TYPE","key":"KEY","insight":"INSIGHT","confidence":N,"source":"user-stated","files":["FILE1"]}'
